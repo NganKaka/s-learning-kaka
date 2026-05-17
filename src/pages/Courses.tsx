@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { Search, X, BookOpen, Clock, BarChart3, CheckCircle2, Play } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import PageShell from '../components/PageShell';
+import DocumentHead from '../components/DocumentHead';
 import SectionHeading from '../components/ui/SectionHeading';
 import { usePublishedCourses, formatVnd, formatDuration } from '../lib/courses';
 import { useAuth } from '../contexts/AuthContext';
@@ -83,6 +84,11 @@ export default function Courses() {
 
   return (
     <PageShell>
+      <DocumentHead
+        title="Tất cả khoá học — sLearningKaka"
+        description="Bộ sưu tập các khoá học của sLearningKaka. Mỗi khoá đi kèm video bài giảng, flashcard, quiz và chứng chỉ hoàn thành."
+        url="https://s-learning-kaka.vercel.app/courses"
+      />
       <SectionHeading
         eyebrow="Catalog"
         title="Tất cả khoá học"

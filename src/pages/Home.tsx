@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight, BookOpen, Brain, Trophy, Clock, BarChart3, ExternalLink } from 'lucide-react';
 import PageShell from '../components/PageShell';
+import DocumentHead from '../components/DocumentHead';
 import NameDecode from '../components/ui/NameDecode';
 import GradientText from '../components/ui/GradientText';
 import SectionHeading from '../components/ui/SectionHeading';
@@ -17,6 +18,11 @@ export default function Home() {
 
   return (
     <PageShell>
+      <DocumentHead
+        title="sLearningKaka — Học cùng Vo Hoang Ngan"
+        description="Nền tảng học tập cho học sinh Việt Nam: video bài giảng, flashcard ôn tập, quiz đánh giá, chứng chỉ hoàn thành. Khoá đầu tiên — Toán 12."
+        url="https://s-learning-kaka.vercel.app/"
+      />
       <section id="hero" className="relative pt-12 md:pt-20 grid lg:grid-cols-[1.2fr_0.8fr] gap-10 items-center">
         <div className="space-y-7">
           <h1 className="font-headline text-4xl md:text-6xl font-extrabold tracking-tight text-on-surface leading-tight">

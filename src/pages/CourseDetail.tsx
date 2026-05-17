@@ -2,6 +2,7 @@ import { Link, Navigate, useParams } from 'react-router-dom';
 import { ArrowRight, BarChart3, Clock, Lock, Play, BookOpen, ChevronDown, CheckCircle2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import PageShell from '../components/PageShell';
+import DocumentHead from '../components/DocumentHead';
 import { useCourse, formatVnd, formatDuration, formatLessonDuration } from '../lib/courses';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -71,6 +72,13 @@ export default function CourseDetail() {
 
   return (
     <PageShell>
+      <DocumentHead
+        title={`${course.title} — sLearningKaka`}
+        description={course.subtitle ?? course.description?.slice(0, 160) ?? `Khoá học ${course.title} trên sLearningKaka.`}
+        image={course.cover_image ?? undefined}
+        url={`https://s-learning-kaka.vercel.app/courses/${course.slug}`}
+        type="article"
+      />
       <div className="grid lg:grid-cols-[1fr_360px] gap-8 lg:gap-12">
         {/* Left: hero + curriculum */}
         <div className="space-y-10">

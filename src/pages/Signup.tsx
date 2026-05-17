@@ -6,6 +6,7 @@ import PageShell from '../components/PageShell';
 import SectionHeading from '../components/ui/SectionHeading';
 import { useAuth } from '../contexts/AuthContext';
 import { translateAuthError } from './Login';
+import { sendWelcomeIfNeeded } from '../lib/welcome';
 
 export default function Signup() {
   const { user, signUp, signInWithGoogle, loading } = useAuth();
@@ -35,6 +36,13 @@ export default function Signup() {
       return;
     }
     setDone(true);
+
+    // Fire-and-forget welcome email if a session is already live (auto-confirm
+    // projects). If email confirmation is required, the session is null until
+    // the user clicks the link, and the welcome will be sent on first login
+    // via AuthContext instead.
+    void sendWelcomeIfNeeded();
+
     // Supabase by default sends an email confirmation. If your project has
     // auto-confirm on, the session is already live and we can redirect.
     setTimeout(() => navigate('/dashboard', { replace: true }), 1500);

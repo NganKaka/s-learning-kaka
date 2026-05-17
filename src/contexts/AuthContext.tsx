@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from '
 import type { Session, User } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 import type { Profile } from '../lib/database.types';
+import { sendWelcomeIfNeeded } from '../lib/welcome';
 
 interface AuthContextValue {
   session: Session | null;
@@ -39,8 +40,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false);
     });
 
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, newSession) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((event, newSession) => {
       setSession(newSession);
+      // Fire welcome email on the first signed-in event (idempotent on server)
+      if (event === 'SIGNED_IN' && newSession?.user) {
+        void sendWelcomeIfNeeded();
+      }
     });
 
     return () => {
