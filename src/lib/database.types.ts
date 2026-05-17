@@ -7,7 +7,7 @@ export type CourseLevel = 'beginner' | 'intermediate' | 'advanced';
 export type CourseStatus = 'draft' | 'published' | 'archived';
 export type OrderStatus = 'pending' | 'confirmed' | 'cancelled' | 'refunded';
 export type EnrollmentStatus = 'active' | 'revoked' | 'expired';
-export type PaymentMethod = 'vietqr_vcb' | 'vietqr_momo' | 'manual' | 'free';
+export type PaymentMethod = 'vietqr_vcb' | 'vietqr_momo' | 'manual' | 'free' | 'wallet';
 
 export interface Profile {
   id: string;
@@ -15,6 +15,7 @@ export interface Profile {
   avatar_url: string | null;
   phone: string | null;
   is_instructor: boolean;
+  wallet_balance_vnd: number;
   created_at: string;
 }
 
@@ -59,11 +60,12 @@ export interface Lesson {
 export interface Order {
   id: string;
   user_id: string;
-  course_id: string;
+  course_id: string | null;
   amount_vnd: number;
   payment_method: PaymentMethod;
   memo_code: string;
   status: OrderStatus;
+  kind: 'purchase' | 'topup';
   confirmed_at: string | null;
   confirmed_by: string | null;
   notes: string | null;

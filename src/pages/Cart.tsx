@@ -92,6 +92,7 @@ export default function Cart() {
     setSubmitting(true);
     setErrorMsg(null);
     const result = await createOrder({
+      kind: 'purchase',
       courseId: course.id,
       courseSlug: course.slug,
       amountVnd: course.price_vnd,

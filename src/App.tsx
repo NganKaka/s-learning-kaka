@@ -23,6 +23,7 @@ const Login = lazy(() => import('./pages/Login'));
 const Signup = lazy(() => import('./pages/Signup'));
 const Cart = lazy(() => import('./pages/Cart'));
 const Account = lazy(() => import('./pages/Account'));
+const Wallet = lazy(() => import('./pages/Wallet'));
 const Teacher = lazy(() => import('./pages/Teacher'));
 
 function AnimatedRoutes() {
@@ -40,6 +41,7 @@ function AnimatedRoutes() {
           <Route path="/signup" element={<Signup />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/account" element={<Account />} />
+          <Route path="/wallet" element={<Wallet />} />
           <Route path="/teacher/*" element={<Teacher />} />
           <Route path="*" element={<NotFound />} />
         </Routes>

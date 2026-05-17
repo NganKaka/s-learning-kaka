@@ -7,11 +7,6 @@ const VCB_NAME = import.meta.env.VITE_VIETQR_VCB_NAME;
 const MOMO_ACCOUNT = import.meta.env.VITE_VIETQR_MOMO_ACCOUNT;
 const MOMO_NAME = import.meta.env.VITE_VIETQR_MOMO_NAME;
 
-/**
- * Generate a short, alpha-numeric memo code we can match against incoming
- * bank-transfer descriptions. Format: COURSE-XXXXXX (uppercase, no I/O/0/1
- * to avoid lookalike confusion).
- */
 function randomMemoSuffix(length = 6): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   let out = '';
@@ -19,38 +14,47 @@ function randomMemoSuffix(length = 6): string {
   return out;
 }
 
-export function buildMemoCode(courseSlug: string): string {
-  // memo line caps in some bank apps are short; keep under 20 chars
-  const prefix = courseSlug.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8);
-  return `${prefix}-${randomMemoSuffix(6)}`;
+export function buildMemoCode(prefix: string): string {
+  const cleaned = prefix.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8);
+  return `${cleaned}-${randomMemoSuffix(6)}`;
 }
 
-export interface CreateOrderInput {
+export interface CreatePurchaseOrderInput {
+  kind: 'purchase';
   courseId: string;
   courseSlug: string;
   amountVnd: number;
   paymentMethod: PaymentMethod;
 }
 
+export interface CreateTopupOrderInput {
+  kind: 'topup';
+  amountVnd: number;
+  paymentMethod: PaymentMethod;
+}
+
+export type CreateOrderInput = CreatePurchaseOrderInput | CreateTopupOrderInput;
+
 export async function createOrder(input: CreateOrderInput): Promise<{ order: Order | null; error: string | null }> {
   const { data: userData } = await supabase.auth.getUser();
   if (!userData.user) return { order: null, error: 'Bạn chưa đăng nhập.' };
 
-  const memo = buildMemoCode(input.courseSlug);
+  const memoPrefix = input.kind === 'topup' ? 'TOPUP' : input.courseSlug;
+  const memo = buildMemoCode(memoPrefix);
 
-  const { data, error } = await supabase
-    .from('orders')
-    .insert({
-      user_id: userData.user.id,
-      course_id: input.courseId,
-      amount_vnd: input.amountVnd,
-      payment_method: input.paymentMethod,
-      memo_code: memo,
-      status: 'pending',
-    })
-    .select('*')
-    .single();
+  const insertPayload: Record<string, unknown> = {
+    user_id: userData.user.id,
+    amount_vnd: input.amountVnd,
+    payment_method: input.paymentMethod,
+    memo_code: memo,
+    status: 'pending',
+    kind: input.kind,
+  };
+  if (input.kind === 'purchase') {
+    insertPayload.course_id = input.courseId;
+  }
 
+  const { data, error } = await supabase.from('orders').insert(insertPayload).select('*').single();
   if (error) return { order: null, error: error.message };
   return { order: data as Order, error: null };
 }

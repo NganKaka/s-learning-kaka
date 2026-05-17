@@ -14,6 +14,12 @@ const LEVELS = [
   { id: 'advanced', label: 'Nâng cao' },
 ] as const;
 
+const OWNERSHIP_FILTERS = [
+  { id: 'all', label: 'Tất cả' },
+  { id: 'owned', label: 'Đã mua' },
+  { id: 'available', label: 'Chưa mua' },
+] as const;
+
 const LEVEL_LABEL: Record<string, string> = {
   beginner: 'Cơ bản',
   intermediate: 'Trung bình',
@@ -25,6 +31,7 @@ export default function Courses() {
   const { user } = useAuth();
   const [query, setQuery] = useState('');
   const [level, setLevel] = useState<string>('all');
+  const [ownership, setOwnership] = useState<'all' | 'owned' | 'available'>('all');
   const [enrolledIds, setEnrolledIds] = useState<Set<string>>(new Set());
 
   // Pull current user's enrollments so we can swap the price for an
@@ -59,9 +66,20 @@ export default function Courses() {
         (c.subtitle?.toLowerCase().includes(q) ?? false) ||
         (c.description?.toLowerCase().includes(q) ?? false);
       const matchesLevel = level === 'all' || c.level === level;
-      return matchesQuery && matchesLevel;
+      const owned = enrolledIds.has(c.id);
+      const matchesOwnership =
+        ownership === 'all' ||
+        (ownership === 'owned' && owned) ||
+        (ownership === 'available' && !owned);
+      return matchesQuery && matchesLevel && matchesOwnership;
     });
-  }, [courses, query, level]);
+  }, [courses, query, level, ownership, enrolledIds]);
+
+  const ownershipCounts = useMemo(() => {
+    if (!courses) return { all: 0, owned: 0, available: 0 };
+    const owned = courses.filter((c) => enrolledIds.has(c.id)).length;
+    return { all: courses.length, owned, available: courses.length - owned };
+  }, [courses, enrolledIds]);
 
   return (
     <PageShell>
@@ -92,7 +110,35 @@ export default function Courses() {
           )}
         </div>
 
-        <div className="flex flex-wrap gap-2">
+        {user && (
+          <div className="flex items-center gap-2 flex-wrap">
+            <p className="font-tech text-[9px] uppercase tracking-[0.18em] text-secondary/45 mr-1">Trạng thái</p>
+            {OWNERSHIP_FILTERS.map((o) => {
+              const isActive = ownership === o.id;
+              const count = ownershipCounts[o.id as 'all' | 'owned' | 'available'];
+              return (
+                <button
+                  key={o.id}
+                  onClick={() => setOwnership(o.id as 'all' | 'owned' | 'available')}
+                  className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[10px] font-tech uppercase tracking-[0.14em] transition-all ${
+                    isActive
+                      ? 'border border-cyan-300/50 bg-cyan-400/15 text-cyan-200'
+                      : 'border border-white/10 bg-white/[0.03] text-secondary/70 hover:border-cyan-300/30 hover:text-cyan-200'
+                  }`}
+                >
+                  {o.id === 'owned' && <CheckCircle2 size={11} />}
+                  {o.label}
+                  <span className={`tabular-nums ${isActive ? 'text-cyan-300' : 'text-secondary/45'}`}>
+                    {count}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        <div className="flex items-center gap-2 flex-wrap">
+          <p className="font-tech text-[9px] uppercase tracking-[0.18em] text-secondary/45 mr-1">Trình độ</p>
           {LEVELS.map((l) => {
             const isActive = level === l.id;
             return (
@@ -133,11 +179,12 @@ export default function Courses() {
               ? 'Chưa có khoá học nào được xuất bản.'
               : 'Không có khoá học nào khớp bộ lọc.'}
           </p>
-          {(query || level !== 'all') && (
+          {(query || level !== 'all' || ownership !== 'all') && (
             <button
               onClick={() => {
                 setQuery('');
                 setLevel('all');
+                setOwnership('all');
               }}
               className="mt-3 text-sm text-cyan-300 hover:text-cyan-200 underline"
             >

@@ -49,10 +49,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const { orderId } = (req.body ?? {}) as { orderId?: string };
   if (!orderId) return res.status(400).json({ error: 'orderId required' });
 
-  // Fetch order + course + student email atomically via select.
+  // Fetch order. May be a course purchase or a wallet top-up.
   const { data: order, error: orderErr } = await admin
     .from('orders')
-    .select('id, user_id, course_id, amount_vnd, memo_code, status')
+    .select('id, user_id, course_id, amount_vnd, memo_code, status, kind')
     .eq('id', orderId)
     .maybeSingle();
 
@@ -61,20 +61,33 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(409).json({ error: `Order is ${order.status}, not pending` });
   }
 
-  // Insert enrollment (idempotent via unique user_id+course_id)
-  const { error: enrollErr } = await admin
-    .from('enrollments')
-    .upsert(
-      {
-        user_id: order.user_id,
-        course_id: order.course_id,
-        order_id: order.id,
-        status: 'active',
-        granted_at: new Date().toISOString(),
-      },
-      { onConflict: 'user_id,course_id' },
-    );
-  if (enrollErr) return res.status(500).json({ error: enrollErr.message });
+  if (order.kind === 'topup') {
+    const { error: rpcErr } = await admin.rpc('wallet_credit', {
+      p_user_id: order.user_id,
+      p_amount: order.amount_vnd,
+      p_kind: 'topup',
+      p_order_id: order.id,
+      p_memo: `Top-up ${order.memo_code}`,
+    });
+    if (rpcErr) return res.status(500).json({ error: rpcErr.message });
+  } else {
+    if (!order.course_id) {
+      return res.status(400).json({ error: 'Purchase order missing course_id' });
+    }
+    const { error: enrollErr } = await admin
+      .from('enrollments')
+      .upsert(
+        {
+          user_id: order.user_id,
+          course_id: order.course_id,
+          order_id: order.id,
+          status: 'active',
+          granted_at: new Date().toISOString(),
+        },
+        { onConflict: 'user_id,course_id' },
+      );
+    if (enrollErr) return res.status(500).json({ error: enrollErr.message });
+  }
 
   // Mark order confirmed
   const { error: confirmErr } = await admin
