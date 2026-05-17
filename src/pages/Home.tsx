@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, BookOpen, Brain, Trophy, Clock, BarChart3 } from 'lucide-react';
+import { ArrowRight, BookOpen, Brain, Trophy, Clock, BarChart3, ExternalLink } from 'lucide-react';
 import PageShell from '../components/PageShell';
 import NameDecode from '../components/ui/NameDecode';
 import GradientText from '../components/ui/GradientText';
@@ -153,6 +153,47 @@ export default function Home() {
                 <p className="text-secondary/85 leading-relaxed text-sm">{item.body}</p>
               </div>
             ))}
+          </div>
+        </section>
+
+        <section id="instructor">
+          <SectionHeading
+            eyebrow="Giảng viên"
+            title="Vo Hoang Ngan"
+            subtitle="Software Engineer · Cử nhân CS HCMUT · Huy chương Olympic Toán quốc tế (HKIMO Vàng, AIMO Bạc, IGO)."
+          />
+
+          <div className="mt-8 grid md:grid-cols-[1fr_auto] items-center gap-6 glass-card rounded-2xl p-6 md:p-8 ambient-shadow">
+            <div className="space-y-4">
+              <p className="text-secondary/85 leading-relaxed">
+                Giảng viên kiêm kỹ sư phần mềm tại HCM. Nền tảng Toán mạnh từ thời kỳ chuyên Toán
+                Lê Hồng Phong, kết hợp kinh nghiệm xây dựng sản phẩm thật giúp việc giảng dạy
+                không chỉ ở mức "biết làm bài" — học sinh hiểu được tại sao và áp dụng được.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {['VMO 3rd', 'HKIMO Gold', 'AIMO Silver', 'IGO Aluminium', 'Le Hong Phong Math'].map((tag) => (
+                  <span key={tag} className="rounded-full border border-cyan-300/20 bg-cyan-950/15 px-3 py-1 font-tech text-[10px] uppercase tracking-[0.14em] text-cyan-100/75">
+                    {tag}
+                  </span>
+                ))}
+              </div>
+              <a
+                href="https://s-profile-kaka.vercel.app"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-xl border border-primary/40 bg-primary/15 px-5 py-3 text-xs font-tech uppercase tracking-[0.16em] text-primary hover:bg-primary/25 hover:shadow-[0_0_18px_rgba(233,195,73,0.32)] transition-all"
+              >
+                Hồ sơ đầy đủ <ExternalLink size={12} />
+              </a>
+            </div>
+            <div className="hidden md:flex items-center justify-center">
+              <div className="relative">
+                <div className="absolute -inset-3 rounded-full bg-gradient-to-br from-primary/30 to-cyan-400/20 blur-xl" />
+                <div className="relative h-32 w-32 rounded-full border-2 border-primary/40 bg-gradient-to-br from-primary/20 to-cyan-400/15 flex items-center justify-center font-headline text-3xl font-extrabold text-primary tabular-nums">
+                  VHN
+                </div>
+              </div>
+            </div>
           </div>
         </section>
       </div>

@@ -10,6 +10,7 @@ interface AuthContextValue {
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
   signUp: (email: string, password: string, displayName: string) => Promise<{ error: string | null }>;
+  signInWithGoogle: (next?: string) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
 }
 
@@ -20,6 +21,7 @@ const AuthContext = createContext<AuthContextValue>({
   loading: true,
   signIn: async () => ({ error: 'AuthProvider not mounted' }),
   signUp: async () => ({ error: 'AuthProvider not mounted' }),
+  signInWithGoogle: async () => ({ error: 'AuthProvider not mounted' }),
   signOut: async () => {},
 });
 
@@ -81,6 +83,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error: error?.message ?? null };
   };
 
+  const signInWithGoogle = async (next?: string) => {
+    const redirectTo = `${window.location.origin}${next ?? '/dashboard'}`;
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo },
+    });
+    return { error: error?.message ?? null };
+  };
+
   const signOut = async () => {
     await supabase.auth.signOut();
   };
@@ -94,6 +105,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         loading,
         signIn,
         signUp,
+        signInWithGoogle,
         signOut,
       }}
     >

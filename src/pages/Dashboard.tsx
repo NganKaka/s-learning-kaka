@@ -3,6 +3,7 @@ import { Link, Navigate } from 'react-router-dom';
 import { ArrowRight, BookOpen, Clock, Trophy, Flame, Brain, Award, Loader2 } from 'lucide-react';
 import PageShell from '../components/PageShell';
 import SectionHeading from '../components/ui/SectionHeading';
+import StudentAnnouncements from '../components/StudentAnnouncements';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { formatDuration } from '../lib/courses';
@@ -213,6 +214,8 @@ export default function Dashboard() {
         title={`Chào ${profile?.display_name ?? 'bạn'}`}
         subtitle="Khoá học đang học và đơn hàng chờ duyệt — tất cả ở một nơi."
       />
+
+      <StudentAnnouncements />
 
       {/* Daily stats */}
       {stats && (
