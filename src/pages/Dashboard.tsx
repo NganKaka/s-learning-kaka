@@ -29,6 +29,22 @@ export default function Dashboard() {
   const { user, profile, loading } = useAuth();
   const [enrolled, setEnrolled] = useState<EnrolledCourse[] | null>(null);
   const [pending, setPending] = useState<PendingOrder[] | null>(null);
+  const [tick, setTick] = useState(0);
+
+  // Refetch on focus / page reshow so returning to the tab after teacher
+  // approval pulls the new enrollment without reload.
+  useEffect(() => {
+    const onFocus = () => setTick((n) => n + 1);
+    const onVis = () => {
+      if (!document.hidden) setTick((n) => n + 1);
+    };
+    window.addEventListener('focus', onFocus);
+    document.addEventListener('visibilitychange', onVis);
+    return () => {
+      window.removeEventListener('focus', onFocus);
+      document.removeEventListener('visibilitychange', onVis);
+    };
+  }, []);
 
   useEffect(() => {
     if (!user) return;
@@ -89,10 +105,18 @@ export default function Dashboard() {
       setPending(pendingRows);
     })();
 
+    // Also poll every 8s while there are pending orders, so the page
+    // updates without manual reload after the teacher approves.
+    let pollId: number | null = null;
+    if (pending && pending.length > 0) {
+      pollId = window.setInterval(() => setTick((n) => n + 1), 8000);
+    }
+
     return () => {
       cancelled = true;
+      if (pollId) window.clearInterval(pollId);
     };
-  }, [user?.id]);
+  }, [user?.id, tick, pending?.length]);
 
   if (loading) {
     return (
