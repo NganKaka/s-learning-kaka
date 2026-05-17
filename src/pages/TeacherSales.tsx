@@ -13,12 +13,14 @@ interface PendingRow {
   amount_vnd: number;
   memo_code: string;
   payment_method: string;
+  kind: 'purchase' | 'topup';
   created_at: string;
   user_id: string;
-  course_id: string;
+  course_id: string | null;
   user_email?: string | null;
   user_display_name?: string | null;
   course_title?: string | null;
+  notes?: string | null;
 }
 
 export default function TeacherSales() {
@@ -39,22 +41,32 @@ export default function TeacherSales() {
       // user_id (admin can cross-ref in Supabase if needed).
       const { data: pending } = await supabase
         .from('orders')
-        .select('id, amount_vnd, memo_code, payment_method, created_at, user_id, course_id, courses(title)')
+        .select('id, amount_vnd, memo_code, payment_method, kind, created_at, user_id, course_id, notes, courses(title)')
         .eq('status', 'pending')
         .order('created_at', { ascending: false });
 
       if (cancelled) return;
 
-      const rows: PendingRow[] = (pending ?? []).map((p) => ({
-        id: p.id as string,
-        amount_vnd: p.amount_vnd as number,
-        memo_code: p.memo_code as string,
-        payment_method: p.payment_method as string,
-        created_at: p.created_at as string,
-        user_id: p.user_id as string,
-        course_id: p.course_id as string,
-        course_title: (p as { courses?: { title?: string } }).courses?.title ?? null,
-      }));
+      const rows: PendingRow[] = (pending ?? []).map((p) => {
+        const coursesField = (p as { courses?: { title?: string } | { title?: string }[] | null }).courses;
+        const courseTitle = coursesField
+          ? Array.isArray(coursesField)
+            ? (coursesField[0]?.title ?? null)
+            : (coursesField.title ?? null)
+          : null;
+        return {
+          id: p.id as string,
+          amount_vnd: p.amount_vnd as number,
+          memo_code: p.memo_code as string,
+          payment_method: p.payment_method as string,
+          kind: ((p as { kind?: 'purchase' | 'topup' }).kind ?? 'purchase'),
+          created_at: p.created_at as string,
+          user_id: p.user_id as string,
+          course_id: (p.course_id as string | null) ?? null,
+          notes: (p as { notes?: string | null }).notes ?? null,
+          course_title: courseTitle,
+        };
+      });
 
       setOrders(rows);
 
@@ -170,21 +182,30 @@ export default function TeacherSales() {
           </div>
         )}
 
-        {orders?.map((order) => (
+        {orders?.map((order) => {
+          const receiptUrl = extractReceiptUrl(order.notes);
+          return (
           <motion.div
             key={order.id}
             layout
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            className="glass-card rounded-2xl p-5 grid md:grid-cols-[1fr_auto] gap-4 items-center"
+            className="glass-card rounded-2xl p-5 grid md:grid-cols-[1fr_auto] gap-4 items-start"
           >
             <div className="space-y-1.5 min-w-0">
               <div className="flex items-center gap-3 flex-wrap">
                 <span className="font-tech text-[10px] uppercase tracking-[0.18em] text-primary tabular-nums">
                   {order.memo_code}
                 </span>
+                <span className={`rounded-full px-2 py-0.5 font-tech text-[9px] uppercase tracking-[0.16em] ${
+                  order.kind === 'topup'
+                    ? 'border border-cyan-300/40 bg-cyan-400/10 text-cyan-200'
+                    : 'border border-primary/30 bg-primary/10 text-primary'
+                }`}>
+                  {order.kind === 'topup' ? 'Nạp tiền' : 'Mua khoá học'}
+                </span>
                 <span className="font-headline font-bold text-on-surface truncate">
-                  {order.course_title ?? order.course_id}
+                  {order.kind === 'topup' ? 'Nạp số dư' : (order.course_title ?? order.course_id ?? '—')}
                 </span>
               </div>
               <div className="flex items-center gap-3 flex-wrap font-tech text-[10px] uppercase tracking-[0.14em] text-secondary/55">
@@ -195,6 +216,20 @@ export default function TeacherSales() {
                 <span className="text-secondary/45">{formatDate(order.created_at)}</span>
               </div>
               <p className="text-xs text-secondary/50 truncate">User: {order.user_id}</p>
+              {receiptUrl && (
+                <a
+                  href={receiptUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-2 inline-block"
+                >
+                  <img
+                    src={receiptUrl}
+                    alt="Ảnh chuyển khoản"
+                    className="max-h-32 rounded-lg border border-white/10 hover:border-cyan-300/40 transition-colors"
+                  />
+                </a>
+              )}
             </div>
 
             <button
@@ -214,10 +249,17 @@ export default function TeacherSales() {
               )}
             </button>
           </motion.div>
-        ))}
+          );
+        })}
       </div>
     </PageShell>
   );
+}
+
+function extractReceiptUrl(notes: string | null | undefined): string | null {
+  if (!notes) return null;
+  const match = notes.match(/\[receipt\]\s+(\S+)/);
+  return match?.[1] ?? null;
 }
 
 function StatCard({ icon: Icon, label, value, accent }: { icon: React.ComponentType<{ size?: number }>; label: string; value: string; accent: 'gold' | 'cyan' }) {
