@@ -1,9 +1,11 @@
 import { Link } from 'react-router-dom';
-import { Search, X, BookOpen, Clock, BarChart3 } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { Search, X, BookOpen, Clock, BarChart3, CheckCircle2, Play } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
 import PageShell from '../components/PageShell';
 import SectionHeading from '../components/ui/SectionHeading';
 import { usePublishedCourses, formatVnd, formatDuration } from '../lib/courses';
+import { useAuth } from '../contexts/AuthContext';
+import { supabase } from '../lib/supabase';
 
 const LEVELS = [
   { id: 'all', label: 'Tất cả' },
@@ -20,8 +22,32 @@ const LEVEL_LABEL: Record<string, string> = {
 
 export default function Courses() {
   const { data: courses, loading, error } = usePublishedCourses();
+  const { user } = useAuth();
   const [query, setQuery] = useState('');
   const [level, setLevel] = useState<string>('all');
+  const [enrolledIds, setEnrolledIds] = useState<Set<string>>(new Set());
+
+  // Pull current user's enrollments so we can swap the price for an
+  // "already enrolled" pill on those cards.
+  useEffect(() => {
+    if (!user) {
+      setEnrolledIds(new Set());
+      return;
+    }
+    let cancelled = false;
+    supabase
+      .from('enrollments')
+      .select('course_id')
+      .eq('user_id', user.id)
+      .eq('status', 'active')
+      .then(({ data }) => {
+        if (cancelled) return;
+        setEnrolledIds(new Set((data ?? []).map((row) => row.course_id as string)));
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id]);
 
   const filtered = useMemo(() => {
     if (!courses) return [];
@@ -123,12 +149,20 @@ export default function Courses() {
 
       {!loading && !error && filtered.length > 0 && (
         <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((course) => (
+          {filtered.map((course) => {
+            const owned = enrolledIds.has(course.id);
+            return (
             <Link
               key={course.id}
               to={`/courses/${course.slug}`}
-              className="group glass-card block rounded-2xl overflow-hidden transition-all hover:border-cyan-300/35"
+              className="group glass-card block rounded-2xl overflow-hidden transition-all hover:border-cyan-300/35 relative"
             >
+              {owned && (
+                <div className="absolute top-3 right-3 z-10 inline-flex items-center gap-1.5 rounded-full border border-cyan-300/40 bg-cyan-400/15 px-2.5 py-1 font-tech text-[9px] uppercase tracking-[0.16em] text-cyan-100 backdrop-blur-sm">
+                  <CheckCircle2 size={10} />
+                  Đã đăng ký
+                </div>
+              )}
               {course.cover_image && (
                 <div className="aspect-video overflow-hidden bg-white/[0.02]">
                   <img
@@ -163,16 +197,23 @@ export default function Courses() {
                 )}
 
                 <div className="flex items-center justify-between pt-2">
-                  <span className="font-headline text-lg font-bold text-primary tabular-nums">
-                    {course.price_vnd === 0 ? 'Miễn phí' : formatVnd(course.price_vnd)}
-                  </span>
+                  {owned ? (
+                    <span className="inline-flex items-center gap-1.5 font-tech text-xs uppercase tracking-[0.14em] text-cyan-200">
+                      <Play size={12} /> Tiếp tục học
+                    </span>
+                  ) : (
+                    <span className="font-headline text-lg font-bold text-primary tabular-nums">
+                      {course.price_vnd === 0 ? 'Miễn phí' : formatVnd(course.price_vnd)}
+                    </span>
+                  )}
                   <span className="inline-flex items-center gap-1 text-xs font-tech uppercase tracking-[0.14em] text-cyan-300 group-hover:gap-2 transition-all">
                     <BookOpen size={12} /> Xem chi tiết
                   </span>
                 </div>
               </div>
             </Link>
-          ))}
+            );
+          })}
         </div>
       )}
     </PageShell>

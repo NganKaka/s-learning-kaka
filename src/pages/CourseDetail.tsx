@@ -1,8 +1,10 @@
 import { Link, Navigate, useParams } from 'react-router-dom';
-import { ArrowRight, BarChart3, Clock, Lock, Play, BookOpen, ChevronDown } from 'lucide-react';
-import { useState } from 'react';
+import { ArrowRight, BarChart3, Clock, Lock, Play, BookOpen, ChevronDown, CheckCircle2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import PageShell from '../components/PageShell';
 import { useCourse, formatVnd, formatDuration, formatLessonDuration } from '../lib/courses';
+import { useAuth } from '../contexts/AuthContext';
+import { supabase } from '../lib/supabase';
 
 const LEVEL_LABEL: Record<string, string> = {
   beginner: 'Cơ bản',
@@ -13,6 +15,30 @@ const LEVEL_LABEL: Record<string, string> = {
 export default function CourseDetail() {
   const { slug } = useParams<{ slug: string }>();
   const { data: course, loading, error } = useCourse(slug);
+  const { user } = useAuth();
+  const [isEnrolled, setIsEnrolled] = useState<boolean | null>(null);
+
+  // Check whether the signed-in user already owns this course
+  useEffect(() => {
+    if (!user || !course?.id) {
+      setIsEnrolled(false);
+      return;
+    }
+    let cancelled = false;
+    supabase
+      .from('enrollments')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('course_id', course.id)
+      .eq('status', 'active')
+      .maybeSingle()
+      .then(({ data }) => {
+        if (!cancelled) setIsEnrolled(!!data);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id, course?.id]);
 
   if (loading) {
     return (
@@ -41,6 +67,7 @@ export default function CourseDetail() {
   }
 
   const totalLessons = course.modules.reduce((sum, m) => sum + m.lessons.length, 0);
+  const firstLessonSlug = course.modules[0]?.lessons[0]?.slug ?? null;
 
   return (
     <PageShell>
@@ -124,19 +151,35 @@ export default function CourseDetail() {
         {/* Right: sticky purchase card */}
         <aside className="lg:sticky lg:top-28 lg:self-start space-y-4">
           <div className="glass-card rounded-3xl p-6 ambient-shadow space-y-5">
-            <div>
-              <p className="font-tech text-[10px] uppercase tracking-[0.2em] text-secondary/55">Học phí</p>
-              <p className="mt-1 font-headline text-3xl font-extrabold text-primary tabular-nums">
-                {course.price_vnd === 0 ? 'Miễn phí' : formatVnd(course.price_vnd)}
-              </p>
-            </div>
+            {isEnrolled ? (
+              <div className="flex items-center gap-2 rounded-xl border border-cyan-300/30 bg-cyan-400/10 px-3 py-2 font-tech text-[10px] uppercase tracking-[0.16em] text-cyan-200">
+                <CheckCircle2 size={12} />
+                Đã đăng ký
+              </div>
+            ) : (
+              <div>
+                <p className="font-tech text-[10px] uppercase tracking-[0.2em] text-secondary/55">Học phí</p>
+                <p className="mt-1 font-headline text-3xl font-extrabold text-primary tabular-nums">
+                  {course.price_vnd === 0 ? 'Miễn phí' : formatVnd(course.price_vnd)}
+                </p>
+              </div>
+            )}
 
-            <Link
-              to={`/cart?course=${course.slug}`}
-              className="block w-full text-center bg-primary text-background px-6 py-3 rounded-xl text-xs font-bold tracking-[0.14em] uppercase border border-primary/50 shadow-[0_0_24px_rgba(233,195,73,0.55)] hover:shadow-[0_0_32px_rgba(233,195,73,0.9)] transition-shadow"
-            >
-              {course.price_vnd === 0 ? 'Bắt đầu học' : 'Đăng ký khoá học'}
-            </Link>
+            {isEnrolled && firstLessonSlug ? (
+              <Link
+                to={`/learn/${course.slug}/${firstLessonSlug}`}
+                className="block w-full text-center bg-cyan-400 text-background px-6 py-3 rounded-xl text-xs font-bold tracking-[0.14em] uppercase border border-cyan-300/60 shadow-[0_0_24px_rgba(34,211,238,0.45)] hover:shadow-[0_0_32px_rgba(34,211,238,0.8)] transition-shadow inline-flex items-center justify-center gap-2"
+              >
+                <Play size={14} /> Tiếp tục học
+              </Link>
+            ) : (
+              <Link
+                to={`/cart?course=${course.slug}`}
+                className="block w-full text-center bg-primary text-background px-6 py-3 rounded-xl text-xs font-bold tracking-[0.14em] uppercase border border-primary/50 shadow-[0_0_24px_rgba(233,195,73,0.55)] hover:shadow-[0_0_32px_rgba(233,195,73,0.9)] transition-shadow"
+              >
+                {course.price_vnd === 0 ? 'Bắt đầu học' : 'Đăng ký khoá học'}
+              </Link>
+            )}
 
             <ul className="space-y-2 pt-2 border-t border-white/10 text-sm text-secondary/85">
               <li className="flex items-start gap-2">
