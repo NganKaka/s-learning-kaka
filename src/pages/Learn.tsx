@@ -2,9 +2,11 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, BookOpen, Check, Lock, Play } from 'lucide-react';
 import PageShell from '../components/PageShell';
+import LessonCards from '../components/LessonCards';
+import LessonQuiz from '../components/LessonQuiz';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
-import type { Course, Lesson, Module } from '../lib/database.types';
+import type { Lesson, Module } from '../lib/database.types';
 import { formatLessonDuration } from '../lib/courses';
 
 const BUNNY_LIBRARY_ID = import.meta.env.VITE_BUNNY_STREAM_LIBRARY_ID ?? '';
@@ -256,6 +258,9 @@ export default function Learn() {
               <p className="text-secondary/85 leading-loose whitespace-pre-line">{lesson.description}</p>
             </div>
           )}
+
+          {canPlay && user && <LessonCards lessonId={lesson.id} />}
+          {canPlay && user && <LessonQuiz lessonId={lesson.id} userId={user.id} />}
 
           <div className="flex items-center justify-between gap-3 pt-2">
             <button

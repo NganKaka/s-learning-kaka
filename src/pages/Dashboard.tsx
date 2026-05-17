@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
-import { ArrowRight, BookOpen, Clock, Trophy } from 'lucide-react';
+import { ArrowRight, BookOpen, Clock, Trophy, Flame, Brain } from 'lucide-react';
 import PageShell from '../components/PageShell';
 import SectionHeading from '../components/ui/SectionHeading';
 import { useAuth } from '../contexts/AuthContext';
@@ -14,6 +14,13 @@ interface EnrolledCourse {
   cover_image: string | null;
   duration_minutes: number;
   granted_at: string;
+  total_lessons: number;
+  completed_lessons: number;
+}
+
+interface DailyStats {
+  streak: number;
+  cardsDueToday: number;
 }
 
 interface PendingOrder {
@@ -29,6 +36,7 @@ export default function Dashboard() {
   const { user, profile, loading } = useAuth();
   const [enrolled, setEnrolled] = useState<EnrolledCourse[] | null>(null);
   const [pending, setPending] = useState<PendingOrder[] | null>(null);
+  const [stats, setStats] = useState<DailyStats | null>(null);
   const [tick, setTick] = useState(0);
 
   // Refetch on focus / page reshow so returning to the tab after teacher
@@ -67,7 +75,7 @@ export default function Dashboard() {
 
       if (cancelled) return;
 
-      const enrolledRows: EnrolledCourse[] = (enr ?? [])
+      const baseRows = (enr ?? [])
         .map((row) => {
           const c = (Array.isArray(row.courses) ? row.courses[0] : row.courses) as
             | { id: string; slug: string; title: string; cover_image: string | null; duration_minutes: number }
@@ -82,7 +90,37 @@ export default function Dashboard() {
             granted_at: row.granted_at as string,
           };
         })
-        .filter((r): r is EnrolledCourse => r !== null);
+        .filter((r): r is Omit<EnrolledCourse, 'total_lessons' | 'completed_lessons'> => r !== null);
+
+      // For each enrolled course, count total lessons + completed
+      const courseIds = baseRows.map((r) => r.id);
+      let totalsByCourse = new Map<string, number>();
+      let completedByCourse = new Map<string, number>();
+      if (courseIds.length > 0) {
+        const [{ data: allLessons }, { data: progress }] = await Promise.all([
+          supabase.from('lessons').select('id, course_id').in('course_id', courseIds),
+          supabase
+            .from('lesson_progress')
+            .select('course_id')
+            .eq('user_id', user.id)
+            .not('completed_at', 'is', null)
+            .in('course_id', courseIds),
+        ]);
+        for (const l of allLessons ?? []) {
+          const cid = l.course_id as string;
+          totalsByCourse.set(cid, (totalsByCourse.get(cid) ?? 0) + 1);
+        }
+        for (const p of progress ?? []) {
+          const cid = p.course_id as string;
+          completedByCourse.set(cid, (completedByCourse.get(cid) ?? 0) + 1);
+        }
+      }
+
+      const enrolledRows: EnrolledCourse[] = baseRows.map((r) => ({
+        ...r,
+        total_lessons: totalsByCourse.get(r.id) ?? 0,
+        completed_lessons: completedByCourse.get(r.id) ?? 0,
+      }));
 
       const pendingRows: PendingOrder[] = (ord ?? [])
         .map((row) => {
@@ -101,12 +139,52 @@ export default function Dashboard() {
         })
         .filter((r): r is PendingOrder => r !== null);
 
+      // Streak: count distinct days with a lesson_progress.updated_at,
+      // walking back from today.
+      const { data: activity } = await supabase
+        .from('lesson_progress')
+        .select('updated_at')
+        .eq('user_id', user.id)
+        .order('updated_at', { ascending: false });
+
+      let streak = 0;
+      if (activity && activity.length > 0) {
+        const dayKeys = new Set(
+          activity.map((a) => new Date(a.updated_at as string).toISOString().slice(0, 10)),
+        );
+        const today = new Date();
+        for (let i = 0; i < 365; i += 1) {
+          const d = new Date(today);
+          d.setDate(today.getDate() - i);
+          const key = d.toISOString().slice(0, 10);
+          if (dayKeys.has(key)) streak += 1;
+          else break;
+        }
+      }
+
+      // Cards due today: any card_review with due_at <= now() OR no review row
+      // for an enrolled course's flashcard. We approximate the "no row" case
+      // by counting flashcards in enrolled courses minus existing review rows
+      // with due_at > now.
+      let cardsDueToday = 0;
+      if (courseIds.length > 0) {
+        const [{ data: cards }, { data: futureReviews }] = await Promise.all([
+          supabase.from('flashcards').select('id').in('course_id', courseIds),
+          supabase
+            .from('card_reviews')
+            .select('card_id, due_at')
+            .eq('user_id', user.id)
+            .gt('due_at', new Date().toISOString()),
+        ]);
+        const futureSet = new Set((futureReviews ?? []).map((r) => r.card_id as string));
+        cardsDueToday = (cards ?? []).filter((c) => !futureSet.has(c.id as string)).length;
+      }
+
       setEnrolled(enrolledRows);
       setPending(pendingRows);
+      setStats({ streak, cardsDueToday });
     })();
 
-    // Also poll every 8s while there are pending orders, so the page
-    // updates without manual reload after the teacher approves.
     let pollId: number | null = null;
     if (pending && pending.length > 0) {
       pollId = window.setInterval(() => setTick((n) => n + 1), 8000);
@@ -135,6 +213,44 @@ export default function Dashboard() {
         title={`Chào ${profile?.display_name ?? 'bạn'}`}
         subtitle="Khoá học đang học và đơn hàng chờ duyệt — tất cả ở một nơi."
       />
+
+      {/* Daily stats */}
+      {stats && (
+        <div className="mt-8 grid sm:grid-cols-3 gap-4">
+          <Link
+            to="/cards"
+            className="glass-card rounded-2xl p-5 space-y-2 hover:border-cyan-300/35 transition-colors"
+          >
+            <div className="flex items-center gap-2 font-tech text-[10px] uppercase tracking-[0.18em] text-secondary/55">
+              <Brain size={12} className="text-cyan-300" />
+              <span>Flashcard cần ôn</span>
+            </div>
+            <p className="font-headline text-2xl font-extrabold tabular-nums text-cyan-200">
+              {stats.cardsDueToday}
+            </p>
+          </Link>
+
+          <div className="glass-card rounded-2xl p-5 space-y-2">
+            <div className="flex items-center gap-2 font-tech text-[10px] uppercase tracking-[0.18em] text-secondary/55">
+              <Flame size={12} className="text-primary" />
+              <span>Chuỗi ngày học</span>
+            </div>
+            <p className="font-headline text-2xl font-extrabold tabular-nums text-primary">
+              {stats.streak} {stats.streak === 1 ? 'ngày' : 'ngày'}
+            </p>
+          </div>
+
+          <div className="glass-card rounded-2xl p-5 space-y-2">
+            <div className="flex items-center gap-2 font-tech text-[10px] uppercase tracking-[0.18em] text-secondary/55">
+              <BookOpen size={12} className="text-cyan-300" />
+              <span>Khoá học</span>
+            </div>
+            <p className="font-headline text-2xl font-extrabold tabular-nums text-on-surface">
+              {enrolled?.length ?? 0}
+            </p>
+          </div>
+        </div>
+      )}
 
       {pending && pending.length > 0 && (
         <section className="mt-8 space-y-3">
@@ -193,10 +309,29 @@ export default function Dashboard() {
                     />
                   </div>
                 )}
-                <div className="p-5 space-y-2">
+                <div className="p-5 space-y-3">
                   <h3 className="font-headline text-lg font-bold text-on-surface group-hover:text-cyan-200 transition-colors">
                     {course.title}
                   </h3>
+
+                  {/* Progress bar */}
+                  {course.total_lessons > 0 && (
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between font-tech text-[10px] uppercase tracking-[0.14em] text-secondary/55">
+                        <span>{course.completed_lessons} / {course.total_lessons} bài</span>
+                        <span className="text-cyan-200 tabular-nums">
+                          {Math.round((course.completed_lessons / course.total_lessons) * 100)}%
+                        </span>
+                      </div>
+                      <div className="h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
+                        <div
+                          className="h-full rounded-full bg-gradient-to-r from-primary via-cyan-300 to-cyan-200 transition-[width] duration-500"
+                          style={{ width: `${Math.min(100, (course.completed_lessons / course.total_lessons) * 100)}%` }}
+                        />
+                      </div>
+                    </div>
+                  )}
+
                   <div className="flex items-center gap-3 font-tech text-[10px] uppercase tracking-[0.14em] text-secondary/55">
                     {course.duration_minutes > 0 && (
                       <span className="inline-flex items-center gap-1.5">
