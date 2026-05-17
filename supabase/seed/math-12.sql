@@ -13,7 +13,7 @@
 update public.profiles
 set is_instructor = true,
     display_name = coalesce(display_name, 'Vo Hoang Ngan')
-where id = '<INSTRUCTOR_USER_ID>'::uuid;
+where id = '768e7436-fbbe-47f2-999e-41b17fcd16bb'::uuid;
 
 -- The course
 insert into public.courses (
@@ -28,7 +28,7 @@ insert into public.courses (
   500000,
   'intermediate',
   3600,
-  '<INSTRUCTOR_USER_ID>'::uuid,
+  '768e7436-fbbe-47f2-999e-41b17fcd16bb'::uuid,
   'published'
 )
 on conflict (slug) do update set

@@ -1,9 +1,10 @@
-import { Menu, X, BookOpen } from 'lucide-react';
+import { Menu, X, BookOpen, LogOut, LayoutDashboard } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import ThemeToggle from './ThemeToggle';
 import LiveClock from './LiveClock';
+import { useAuth } from '../contexts/AuthContext';
 
 const links = [
   { label: 'Khoá học', href: '/courses' },
@@ -13,6 +14,13 @@ const links = [
 
 export default function SiteNavbar() {
   const [open, setOpen] = useState(false);
+  const { user, profile, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/');
+  };
 
   return (
     <nav className="fixed top-0 left-0 w-full z-50 bg-background/60 backdrop-blur-lg border-b border-white/5">
@@ -45,13 +53,32 @@ export default function SiteNavbar() {
                 {link.label}
               </Link>
             ))}
+            {profile?.is_instructor && (
+              <Link
+                to="/teacher"
+                className="font-headline tracking-tighter uppercase text-[12px] font-bold text-cyan-300 hover:text-cyan-200 px-2 py-1 rounded-md hover:bg-cyan-400/10 transition-colors inline-flex items-center gap-1.5"
+              >
+                <LayoutDashboard size={12} /> Teacher
+              </Link>
+            )}
             <ThemeToggle />
-            <Link
-              to="/login"
-              className="bg-primary text-background px-5 py-2 rounded-lg text-xs font-bold tracking-wide border border-primary/50 shadow-[0_0_20px_rgba(233,195,73,0.6)] hover:shadow-[0_0_30px_rgba(233,195,73,1)] transition-shadow"
-            >
-              Đăng nhập
-            </Link>
+            {user ? (
+              <button
+                type="button"
+                onClick={handleSignOut}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold tracking-wide border border-white/10 bg-white/[0.03] text-secondary hover:border-cyan-300/40 hover:text-cyan-200 hover:bg-cyan-400/10 transition-colors"
+              >
+                <LogOut size={12} />
+                Đăng xuất
+              </button>
+            ) : (
+              <Link
+                to="/login"
+                className="bg-primary text-background px-5 py-2 rounded-lg text-xs font-bold tracking-wide border border-primary/50 shadow-[0_0_20px_rgba(233,195,73,0.6)] hover:shadow-[0_0_30px_rgba(233,195,73,1)] transition-shadow"
+              >
+                Đăng nhập
+              </Link>
+            )}
           </div>
 
           <motion.button
@@ -86,13 +113,35 @@ export default function SiteNavbar() {
                   {link.label}
                 </Link>
               ))}
-              <Link
-                to="/login"
-                onClick={() => setOpen(false)}
-                className="px-3 py-2.5 rounded-lg text-[12px] font-bold uppercase tracking-widest text-primary border border-primary/25 bg-primary/10"
-              >
-                Đăng nhập
-              </Link>
+              {profile?.is_instructor && (
+                <Link
+                  to="/teacher"
+                  onClick={() => setOpen(false)}
+                  className="px-3 py-2.5 rounded-lg text-[12px] font-bold uppercase tracking-widest text-cyan-300 hover:bg-cyan-500/10 transition-colors"
+                >
+                  Teacher
+                </Link>
+              )}
+              {user ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOpen(false);
+                    handleSignOut();
+                  }}
+                  className="px-3 py-2.5 rounded-lg text-[12px] font-bold uppercase tracking-widest text-secondary border border-white/10 text-left"
+                >
+                  Đăng xuất
+                </button>
+              ) : (
+                <Link
+                  to="/login"
+                  onClick={() => setOpen(false)}
+                  className="px-3 py-2.5 rounded-lg text-[12px] font-bold uppercase tracking-widest text-primary border border-primary/25 bg-primary/10"
+                >
+                  Đăng nhập
+                </Link>
+              )}
             </motion.div>
           )}
         </AnimatePresence>
