@@ -1,10 +1,13 @@
 import { useState } from 'react';
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
-import { Loader2, Mail, Lock, AlertCircle } from 'lucide-react';
+import { Loader2, Mail, Lock, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { motion } from 'framer-motion';
 import PageShell from '../components/PageShell';
 import SectionHeading from '../components/ui/SectionHeading';
 import { useAuth } from '../contexts/AuthContext';
+import { setSessionPersistence } from '../lib/supabase';
+
+const REMEMBER_KEY = 'sLearningKaka.rememberMe';
 
 export default function Login() {
   const { user, signIn, signInWithGoogle, loading } = useAuth();
@@ -14,6 +17,11 @@ export default function Login() {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [remember, setRemember] = useState(() => {
+    const saved = localStorage.getItem(REMEMBER_KEY);
+    return saved === null ? true : saved === '1';
+  });
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
@@ -23,6 +31,8 @@ export default function Login() {
     e.preventDefault();
     setSubmitting(true);
     setErrorMsg(null);
+    localStorage.setItem(REMEMBER_KEY, remember ? '1' : '0');
+    setSessionPersistence(remember);
     const { error } = await signIn(email, password);
     setSubmitting(false);
     if (error) {
@@ -57,15 +67,22 @@ export default function Login() {
             autoComplete="email"
             required
           />
-          <Field
-            icon={Lock}
-            label="Mật khẩu"
-            type="password"
+          <PasswordField
             value={password}
             onChange={setPassword}
-            autoComplete="current-password"
-            required
+            visible={showPassword}
+            onToggleVisible={() => setShowPassword((v) => !v)}
           />
+
+          <label className="flex items-center gap-2 font-tech text-[10px] uppercase tracking-[0.16em] text-secondary/65 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={remember}
+              onChange={(e) => setRemember(e.target.checked)}
+              className="accent-primary"
+            />
+            Ghi nhớ tôi trên thiết bị này
+          </label>
 
           {errorMsg && (
             <div className="flex items-start gap-2 rounded-lg border border-red-400/30 bg-red-500/5 p-3 text-xs text-red-300">
@@ -142,6 +159,46 @@ function Field({ icon: Icon, label, type, value, onChange, autoComplete, require
           required={required}
           className="w-full rounded-xl border border-white/10 bg-white/[0.03] py-3 pl-10 pr-4 text-sm text-on-surface placeholder:text-secondary/40 transition-all focus:border-cyan-300/50 focus:bg-cyan-400/[0.04] focus:outline-none"
         />
+      </div>
+    </div>
+  );
+}
+
+function PasswordField({
+  value,
+  onChange,
+  visible,
+  onToggleVisible,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  visible: boolean;
+  onToggleVisible: () => void;
+}) {
+  return (
+    <div className="space-y-1.5">
+      <label className="font-tech text-[10px] uppercase tracking-[0.18em] text-secondary/60">
+        Mật khẩu <span className="text-primary">*</span>
+      </label>
+      <div className="relative">
+        <Lock size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-secondary/45" />
+        <input
+          type={visible ? 'text' : 'password'}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          autoComplete="current-password"
+          required
+          className="w-full rounded-xl border border-white/10 bg-white/[0.03] py-3 pl-10 pr-12 text-sm text-on-surface placeholder:text-secondary/40 transition-all focus:border-cyan-300/50 focus:bg-cyan-400/[0.04] focus:outline-none"
+        />
+        <button
+          type="button"
+          onClick={onToggleVisible}
+          aria-label={visible ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+          aria-pressed={visible}
+          className="absolute right-3 top-1/2 -translate-y-1/2 inline-flex h-7 w-7 items-center justify-center rounded-md text-secondary/55 hover:text-cyan-200 hover:bg-cyan-400/[0.08] transition-colors"
+        >
+          {visible ? <EyeOff size={14} /> : <Eye size={14} />}
+        </button>
       </div>
     </div>
   );
