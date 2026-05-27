@@ -35,6 +35,7 @@ export interface QuizQuestion {
   explanation_md: string | null;
   points: number;
   order_index: number;
+  tags: string[];
 }
 
 export type AnswerValue =
