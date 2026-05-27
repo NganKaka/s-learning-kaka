@@ -191,14 +191,14 @@ export default function QuizConfigEditor({ lessonId }: { lessonId: string }) {
           </ConfigField>
 
           <ConfigField label="Cách tính điểm cuối">
-            <select
+            <CustomSelect
               value={quiz.grading_mode}
-              onChange={(e) => saveConfig({ grading_mode: e.target.value as QuizGradingMode })}
-              className="w-full rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-on-surface focus:border-cyan-300/40 focus:outline-none"
-            >
-              <option value="max">Điểm cao nhất giữa các lượt</option>
-              <option value="mean">Điểm trung bình các lượt</option>
-            </select>
+              onChange={(v) => saveConfig({ grading_mode: v as QuizGradingMode })}
+              options={[
+                { value: 'max', label: 'Điểm cao nhất giữa các lượt' },
+                { value: 'mean', label: 'Điểm trung bình các lượt' },
+              ]}
+            />
           </ConfigField>
 
           <ConfigField label="Ngưỡng đậu (%) — tuỳ chọn">
@@ -383,16 +383,16 @@ function QuestionEditor({
 
       <div className="grid sm:grid-cols-3 gap-3">
         <ConfigField label="Loại">
-          <select
+          <CustomSelect
             value={question.type}
-            onChange={(e) => setType(e.target.value as QuizQuestionType)}
-            className="w-full rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-on-surface focus:border-cyan-300/40 focus:outline-none"
-          >
-            <option value="single">Trắc nghiệm — một đáp án</option>
-            <option value="multi">Trắc nghiệm — nhiều đáp án</option>
-            <option value="text">Câu trả lời tự luận (text)</option>
-            <option value="file">Nộp tệp</option>
-          </select>
+            onChange={(v) => setType(v as QuizQuestionType)}
+            options={[
+              { value: 'single', label: 'Trắc nghiệm — một đáp án' },
+              { value: 'multi', label: 'Trắc nghiệm — nhiều đáp án' },
+              { value: 'text', label: 'Câu trả lời tự luận (text)' },
+              { value: 'file', label: 'Nộp tệp' },
+            ]}
+          />
         </ConfigField>
 
         <ConfigField label="Điểm">
@@ -482,6 +482,50 @@ function QuestionEditor({
           className="w-full rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-on-surface focus:border-cyan-300/40 focus:outline-none resize-y"
         />
       </ConfigField>
+    </div>
+  );
+}
+
+function CustomSelect({
+  value,
+  onChange,
+  options,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  options: Array<{ value: string; label: string }>;
+}) {
+  const [open, setOpen] = useState(false);
+  const selected = options.find((o) => o.value === value);
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between gap-2 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-on-surface hover:border-cyan-300/30 focus:border-cyan-300/40 focus:outline-none transition-colors"
+      >
+        <span>{selected?.label ?? '—'}</span>
+        <ChevronDown size={14} className={`text-secondary/55 transition-transform ${open ? 'rotate-180' : ''}`} />
+      </button>
+      {open && (
+        <div className="absolute z-50 mt-1 w-full rounded-lg border border-white/15 bg-[#0f1729]/95 backdrop-blur-md shadow-xl overflow-hidden">
+          {options.map((opt) => (
+            <button
+              key={opt.value}
+              type="button"
+              onClick={() => { onChange(opt.value); setOpen(false); }}
+              className={`w-full text-left px-3 py-2 text-sm transition-colors ${
+                opt.value === value
+                  ? 'bg-cyan-400/10 text-cyan-200'
+                  : 'text-on-surface hover:bg-white/[0.06]'
+              }`}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
