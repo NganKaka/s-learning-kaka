@@ -70,8 +70,9 @@ export default function Teacher() {
         </div>
       </div>
 
-      <Suspense fallback={null}>
-        <Routes>
+      <div className="pt-12">
+        <Suspense fallback={null}>
+          <Routes>
           <Route index element={<TeacherSales />} />
           <Route path="revenue" element={<TeacherRevenue />} />
           <Route path="courses" element={<TeacherCourses />} />
@@ -82,6 +83,7 @@ export default function Teacher() {
           <Route path="announcements" element={<TeacherAnnouncements />} />
         </Routes>
       </Suspense>
+      </div>
     </>
   );
 }
