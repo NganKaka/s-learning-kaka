@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Navigate } from 'react-router-dom';
-import { Users, BookOpen, Clock, Search, X } from 'lucide-react';
+import { Users, BookOpen, Clock, Search, X, Filter, Key } from 'lucide-react';
 import PageShell from '../components/PageShell';
 import SectionHeading from '../components/ui/SectionHeading';
 import { useAuth } from '../contexts/AuthContext';
@@ -10,7 +10,7 @@ import { formatVnd } from '../lib/courses';
 interface StudentRow {
   user_id: string;
   display_name: string | null;
-  enrolled_courses: Array<{ course_id: string; title: string; granted_at: string }>;
+  enrolled_courses: Array<{ course_id: string; title: string; granted_at: string; enrollment_id: string; tracking_code: string | null }>;
   completed_lessons: number;
   total_lessons: number;
   last_active: string | null;
@@ -21,6 +21,8 @@ export default function TeacherStudents() {
   const { user, profile } = useAuth();
   const [rows, setRows] = useState<StudentRow[] | null>(null);
   const [query, setQuery] = useState('');
+  const [courses, setCourses] = useState<Array<{ id: string; title: string }>>([]);
+  const [courseFilter, setCourseFilter] = useState<string>('all');
 
   useEffect(() => {
     if (!user || !profile?.is_instructor) return;
@@ -42,11 +44,12 @@ export default function TeacherStudents() {
       }
       const courseTitleById = new Map<string, string>();
       for (const c of myCourses ?? []) courseTitleById.set(c.id as string, c.title as string);
+      setCourses((myCourses ?? []).map((c) => ({ id: c.id as string, title: c.title as string })));
 
       // Enrollments in those courses
       const { data: enrollments } = await supabase
         .from('enrollments')
-        .select('user_id, course_id, granted_at')
+        .select('id, user_id, course_id, granted_at, tracking_code')
         .in('course_id', courseIds)
         .eq('status', 'active');
       if (cancelled) return;
@@ -119,6 +122,8 @@ export default function TeacherStudents() {
             course_id: e.course_id as string,
             title: courseTitleById.get(e.course_id as string) ?? '—',
             granted_at: e.granted_at as string,
+            enrollment_id: e.id as string,
+            tracking_code: (e.tracking_code as string | null) ?? null,
           }));
 
         // Sum total lessons over the student's enrolled courses
@@ -149,16 +154,20 @@ export default function TeacherStudents() {
 
   const filtered = useMemo(() => {
     if (!rows) return [];
-    if (!query.trim()) return rows;
+    let result = rows;
+    if (courseFilter !== 'all') {
+      result = result.filter((r) => r.enrolled_courses.some((c) => c.course_id === courseFilter));
+    }
+    if (!query.trim()) return result;
     const q = query.trim().toLowerCase();
-    return rows.filter((r) => {
+    return result.filter((r) => {
       return (
         r.display_name?.toLowerCase().includes(q) ||
         r.user_id.toLowerCase().includes(q) ||
         r.enrolled_courses.some((c) => c.title.toLowerCase().includes(q))
       );
     });
-  }, [rows, query]);
+  }, [rows, query, courseFilter]);
 
   return (
     <PageShell>
@@ -168,23 +177,40 @@ export default function TeacherStudents() {
         subtitle="Theo dõi tiến độ học, doanh thu, và hoạt động gần đây của từng học viên."
       />
 
-      <div className="mt-6 relative">
-        <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary/50" />
-        <input
-          type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Tìm theo tên, ID, hoặc khoá học…"
-          className="w-full rounded-xl border border-white/10 bg-white/[0.03] py-3 pl-11 pr-11 text-sm text-on-surface placeholder:text-secondary/50 focus:border-cyan-300/50 focus:outline-none"
-        />
-        {query && (
-          <button
-            onClick={() => setQuery('')}
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-secondary/50 hover:text-secondary"
-            aria-label="Xoá"
-          >
-            <X size={16} />
-          </button>
+      <div className="mt-6 flex gap-3 flex-wrap">
+        <div className="relative flex-1 min-w-[200px]">
+          <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary/50" />
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Tìm theo tên, ID, hoặc khoá học…"
+            className="w-full rounded-xl border border-white/10 bg-white/[0.03] py-3 pl-11 pr-11 text-sm text-on-surface placeholder:text-secondary/50 focus:border-cyan-300/50 focus:outline-none"
+          />
+          {query && (
+            <button
+              onClick={() => setQuery('')}
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-secondary/50 hover:text-secondary"
+              aria-label="Xoá"
+            >
+              <X size={16} />
+            </button>
+          )}
+        </div>
+        {courses.length > 1 && (
+          <div className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2">
+            <Filter size={12} className="text-secondary/55" />
+            <select
+              value={courseFilter}
+              onChange={(e) => setCourseFilter(e.target.value)}
+              className="bg-transparent text-sm text-on-surface focus:outline-none"
+            >
+              <option value="all">Tất cả khoá học</option>
+              {courses.map((c) => (
+                <option key={c.id} value={c.id}>{c.title}</option>
+              ))}
+            </select>
+          </div>
         )}
       </div>
 
@@ -250,12 +276,31 @@ export default function TeacherStudents() {
 
                 <div className="flex flex-wrap gap-1.5">
                   {s.enrolled_courses.map((c) => (
-                    <span
-                      key={c.course_id}
-                      className="rounded-full border border-cyan-300/20 bg-cyan-950/15 px-2.5 py-1 font-tech text-[9px] uppercase tracking-[0.14em] text-cyan-100/75"
+                    <div
+                      key={c.enrollment_id}
+                      className="flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-950/15 px-2.5 py-1"
                     >
-                      {c.title}
-                    </span>
+                      <span className="font-tech text-[9px] uppercase tracking-[0.14em] text-cyan-100/75">
+                        {c.title}
+                      </span>
+                      <div className="flex items-center gap-1">
+                        <Key size={9} className="text-secondary/45" />
+                        <input
+                          type="text"
+                          defaultValue={c.tracking_code ?? ''}
+                          placeholder="Mã PH"
+                          onBlur={(e) => {
+                            const val = e.target.value.trim() || null;
+                            if (val !== c.tracking_code) {
+                              supabase.from('enrollments').update({ tracking_code: val }).eq('id', c.enrollment_id).then(() => {
+                                setRows((prev) => prev?.map((r) => r.user_id === s.user_id ? { ...r, enrolled_courses: r.enrolled_courses.map((ec) => ec.enrollment_id === c.enrollment_id ? { ...ec, tracking_code: val } : ec) } : r) ?? null);
+                              });
+                            }
+                          }}
+                          className="w-20 bg-transparent border-b border-dashed border-secondary/30 text-[9px] font-tech text-cyan-200 placeholder:text-secondary/40 focus:border-cyan-300/50 focus:outline-none"
+                        />
+                      </div>
+                    </div>
                   ))}
                 </div>
               </div>
