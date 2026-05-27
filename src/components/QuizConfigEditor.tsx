@@ -7,6 +7,8 @@ import {
   ChevronDown,
   ChevronUp,
   CheckCircle2,
+  Upload,
+  ImageIcon,
 } from 'lucide-react';
 import CustomSelect from './ui/CustomSelect';
 import { supabase } from '../lib/supabase';
@@ -410,6 +412,7 @@ function QuestionEditor({
               { value: 'multi', label: 'Trắc nghiệm — nhiều đáp án' },
               { value: 'text', label: 'Câu trả lời tự luận (text)' },
               { value: 'file', label: 'Nộp tệp' },
+              { value: 'image', label: 'Hình ảnh (đề bài có ảnh)' },
             ]}
           />
         </ConfigField>
@@ -493,6 +496,14 @@ function QuestionEditor({
         </p>
       )}
 
+
+      {question.type === 'image' && (
+        <ImageUploader
+          imageUrl={question.image_url ?? null}
+          onUploaded={(url) => onChange({ image_url: url })}
+        />
+      )}
+
       <ConfigField label="Giải thích (hiển thị sau khi học viên nộp bài, tuỳ chọn)">
         <textarea
           defaultValue={question.explanation_md ?? ''}
@@ -501,6 +512,86 @@ function QuestionEditor({
           className="w-full rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-on-surface focus:border-cyan-300/40 focus:outline-none resize-y"
         />
       </ConfigField>
+    </div>
+  );
+}
+
+function ImageUploader({
+  imageUrl,
+  onUploaded,
+}: {
+  imageUrl: string | null;
+  onUploaded: (url: string | null) => void;
+}) {
+  const [uploading, setUploading] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
+
+  const handleFile = async (file: File) => {
+    if (!file.type.startsWith('image/')) return;
+    setUploading(true);
+    const path = `quiz-images/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
+    const { error } = await supabase.storage.from('quiz-submissions').upload(path, file, { contentType: file.type, upsert: false });
+    if (!error) {
+      const { data } = supabase.storage.from('quiz-submissions').getPublicUrl(path);
+      onUploaded(data.publicUrl);
+    }
+    setUploading(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOver(false);
+    const file = e.dataTransfer.files[0];
+    if (file) handleFile(file);
+  };
+
+  const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) handleFile(file);
+  };
+
+  return (
+    <div className="space-y-2">
+      {imageUrl && (
+        <div className="relative rounded-lg overflow-hidden border border-white/10">
+          <img src={imageUrl} alt="Ảnh câu hỏi" className="w-full max-h-48 object-contain bg-black/20" />
+          <button
+            type="button"
+            onClick={() => onUploaded(null)}
+            className="absolute top-2 right-2 rounded-full bg-black/60 p-1.5 text-red-300 hover:text-red-200"
+          >
+            <Trash2 size={12} />
+          </button>
+        </div>
+      )}
+      <div
+        onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+        onDragLeave={() => setDragOver(false)}
+        onDrop={handleDrop}
+        className={`relative cursor-pointer rounded-xl border-2 border-dashed px-4 py-5 text-center transition-colors ${
+          dragOver ? 'border-cyan-300/60 bg-cyan-400/[0.06]' : 'border-white/15 bg-white/[0.02] hover:border-cyan-300/30'
+        }`}
+      >
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handleInput}
+          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+        />
+        {uploading ? (
+          <Loader2 size={20} className="mx-auto animate-spin text-cyan-300" />
+        ) : (
+          <>
+            <ImageIcon size={20} className="mx-auto text-cyan-300/80 mb-1" />
+            <p className="text-sm text-secondary/75">
+              Kéo thả ảnh hoặc <span className="text-cyan-200 underline">chọn tệp</span>
+            </p>
+            <p className="font-tech text-[9px] uppercase tracking-[0.14em] text-secondary/45 mt-1">
+              PNG, JPG, WebP
+            </p>
+          </>
+        )}
+      </div>
     </div>
   );
 }

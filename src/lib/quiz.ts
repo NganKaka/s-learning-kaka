@@ -9,7 +9,7 @@ import { supabase } from './supabase';
  * dedicated module.
  */
 
-export type QuizQuestionType = 'single' | 'multi' | 'text' | 'file';
+export type QuizQuestionType = 'single' | 'multi' | 'text' | 'file' | 'image';
 export type QuizGradingMode = 'max' | 'mean';
 export type QuizAttemptStatus = 'in_progress' | 'submitted' | 'graded';
 
@@ -33,6 +33,7 @@ export interface QuizQuestion {
   correct_jsonb: number[] | null;
   expected_text: string | null;
   explanation_md: string | null;
+  image_url: string | null;
   points: number;
   order_index: number;
   tags: string[];
