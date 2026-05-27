@@ -19,34 +19,45 @@ export default function Home() {
   return (
     <PageShell>
       <DocumentHead
-        title="sLearningKaka — Học cùng Vo Hoang Ngan"
-        description="Nền tảng học tập cho học sinh Việt Nam: video bài giảng, flashcard ôn tập, quiz đánh giá, chứng chỉ hoàn thành. Khoá đầu tiên — Toán 12."
+        title="sLearningKaka — Luyện thi Toán 12 cùng Vo Hoang Ngan"
+        description="Lộ trình ôn luyện Toán 12 cho kỳ thi Tốt nghiệp THPT: video bài giảng, flashcard SRS, quiz cuối bài, chứng chỉ hoàn thành. Học thử miễn phí ngay."
         url="https://s-learning-kaka.vercel.app/"
       />
       <section id="hero" className="relative pt-12 md:pt-20 grid lg:grid-cols-[1.2fr_0.8fr] gap-10 items-center">
         <div className="space-y-7">
+          <div className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-3 py-1.5 font-tech text-[10px] uppercase tracking-[0.18em] text-primary">
+            <span>Toán 12 · TN THPT 2027</span>
+          </div>
           <h1 className="font-headline text-4xl md:text-6xl font-extrabold tracking-tight text-on-surface leading-tight">
-            <NameDecode text="Học để làm được" duration={750} charLockDuration={280} />
+            <NameDecode text="Mục tiêu 8+ Toán TN THPT" duration={750} charLockDuration={280} />
           </h1>
           <p className="text-lg md:text-xl font-headline font-bold">
-            <GradientText text="Khoá học chất lượng — dạy bởi Vo Hoang Ngan" />
+            <GradientText text="Lộ trình Toán 12 đầy đủ — dạy bởi Vo Hoang Ngan" />
           </p>
           <p className="text-secondary/85 leading-relaxed max-w-xl">
-            Video bài giảng có cấu trúc, flashcard ôn tập theo phương pháp lặp lại ngắt quãng,
-            quiz kiểm tra hiểu bài, và theo dõi tiến độ học tập — tất cả ở một nơi.
+            Hàm số · Mũ và logarit · Tích phân · Số phức · Hình không gian · Toạ độ.
+            Mỗi bài có video giảng chi tiết, flashcard ôn theo phương pháp lặp lại ngắt quãng,
+            và quiz cuối bài để bạn biết mình đang ở đâu trước khi bước tiếp.
           </p>
+          <div className="flex flex-wrap items-center gap-2 font-tech text-[10px] uppercase tracking-[0.16em] text-secondary/70">
+            {['HKIMO Gold', 'AIMO Silver', 'VMO 3rd', 'CS HCMUT'].map((tag) => (
+              <span key={tag} className="rounded-full border border-cyan-300/25 bg-cyan-950/15 px-2.5 py-1 text-cyan-100/80">
+                {tag}
+              </span>
+            ))}
+          </div>
           <div className="flex flex-wrap gap-3">
             <Link
-              to="/courses"
+              to="/learn/math-12/gioi-thieu"
               className="shimmer-sweep bg-primary text-background px-6 py-3 rounded-xl text-xs font-bold tracking-[0.14em] uppercase border border-primary/50 shadow-[0_0_24px_rgba(233,195,73,0.55)] hover:shadow-[0_0_32px_rgba(233,195,73,0.9)] transition-shadow inline-flex items-center gap-2"
             >
-              Xem khoá học <ArrowRight size={14} />
+              Học thử miễn phí <ArrowRight size={14} />
             </Link>
             <Link
-              to="/signup"
+              to="/courses/math-12"
               className="px-6 py-3 rounded-xl text-xs font-bold tracking-[0.14em] uppercase border border-cyan-400/40 bg-cyan-400/10 text-cyan-200 hover:border-cyan-300/60 hover:bg-cyan-400/15 hover:text-cyan-100 transition-colors"
             >
-              Đăng ký miễn phí
+              Xem giáo trình
             </Link>
           </div>
         </div>

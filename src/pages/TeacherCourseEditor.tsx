@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ChevronLeft, ChevronDown, Plus, Trash2, Save, Loader2, AlertCircle, Brain, Sparkles, Video, Eye, EyeOff } from 'lucide-react';
+import { ChevronLeft, ChevronDown, Plus, Trash2, Save, Loader2, AlertCircle, Brain, Video, Eye, EyeOff } from 'lucide-react';
 import PageShell from '../components/PageShell';
+import QuizConfigEditor from '../components/QuizConfigEditor';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import type { Course, Module, Lesson } from '../lib/database.types';
@@ -14,24 +15,6 @@ interface Flashcard {
   front_md: string;
   back_md: string;
   order_index: number;
-}
-
-interface QuizQuestion {
-  id: string;
-  quiz_id: string;
-  prompt_md: string;
-  type: 'single' | 'multi';
-  choices_jsonb: string[];
-  correct_jsonb: number[];
-  explanation_md: string | null;
-  order_index: number;
-}
-
-interface QuizRow {
-  id: string;
-  lesson_id: string;
-  title: string | null;
-  questions: QuizQuestion[];
 }
 
 export default function TeacherCourseEditor() {
@@ -358,7 +341,7 @@ function LessonRow({ lesson, index, isOpen, onToggle, onChange, courseId }: Less
         <div className="px-4 pb-4 space-y-4 border-t border-white/10 pt-4">
           <LessonMetaEditor lesson={lesson} onChange={onChange} />
           <FlashcardsEditor lessonId={lesson.id} courseId={courseId} />
-          <QuizEditor lessonId={lesson.id} />
+          <QuizConfigEditor lessonId={lesson.id} />
         </div>
       )}
     </li>
@@ -526,130 +509,6 @@ function FlashcardsEditor({ lessonId, courseId }: { lessonId: string; courseId: 
           </li>
         ))}
       </ul>
-    </div>
-  );
-}
-
-function QuizEditor({ lessonId }: { lessonId: string }) {
-  const [quiz, setQuiz] = useState<QuizRow | null>(null);
-  const [tick, setTick] = useState(0);
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      const { data: q } = await supabase.from('quizzes').select('*').eq('lesson_id', lessonId).maybeSingle();
-      if (cancelled) return;
-      if (!q) {
-        setQuiz(null);
-        return;
-      }
-      const { data: questions } = await supabase
-        .from('quiz_questions')
-        .select('*')
-        .eq('quiz_id', q.id)
-        .order('order_index', { ascending: true });
-      if (cancelled) return;
-      setQuiz({ ...(q as { id: string; lesson_id: string; title: string | null }), questions: (questions ?? []) as QuizQuestion[] });
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [lessonId, tick]);
-
-  const createQuiz = async () => {
-    const title = window.prompt('Tiêu đề quiz?', 'Kiểm tra cuối bài') ?? null;
-    await supabase.from('quizzes').insert({ lesson_id: lessonId, title });
-    setTick((n) => n + 1);
-  };
-
-  const deleteQuiz = async () => {
-    if (!quiz || !window.confirm('Xoá quiz này và tất cả câu hỏi?')) return;
-    await supabase.from('quizzes').delete().eq('id', quiz.id);
-    setTick((n) => n + 1);
-  };
-
-  const addQuestion = async () => {
-    if (!quiz) return;
-    const prompt = window.prompt('Câu hỏi?');
-    if (!prompt) return;
-    const choicesRaw = window.prompt('Các đáp án (cách nhau bởi |):');
-    if (!choicesRaw) return;
-    const choices = choicesRaw.split('|').map((c) => c.trim()).filter(Boolean);
-    const correctRaw = window.prompt('Đáp án đúng (số thứ tự, từ 1, cách nhau bởi dấu phẩy):');
-    if (!correctRaw) return;
-    const correct = correctRaw.split(',').map((s) => parseInt(s.trim(), 10) - 1).filter((n) => !Number.isNaN(n));
-    const explanation = window.prompt('Giải thích (tuỳ chọn):') ?? null;
-    const type = correct.length > 1 ? 'multi' : 'single';
-
-    await supabase.from('quiz_questions').insert({
-      quiz_id: quiz.id,
-      prompt_md: prompt,
-      type,
-      choices_jsonb: choices,
-      correct_jsonb: correct,
-      explanation_md: explanation,
-      order_index: quiz.questions.length,
-    });
-    setTick((n) => n + 1);
-  };
-
-  const deleteQuestion = async (id: string) => {
-    if (!window.confirm('Xoá câu hỏi này?')) return;
-    await supabase.from('quiz_questions').delete().eq('id', id);
-    setTick((n) => n + 1);
-  };
-
-  return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <p className="inline-flex items-center gap-2 font-tech text-[10px] uppercase tracking-[0.18em] text-primary">
-          <Sparkles size={11} /> Quiz {quiz && <span className="text-secondary/45">({quiz.questions.length} câu)</span>}
-        </p>
-        <div className="flex items-center gap-2">
-          {!quiz ? (
-            <button
-              type="button"
-              onClick={createQuiz}
-              className="inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/15 px-3 py-1 font-tech text-[10px] uppercase tracking-[0.16em] text-primary hover:bg-primary/25"
-            >
-              <Plus size={10} /> Tạo quiz
-            </button>
-          ) : (
-            <>
-              <button
-                type="button"
-                onClick={addQuestion}
-                className="inline-flex items-center gap-1.5 rounded-full border border-cyan-300/30 bg-cyan-400/10 px-3 py-1 font-tech text-[10px] uppercase tracking-[0.16em] text-cyan-200 hover:bg-cyan-400/20"
-              >
-                <Plus size={10} /> Thêm câu hỏi
-              </button>
-              <button onClick={deleteQuiz} className="text-red-400/70 hover:text-red-300">
-                <Trash2 size={12} />
-              </button>
-            </>
-          )}
-        </div>
-      </div>
-      {quiz && (
-        <ol className="space-y-2 list-none">
-          {quiz.questions.map((q, qi) => (
-            <li key={q.id} className="rounded-lg border border-white/10 bg-white/[0.02] px-3 py-2 flex items-start justify-between gap-3">
-              <div className="min-w-0 text-sm">
-                <p className="text-on-surface">
-                  <span className="text-primary mr-2 tabular-nums">{String(qi + 1).padStart(2, '0')}.</span>
-                  {q.prompt_md}
-                </p>
-                <p className="text-xs text-secondary/55 mt-1">
-                  {q.choices_jsonb.length} đáp án · {q.type === 'multi' ? 'Chọn nhiều' : 'Chọn một'}
-                </p>
-              </div>
-              <button onClick={() => deleteQuestion(q.id)} className="text-red-400/70 hover:text-red-300 shrink-0">
-                <Trash2 size={12} />
-              </button>
-            </li>
-          ))}
-        </ol>
-      )}
     </div>
   );
 }

@@ -110,3 +110,50 @@ begin
     (v_module_id, v_course_id, 'mat-cau', 'Phương trình mặt cầu', 3, false, 1200);
 
 end $$;
+
+-- Sample flashcards for the free preview lesson — these are visible
+-- without signing up so prospects can try the SRS deck before paying.
+-- Re-runnable: clear existing rows for the preview lesson first so we
+-- don't accumulate duplicates if the seed is replayed.
+do $$
+declare
+  v_course_id uuid;
+  v_lesson_id uuid;
+begin
+  select id into v_course_id from public.courses where slug = 'math-12';
+  select id into v_lesson_id
+  from public.lessons
+  where course_id = v_course_id and slug = 'gioi-thieu';
+
+  if v_lesson_id is null then
+    return;
+  end if;
+
+  delete from public.flashcards where lesson_id = v_lesson_id;
+
+  insert into public.flashcards (lesson_id, course_id, front_md, back_md, order_index) values
+    (v_lesson_id, v_course_id,
+      'Đạo hàm của f(x) = x^n là gì?',
+      'f''(x) = n · x^(n-1). Đây là công thức nền tảng để khảo sát hàm số.',
+      0),
+    (v_lesson_id, v_course_id,
+      'Hàm số y = f(x) đồng biến trên khoảng (a; b) khi nào?',
+      'Khi f''(x) ≥ 0 với mọi x ∈ (a; b) và f''(x) = 0 chỉ tại hữu hạn điểm.',
+      1),
+    (v_lesson_id, v_course_id,
+      'Điều kiện để x₀ là điểm cực trị của hàm số y = f(x)?',
+      'f''(x₀) = 0 (hoặc f''(x₀) không xác định) và f''(x) đổi dấu khi qua x₀.',
+      2),
+    (v_lesson_id, v_course_id,
+      'log_a(xy) = ?',
+      'log_a(x) + log_a(y), với a > 0, a ≠ 1, x > 0, y > 0.',
+      3),
+    (v_lesson_id, v_course_id,
+      '∫ x^n dx = ? (với n ≠ -1)',
+      'x^(n+1) / (n+1) + C. Đây là công thức nguyên hàm cơ bản nhất.',
+      4),
+    (v_lesson_id, v_course_id,
+      'Modulus của số phức z = a + bi tính như thế nào?',
+      '|z| = √(a² + b²). Bằng khoảng cách từ điểm biểu diễn z đến gốc toạ độ.',
+      5);
+end $$;

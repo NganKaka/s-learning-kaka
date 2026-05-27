@@ -122,7 +122,7 @@ export default function Learn() {
 
   // Lesson progress: best-effort upsert on mount
   useEffect(() => {
-    if (!user || !lesson || !enrolled || lesson.is_preview === false && !enrolled) return;
+    if (!user || !lesson) return;
     if (!enrolled && !lesson.is_preview) return;
     supabase
       .from('lesson_progress')
@@ -259,8 +259,40 @@ export default function Learn() {
             </div>
           )}
 
-          {canPlay && user && <LessonCards lessonId={lesson.id} />}
+          {canPlay && <LessonCards lessonId={lesson.id} />}
           {canPlay && user && <LessonQuiz lessonId={lesson.id} userId={user.id} />}
+
+          {canPlay && lesson.is_preview && !enrolled && (
+            <div className="glass-card rounded-2xl p-6 md:p-8 ambient-shadow border-primary/30 bg-gradient-to-br from-primary/[0.06] to-cyan-400/[0.04] space-y-4">
+              <p className="font-tech text-[10px] uppercase tracking-[0.2em] text-primary">
+                Bạn đang xem bài học miễn phí
+              </p>
+              <p className="font-headline text-xl md:text-2xl font-bold text-on-surface leading-snug">
+                Mở khoá toàn bộ {course.modules.reduce((s, m) => s + m.lessons.length, 0)} bài học,
+                flashcard SRS và bộ quiz cuối bài.
+              </p>
+              <p className="text-sm text-secondary/85 leading-relaxed">
+                Lộ trình ôn luyện Toán 12 đầy đủ — từ Hàm số đến Toạ độ trong không gian.
+                Dạy bởi Vo Hoang Ngan (HKIMO Vàng · AIMO Bạc · cử nhân CS HCMUT).
+              </p>
+              <div className="flex flex-wrap gap-3 pt-1">
+                {!user && (
+                  <Link
+                    to={`/signup?next=/courses/${course.slug}`}
+                    className="bg-primary text-background px-5 py-2.5 rounded-xl text-xs font-bold tracking-[0.14em] uppercase border border-primary/50 shadow-[0_0_24px_rgba(233,195,73,0.55)] hover:shadow-[0_0_32px_rgba(233,195,73,0.9)] transition-shadow"
+                  >
+                    Tạo tài khoản miễn phí
+                  </Link>
+                )}
+                <Link
+                  to={`/cart?course=${course.slug}`}
+                  className="px-5 py-2.5 rounded-xl text-xs font-bold tracking-[0.14em] uppercase border border-cyan-400/40 bg-cyan-400/10 text-cyan-200 hover:border-cyan-300/60 hover:bg-cyan-400/15 hover:text-cyan-100 transition-colors"
+                >
+                  Đăng ký khoá học
+                </Link>
+              </div>
+            </div>
+          )}
 
           <div className="flex items-center justify-between gap-3 pt-2">
             <button
