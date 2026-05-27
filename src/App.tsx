@@ -26,6 +26,7 @@ const Account = lazy(() => import('./pages/Account'));
 const Wallet = lazy(() => import('./pages/Wallet'));
 const Teacher = lazy(() => import('./pages/Teacher'));
 const ParentDashboard = lazy(() => import('./pages/ParentDashboard'));
+const Admin = lazy(() => import('./pages/Admin'));
 
 function AnimatedRoutes() {
   return (
@@ -45,6 +46,7 @@ function AnimatedRoutes() {
           <Route path="/wallet" element={<Wallet />} />
           <Route path="/teacher/*" element={<Teacher />} />
           <Route path="/parent" element={<ParentDashboard />} />
+          <Route path="/admin" element={<Admin />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
