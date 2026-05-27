@@ -12,11 +12,13 @@ export default function CustomSelect({
   onChange,
   options,
   className,
+  disabled,
 }: {
   value: string;
   onChange: (value: string) => void;
   options: Option[];
   className?: string;
+  disabled?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -33,11 +35,12 @@ export default function CustomSelect({
   }, [open]);
 
   return (
-    <div className={`relative ${className ?? ''}`} ref={ref}>
+    <div className={`relative ${className ?? ''} ${disabled ? 'opacity-50 pointer-events-none' : ''}`} ref={ref}>
       <button
         type="button"
-        onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between gap-2 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-on-surface hover:border-cyan-300/30 focus:border-cyan-300/40 focus:outline-none transition-colors"
+        onClick={() => !disabled && setOpen(!open)}
+        disabled={disabled}
+        className="w-full flex items-center justify-between gap-2 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-on-surface hover:border-cyan-300/30 focus:border-cyan-300/40 focus:outline-none transition-colors disabled:cursor-not-allowed"
       >
         <span className="truncate">{selected?.label ?? '—'}</span>
         <ChevronDown size={14} className={`text-secondary/55 shrink-0 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />

@@ -381,6 +381,7 @@ function ParentLinker() {
           <CustomSelect
             value={selectedEnrollment}
             onChange={(v) => setSelectedEnrollment(v)}
+            disabled={!selectedCourse}
             options={[{ value: '', label: selectedCourse ? 'Chọn học viên…' : 'Chọn khoá học trước' }, ...studentOptions.map((s) => ({ value: s.id, label: s.label }))]}
           />
         </div>
