@@ -3,6 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#67e8f9" />
 
     <title>sLearningKaka — Học cùng Vo Hoang Ngan</title>
     <meta name="description" content="Nền tảng học tập cho học sinh Việt Nam: video bài giảng, flashcard ôn tập, quiz đánh giá, chứng chỉ hoàn thành. Khoá đầu tiên — Toán 12." />
@@ -36,5 +38,6 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js');</script>
   </body>
 </html>

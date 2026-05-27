@@ -30,6 +30,8 @@ const Admin = lazy(() => import('./pages/Admin'));
 const Mistakes = lazy(() => import('./pages/Mistakes'));
 const ExamSimulation = lazy(() => import('./pages/ExamSimulation'));
 const VerifyCertificate = lazy(() => import('./pages/VerifyCertificate'));
+const SearchPage = lazy(() => import('./pages/SearchPage'));
+const MessagesPage = lazy(() => import('./pages/Messages'));
 
 function AnimatedRoutes() {
   return (
@@ -52,6 +54,8 @@ function AnimatedRoutes() {
           <Route path="/mistakes" element={<Mistakes />} />
           <Route path="/exam/:slug" element={<ExamSimulation />} />
           <Route path="/verify/:code" element={<VerifyCertificate />} />
+          <Route path="/search" element={<SearchPage />} />
+          <Route path="/messages" element={<MessagesPage />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
