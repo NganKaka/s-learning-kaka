@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { ChevronLeft, ChevronDown, Plus, Trash2, Save, Loader2, AlertCircle, Brain, Video, Eye, EyeOff } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ChevronLeft, ChevronDown, Plus, Trash2, Save, Loader2, AlertCircle, Brain, Video, Eye, EyeOff, Sparkles, X } from 'lucide-react';
 import PageShell from '../components/PageShell';
 import QuizConfigEditor from '../components/QuizConfigEditor';
 import { useAuth } from '../contexts/AuthContext';
@@ -313,6 +313,15 @@ interface LessonRowProps {
 }
 
 function LessonRow({ lesson, index, isOpen, onToggle, onChange, courseId }: LessonRowProps) {
+  const [quizModalOpen, setQuizModalOpen] = useState(false);
+  const [hasQuiz, setHasQuiz] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    supabase.from('quizzes').select('id').eq('lesson_id', lesson.id).maybeSingle().then(({ data }) => {
+      setHasQuiz(!!data);
+    });
+  }, [lesson.id, quizModalOpen]);
+
   return (
     <li className="rounded-xl border border-white/10 bg-white/[0.03] overflow-hidden">
       <button
@@ -341,9 +350,65 @@ function LessonRow({ lesson, index, isOpen, onToggle, onChange, courseId }: Less
         <div className="px-4 pb-4 space-y-4 border-t border-white/10 pt-4">
           <LessonMetaEditor lesson={lesson} onChange={onChange} />
           <FlashcardsEditor lessonId={lesson.id} courseId={courseId} />
-          <QuizConfigEditor lessonId={lesson.id} />
+
+          {/* Quiz button */}
+          <button
+            type="button"
+            onClick={() => setQuizModalOpen(true)}
+            className={`w-full inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-3 font-tech text-[10px] uppercase tracking-[0.16em] transition-colors ${
+              hasQuiz
+                ? 'border-primary/30 bg-primary/10 text-primary hover:bg-primary/20'
+                : 'border-dashed border-cyan-300/30 bg-cyan-400/[0.04] text-cyan-200 hover:border-cyan-300/60 hover:bg-cyan-400/[0.08]'
+            }`}
+          >
+            <Sparkles size={12} />
+            {hasQuiz ? 'Chỉnh sửa Quiz' : 'Thêm Quiz'}
+          </button>
         </div>
       )}
+
+      {/* Quiz fullscreen modal */}
+      <AnimatePresence>
+        {quizModalOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-[100] flex items-start justify-center overflow-y-auto"
+          >
+            {/* Backdrop */}
+            <div
+              className="fixed inset-0 bg-black/70 backdrop-blur-sm"
+              onClick={() => setQuizModalOpen(false)}
+            />
+            {/* Modal content */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              transition={{ duration: 0.2, ease: 'easeOut' }}
+              className="relative z-10 w-full max-w-3xl my-8 mx-4 rounded-2xl border border-white/10 bg-[#0a0f1e] p-6 md:p-8 shadow-2xl"
+            >
+              {/* Close button */}
+              <button
+                type="button"
+                onClick={() => setQuizModalOpen(false)}
+                className="absolute top-4 right-4 rounded-full border border-white/15 bg-white/[0.05] p-2 text-secondary/60 hover:text-on-surface hover:bg-white/[0.1] transition-colors"
+                aria-label="Đóng"
+              >
+                <X size={16} />
+              </button>
+
+              <p className="font-headline text-lg font-bold text-on-surface mb-5">
+                Quiz — {lesson.title}
+              </p>
+
+              <QuizConfigEditor lessonId={lesson.id} />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </li>
   );
 }
