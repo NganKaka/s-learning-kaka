@@ -258,6 +258,24 @@ export default function QuizConfigEditor({ lessonId }: { lessonId: string }) {
           <Plus size={11} /> Thêm câu hỏi
         </button>
       </div>
+
+      {/* Save / Cancel */}
+      <div className="flex items-center gap-3 pt-2">
+        <button
+          type="button"
+          onClick={() => { setSavingConfig(true); setTimeout(() => { setSavingConfig(false); setTick((n) => n + 1); }, 300); }}
+          className="inline-flex items-center gap-2 rounded-full border border-emerald-400/40 bg-emerald-500/15 px-4 py-2 text-xs font-tech uppercase tracking-[0.16em] text-emerald-200 hover:bg-emerald-500/25"
+        >
+          <CheckCircle2 size={12} /> Lưu quiz
+        </button>
+        <button
+          type="button"
+          onClick={() => setTick((n) => n + 1)}
+          className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.04] px-4 py-2 text-xs font-tech uppercase tracking-[0.16em] text-secondary/70 hover:bg-white/[0.08]"
+        >
+          Huỷ thay đổi
+        </button>
+      </div>
     </div>
   );
 }
