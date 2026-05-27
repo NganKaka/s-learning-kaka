@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { Shield, Loader2, Save, Search, Users, Settings, Link2 } from 'lucide-react';
 import PageShell from '../components/PageShell';
+import CustomSelect from '../components/ui/CustomSelect';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 
@@ -355,29 +356,19 @@ function ParentLinker() {
       <div className="grid sm:grid-cols-2 gap-3">
         <div className="space-y-1">
           <label className="font-tech text-[10px] uppercase tracking-[0.18em] text-secondary/55">Phụ huynh</label>
-          <select
+          <CustomSelect
             value={selectedParent}
-            onChange={(e) => setSelectedParent(e.target.value)}
-            className="w-full rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-on-surface focus:border-cyan-300/40 focus:outline-none"
-          >
-            <option value="">Chọn phụ huynh…</option>
-            {parents.map((p) => (
-              <option key={p.id} value={p.id}>{p.display_name ?? p.id.slice(0, 8)}</option>
-            ))}
-          </select>
+            onChange={(v) => setSelectedParent(v)}
+            options={[{ value: '', label: 'Chọn phụ huynh…' }, ...parents.map((p) => ({ value: p.id, label: p.display_name ?? p.id.slice(0, 8) }))]}
+          />
         </div>
         <div className="space-y-1">
           <label className="font-tech text-[10px] uppercase tracking-[0.18em] text-secondary/55">Học viên — Khoá học</label>
-          <select
+          <CustomSelect
             value={selectedEnrollment}
-            onChange={(e) => setSelectedEnrollment(e.target.value)}
-            className="w-full rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-on-surface focus:border-cyan-300/40 focus:outline-none"
-          >
-            <option value="">Chọn học viên…</option>
-            {studentOptions.map((s) => (
-              <option key={s.id} value={s.id}>{s.label}</option>
-            ))}
-          </select>
+            onChange={(v) => setSelectedEnrollment(v)}
+            options={[{ value: '', label: 'Chọn học viên…' }, ...studentOptions.map((s) => ({ value: s.id, label: s.label }))]}
+          />
         </div>
       </div>
 
