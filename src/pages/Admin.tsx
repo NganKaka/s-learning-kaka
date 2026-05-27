@@ -406,6 +406,91 @@ function ParentLinker() {
           </div>
         </div>
       )}
+
+      {/* Tracking codes table */}
+      <div className="space-y-2">
+        <p className="font-tech text-[10px] uppercase tracking-[0.18em] text-secondary/55">Mã theo dõi</p>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-white/10 text-left">
+                <th className="pb-2 font-tech text-[10px] uppercase tracking-[0.14em] text-secondary/55">Học viên</th>
+                <th className="pb-2 font-tech text-[10px] uppercase tracking-[0.14em] text-secondary/55">Khoá học</th>
+                <th className="pb-2 font-tech text-[10px] uppercase tracking-[0.14em] text-secondary/55">Mã</th>
+                <th className="pb-2 font-tech text-[10px] uppercase tracking-[0.14em] text-secondary/55">Trạng thái</th>
+              </tr>
+            </thead>
+            <tbody>
+              {enrollments.map((e) => {
+                const studentName = students.find((s) => s.id === e.user_id)?.display_name ?? e.user_id.slice(0, 8);
+                const linked = links.some((l) => l.course_title === e.course_title && l.student_name === studentName);
+                return (
+                  <TrackingCodeRow
+                    key={e.id}
+                    enrollmentId={e.id}
+                    studentName={studentName}
+                    courseTitle={e.course_title}
+                    linked={linked}
+                  />
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
+  );
+}
+
+function TrackingCodeRow({ enrollmentId, studentName, courseTitle, linked }: {
+  enrollmentId: string;
+  studentName: string;
+  courseTitle: string;
+  linked: boolean;
+}) {
+  const [code, setCode] = useState<string | null>(null);
+  const [loadingCode, setLoadingCode] = useState(true);
+
+  useEffect(() => {
+    supabase.from('enrollments').select('tracking_code').eq('id', enrollmentId).single().then(({ data }) => {
+      setCode((data?.tracking_code as string | null) ?? null);
+      setLoadingCode(false);
+    });
+  }, [enrollmentId]);
+
+  const generateCode = async () => {
+    const newCode = `TRK-${Date.now().toString(36).toUpperCase().slice(-6)}`;
+    await supabase.from('enrollments').update({ tracking_code: newCode }).eq('id', enrollmentId);
+    setCode(newCode);
+  };
+
+  return (
+    <tr className="border-b border-white/5">
+      <td className="py-2 text-on-surface">{studentName}</td>
+      <td className="py-2 text-secondary/70">{courseTitle}</td>
+      <td className="py-2">
+        {loadingCode ? (
+          <span className="text-secondary/40">…</span>
+        ) : code ? (
+          <code className="rounded bg-white/[0.06] px-1.5 py-0.5 font-tech text-[10px] text-cyan-200">{code}</code>
+        ) : (
+          <button
+            onClick={generateCode}
+            className="font-tech text-[10px] uppercase text-primary hover:text-cyan-200"
+          >
+            Tạo mã
+          </button>
+        )}
+      </td>
+      <td className="py-2">
+        {linked ? (
+          <span className="font-tech text-[9px] uppercase text-emerald-300">Đã liên kết</span>
+        ) : code ? (
+          <span className="font-tech text-[9px] uppercase text-amber-300">Chưa liên kết</span>
+        ) : (
+          <span className="font-tech text-[9px] uppercase text-secondary/40">Chưa có mã</span>
+        )}
+      </td>
+    </tr>
   );
 }
