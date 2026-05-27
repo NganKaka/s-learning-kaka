@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
-import { Loader2, Plus, Users, TrendingUp } from 'lucide-react';
+import { Loader2, Plus, Users, TrendingUp, Activity, Target, BarChart3 } from 'lucide-react';
 import {
   LineChart,
   Line,
@@ -21,6 +21,13 @@ import {
   getStudentScores,
   linkCode,
 } from '../lib/parent';
+import {
+  type ActivityEntry,
+  getActivityLog,
+  getClassAverage,
+  getStudentTotalScore,
+  getStudentGoals,
+} from '../lib/parentHelpers';
 
 export default function ParentDashboard() {
   const { user, profile, loading } = useAuth();
@@ -32,6 +39,10 @@ export default function ParentDashboard() {
   const [selectedStudent, setSelectedStudent] = useState<LinkedStudent | null>(null);
   const [scores, setScores] = useState<StudentScore[]>([]);
   const [loadingScores, setLoadingScores] = useState(false);
+  const [activities, setActivities] = useState<ActivityEntry[]>([]);
+  const [classAvg, setClassAvg] = useState<number | null>(null);
+  const [studentScore, setStudentScore] = useState<number>(0);
+  const [goals, setGoals] = useState<{ current: { lessons_target: number; flashcards_target: number; quizzes_target: number; lessons_done: number; flashcards_done: number; quizzes_done: number; met: boolean } | null; history: Array<{ week_start: string; met: boolean }> }>({ current: null, history: [] });
 
   const fetchStudents = useCallback(async () => {
     if (!user) return;
@@ -58,6 +69,10 @@ export default function ParentDashboard() {
         setLoadingScores(false);
       }
     });
+    getActivityLog(selectedStudent.student_id).then((a) => { if (!cancelled) setActivities(a); });
+    getClassAverage(selectedStudent.course_id).then((avg) => { if (!cancelled) setClassAvg(avg); });
+    getStudentTotalScore(selectedStudent.student_id, selectedStudent.course_id).then((sc) => { if (!cancelled) setStudentScore(sc); });
+    getStudentGoals(selectedStudent.student_id).then((g) => { if (!cancelled) setGoals(g); });
     return () => { cancelled = true; };
   }, [selectedStudent]);
 
@@ -316,9 +331,98 @@ export default function ParentDashboard() {
                 </div>
               </>
             )}
+
+            {/* Class average comparison */}
+            {classAvg !== null && (
+              <div className="glass-card rounded-2xl p-5 space-y-3">
+                <p className="inline-flex items-center gap-2 font-tech text-[10px] uppercase tracking-[0.18em] text-secondary/55">
+                  <BarChart3 size={12} /> So sánh với lớp
+                </p>
+                <div className="flex items-center gap-6">
+                  <div className="text-center">
+                    <p className="font-headline text-2xl font-extrabold text-primary tabular-nums">{studentScore.toFixed(0)}</p>
+                    <p className="font-tech text-[9px] uppercase text-secondary/55">Con bạn</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="font-headline text-2xl font-extrabold text-secondary/70 tabular-nums">{classAvg.toFixed(0)}</p>
+                    <p className="font-tech text-[9px] uppercase text-secondary/55">TB lớp</p>
+                  </div>
+                  <div className="flex-1">
+                    <div className="h-3 rounded-full bg-white/10 relative overflow-hidden">
+                      <div className="absolute inset-y-0 left-0 rounded-full bg-cyan-400/60" style={{ width: `${Math.min(100, (studentScore / Math.max(1, classAvg)) * 50)}%` }} />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Goal visibility */}
+            {goals.current && (
+              <div className="glass-card rounded-2xl p-5 space-y-3">
+                <p className="inline-flex items-center gap-2 font-tech text-[10px] uppercase tracking-[0.18em] text-secondary/55">
+                  <Target size={12} /> Mục tiêu tuần {goals.current.met && <span className="text-emerald-400">✓ Đạt</span>}
+                </p>
+                <div className="grid grid-cols-3 gap-3 text-center">
+                  <div>
+                    <p className="font-headline text-lg font-bold text-on-surface tabular-nums">{goals.current.lessons_done}/{goals.current.lessons_target}</p>
+                    <p className="font-tech text-[9px] uppercase text-secondary/55">Bài học</p>
+                  </div>
+                  <div>
+                    <p className="font-headline text-lg font-bold text-on-surface tabular-nums">{goals.current.flashcards_done}/{goals.current.flashcards_target}</p>
+                    <p className="font-tech text-[9px] uppercase text-secondary/55">Flashcards</p>
+                  </div>
+                  <div>
+                    <p className="font-headline text-lg font-bold text-on-surface tabular-nums">{goals.current.quizzes_done}/{goals.current.quizzes_target}</p>
+                    <p className="font-tech text-[9px] uppercase text-secondary/55">Quiz</p>
+                  </div>
+                </div>
+                {goals.history.length > 1 && (
+                  <div className="flex gap-1.5 items-center">
+                    <span className="font-tech text-[9px] text-secondary/45">Lịch sử:</span>
+                    {goals.history.map((h) => (
+                      <span key={h.week_start} className={`w-4 h-4 rounded-sm flex items-center justify-center text-[8px] ${h.met ? 'bg-emerald-500/20 text-emerald-300' : 'bg-red-500/10 text-red-300'}`}>
+                        {h.met ? '✓' : '✗'}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Activity log */}
+            {activities.length > 0 && (
+              <div className="glass-card rounded-2xl p-5 space-y-3">
+                <p className="inline-flex items-center gap-2 font-tech text-[10px] uppercase tracking-[0.18em] text-secondary/55">
+                  <Activity size={12} /> Hoạt động gần đây
+                </p>
+                <div className="space-y-2 max-h-60 overflow-y-auto">
+                  {activities.slice(0, 15).map((a) => (
+                    <div key={a.id} className="flex items-center justify-between gap-3 rounded-lg border border-white/5 bg-white/[0.02] px-3 py-2">
+                      <span className="text-sm text-on-surface">{formatAction(a.action)}</span>
+                      <span className="font-tech text-[9px] tabular-nums text-secondary/45 shrink-0">
+                        {new Date(a.created_at).toLocaleDateString('vi-VN')}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
     </PageShell>
   );
+}
+
+function formatAction(action: string): string {
+  const map: Record<string, string> = {
+    lesson_view: '📚 Xem bài học',
+    quiz_submit: '📝 Nộp bài kiểm tra',
+    flashcard_review: '🧠 Ôn flashcards',
+    login: '🔑 Đăng nhập',
+    'milestone:perfect_quiz': '🏆 Đạt điểm tuyệt đối',
+    'milestone:module_complete': '📚 Hoàn thành chương',
+    'milestone:streak_7': '🔥 Streak 7 ngày',
+  };
+  return map[action] ?? action;
 }
