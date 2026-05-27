@@ -3,6 +3,7 @@ import { Navigate } from 'react-router-dom';
 import { Users, BookOpen, Clock, Search, X, Filter, Key } from 'lucide-react';
 import PageShell from '../components/PageShell';
 import SectionHeading from '../components/ui/SectionHeading';
+import CustomSelect from '../components/ui/CustomSelect';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { formatVnd } from '../lib/courses';
@@ -198,18 +199,14 @@ export default function TeacherStudents() {
           )}
         </div>
         {courses.length > 1 && (
-          <div className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2">
+          <div className="inline-flex items-center gap-2">
             <Filter size={12} className="text-secondary/55" />
-            <select
+            <CustomSelect
               value={courseFilter}
-              onChange={(e) => setCourseFilter(e.target.value)}
-              className="bg-transparent text-sm text-on-surface focus:outline-none"
-            >
-              <option value="all">Tất cả khoá học</option>
-              {courses.map((c) => (
-                <option key={c.id} value={c.id}>{c.title}</option>
-              ))}
-            </select>
+              onChange={(v) => setCourseFilter(v)}
+              options={[{ value: 'all', label: 'Tất cả khoá học' }, ...courses.map((c) => ({ value: c.id, label: c.title }))]}
+              className="w-52"
+            />
           </div>
         )}
       </div>

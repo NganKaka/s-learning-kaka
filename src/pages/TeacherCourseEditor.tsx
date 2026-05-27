@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronDown, Plus, Trash2, Save, Loader2, AlertCircle, Brain, Video, Eye, EyeOff, Sparkles, X } from 'lucide-react';
 import PageShell from '../components/PageShell';
 import QuizConfigEditor from '../components/QuizConfigEditor';
+import CustomSelect from '../components/ui/CustomSelect';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import type { Course, Module, Lesson } from '../lib/database.types';
@@ -671,17 +672,11 @@ function SelectField<T extends string>({
   return (
     <div className="space-y-1">
       <label className="font-tech text-[10px] uppercase tracking-[0.18em] text-secondary/55">{label}</label>
-      <select
+      <CustomSelect
         value={value}
-        onChange={(e) => onSave(e.target.value as T)}
-        className="w-full rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-on-surface focus:border-cyan-300/40 focus:outline-none"
-      >
-        {options.map((o) => (
-          <option key={o.v} value={o.v}>
-            {o.label}
-          </option>
-        ))}
-      </select>
+        onChange={(v) => onSave(v as T)}
+        options={options.map((o) => ({ value: o.v, label: o.label }))}
+      />
     </div>
   );
 }
