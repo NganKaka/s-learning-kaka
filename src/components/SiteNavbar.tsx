@@ -1,4 +1,4 @@
-import { Menu, X, BookOpen, LogOut, LayoutDashboard, Brain, User, ChevronDown, Settings, Wallet } from 'lucide-react';
+import { Menu, X, BookOpen, LogOut, LayoutDashboard, Brain, User, ChevronDown, Settings, Wallet, Shield } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -64,6 +64,14 @@ export default function SiteNavbar() {
                 <LayoutDashboard size={12} /> Teacher
               </Link>
             )}
+            {profile?.is_admin && (
+              <Link
+                to="/admin"
+                className="font-headline tracking-tighter uppercase text-[12px] font-bold text-amber-300 hover:text-amber-200 px-2 py-1 rounded-md hover:bg-amber-400/10 transition-colors inline-flex items-center gap-1.5"
+              >
+                <Shield size={12} /> Admin
+              </Link>
+            )}
             <ThemeToggle />
             {user ? (
               <>
@@ -81,6 +89,7 @@ export default function SiteNavbar() {
                   email={user.email ?? ''}
                   avatarUrl={profile?.avatar_url ?? null}
                   isInstructor={profile?.is_instructor ?? false}
+                  isAdmin={profile?.is_admin ?? false}
                   balanceVnd={balance}
                   onSignOut={handleSignOut}
                 />
@@ -165,6 +174,15 @@ export default function SiteNavbar() {
                   Teacher
                 </Link>
               )}
+              {profile?.is_admin && (
+                <Link
+                  to="/admin"
+                  onClick={() => setOpen(false)}
+                  className="px-3 py-2.5 rounded-lg text-[12px] font-bold uppercase tracking-widest text-amber-300 hover:bg-amber-500/10 transition-colors"
+                >
+                  Admin
+                </Link>
+              )}
               {user ? (
                 <>
                   <Link
@@ -207,11 +225,12 @@ interface UserMenuProps {
   email: string;
   avatarUrl: string | null;
   isInstructor: boolean;
+  isAdmin: boolean;
   balanceVnd: number | null;
   onSignOut: () => void;
 }
 
-function UserMenu({ displayName, email, avatarUrl, isInstructor, balanceVnd, onSignOut }: UserMenuProps) {
+function UserMenu({ displayName, email, avatarUrl, isInstructor, isAdmin, balanceVnd, onSignOut }: UserMenuProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -294,6 +313,9 @@ function UserMenu({ displayName, email, avatarUrl, isInstructor, balanceVnd, onS
               <MenuItem to="/account" icon={Settings} label="Tài khoản" onClose={() => setOpen(false)} />
               {isInstructor && (
                 <MenuItem to="/teacher" icon={LayoutDashboard} label="Teacher" onClose={() => setOpen(false)} accent />
+              )}
+              {isAdmin && (
+                <MenuItem to="/admin" icon={Shield} label="Admin" onClose={() => setOpen(false)} accent />
               )}
             </div>
 

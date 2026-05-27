@@ -15,6 +15,8 @@ export interface Profile {
   avatar_url: string | null;
   phone: string | null;
   is_instructor: boolean;
+  is_parent: boolean;
+  is_admin: boolean;
   wallet_balance_vnd: number;
   created_at: string;
 }
