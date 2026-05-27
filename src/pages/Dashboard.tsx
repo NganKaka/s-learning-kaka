@@ -4,6 +4,10 @@ import { ArrowRight, BookOpen, Clock, Trophy, Flame, Brain, Award, Loader2 } fro
 import PageShell from '../components/PageShell';
 import SectionHeading from '../components/ui/SectionHeading';
 import StudentAnnouncements from '../components/StudentAnnouncements';
+import StudyPlanner from '../components/StudyPlanner';
+import StudyHeatmap from '../components/StudyHeatmap';
+import BadgeDisplay from '../components/BadgeDisplay';
+import WeakTopicAnalysis from '../components/WeakTopicAnalysis';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { formatDuration } from '../lib/courses';
@@ -217,6 +221,21 @@ export default function Dashboard() {
 
       <StudentAnnouncements />
 
+      {/* Study tools */}
+      {user && (
+        <div className="mt-8 grid md:grid-cols-2 gap-4">
+          <StudyPlanner userId={user.id} />
+          <div className="glass-card rounded-2xl p-5">
+            <StudyHeatmap userId={user.id} />
+          </div>
+        </div>
+      )}
+      {user && (
+        <div className="mt-4 glass-card rounded-2xl p-5">
+          <BadgeDisplay userId={user.id} />
+        </div>
+      )}
+
       {/* Daily stats */}
       {stats && (
         <div className="mt-8 grid sm:grid-cols-3 gap-4">
@@ -302,6 +321,13 @@ export default function Dashboard() {
           </div>
         )}
       </section>
+
+      {/* Weak topics */}
+      {user && enrolled && enrolled.length > 0 && (
+        <div className="mt-6 glass-card rounded-2xl p-5">
+          <WeakTopicAnalysis userId={user.id} courseId={enrolled[0].id} />
+        </div>
+      )}
     </PageShell>
   );
 }

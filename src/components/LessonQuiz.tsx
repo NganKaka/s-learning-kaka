@@ -11,8 +11,19 @@ import {
   Upload,
   FileText,
   X,
+  RotateCcw,
+  Zap,
+  BookOpen,
 } from 'lucide-react';
 import { useToast } from '../contexts/ToastContext';
+import QuizReview from './QuizReview';
+import PracticeMode from './PracticeMode';
+import TimedDrill from './TimedDrill';
+import { awardXp } from '../lib/xp';
+import { checkAndAwardBadges } from '../lib/badges';
+import { addMistake } from '../lib/mistakeNotebook';
+import { incrementGoalProgress } from '../lib/studyGoals';
+import { selectQuestions } from '../lib/questionBank';
 import {
   type AnswerValue,
   type Quiz,
@@ -70,6 +81,9 @@ export default function LessonQuiz({ lessonId, userId }: { lessonId: string; use
 
   const startedAtRef = useRef<number | null>(null);
   const submittedRef = useRef(false); // guard against double-submission (e.g. timer + click)
+  const [mode, setMode] = useState<'quiz' | 'review' | 'practice' | 'drill'>('quiz');
+  const [reviewAttempt, setReviewAttempt] = useState<QuizAttempt | null>(null);
+  const [retryWrongOnly, setRetryWrongOnly] = useState(false);
 
   const totalMaxPoints = useMemo(
     () => questions.reduce((s, q) => s + q.points, 0),
@@ -277,6 +291,22 @@ export default function LessonQuiz({ lessonId, userId }: { lessonId: string; use
       setPreviousAttempts((prev) => [...prev, submittedAttempt]);
       setSubmitting(false);
 
+      // Post-submission: XP, badges, mistakes, goals
+      awardXp({ userId, source: 'quiz_submit', referenceId: activeAttempt.id }).then(({ streak }) => {
+        const score = graded.finalPctIfNoTeacherGrading;
+        checkAndAwardBadges(userId, { quizScore: score ?? undefined, streak });
+      });
+      incrementGoalProgress(userId, 'quizzes_done');
+      // Log wrong answers to mistake notebook
+      for (const pq of graded.perQuestion) {
+        if (pq.autoGradable && pq.isCorrect === false) {
+          const q = questions.find((qq) => qq.id === pq.questionId);
+          if (q && quiz) {
+            addMistake({ userId, questionId: q.id, quizId: quiz.id, courseId: '', wrongAnswer: finalAnswers[q.id] ?? { kind: 'empty' }, correctAnswer: { kind: 'empty' } });
+          }
+        }
+      }
+
       if (!uploadFailed) {
         showToast(
           reason === 'timeout' ? 'Hết giờ — bài đã nộp.' : 'Đã nộp bài. Kết quả gửi tới giáo viên.',
@@ -293,6 +323,17 @@ export default function LessonQuiz({ lessonId, userId }: { lessonId: string; use
 
   if (loading) return null;
   if (!quiz || questions.length === 0) return null;
+
+  // Mode-based rendering
+  if (mode === 'review' && reviewAttempt) {
+    return <QuizReview attempt={reviewAttempt} questions={questions} onClose={() => { setMode('quiz'); setReviewAttempt(null); }} />;
+  }
+  if (mode === 'practice') {
+    return <PracticeMode questions={questions.filter((q) => q.type === 'single' || q.type === 'multi' || q.type === 'text')} onExit={() => setMode('quiz')} />;
+  }
+  if (mode === 'drill') {
+    return <TimedDrill questions={questions} onComplete={(correct, total) => { awardXp({ userId, source: 'drill_complete' }); }} onExit={() => setMode('quiz')} />;
+  }
 
   const attemptsUsed = previousAttempts.length;
   const attemptsRemaining = Math.max(0, quiz.max_attempts - attemptsUsed);
@@ -365,6 +406,9 @@ export default function LessonQuiz({ lessonId, userId }: { lessonId: string; use
                   <span className="font-tech text-[10px] tabular-nums text-secondary/45">
                     {formatTimeLeft(a.time_spent_seconds)}
                   </span>
+                  <button type="button" onClick={() => { setReviewAttempt(a); setMode('review'); }} className="font-tech text-[10px] uppercase tracking-[0.14em] text-cyan-300 hover:text-cyan-200">
+                    Xem lại
+                  </button>
                 </li>
               ))}
             </ul>
@@ -381,20 +425,28 @@ export default function LessonQuiz({ lessonId, userId }: { lessonId: string; use
             <span className="text-cyan-200 tabular-nums">{attemptsRemaining}</span>/
             <span className="tabular-nums">{quiz.max_attempts}</span> lượt làm
           </p>
-          {attemptsRemaining > 0 ? (
-            <button
-              type="button"
-              onClick={beginAttempt}
-              className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/15 px-5 py-2.5 text-xs font-tech uppercase tracking-[0.16em] text-primary hover:bg-primary/25 transition-colors"
-            >
-              <Sparkles size={12} />
-              {previousAttempts.length === 0 ? 'Bắt đầu làm bài' : 'Làm lại'}
+          <div className="flex items-center gap-2 flex-wrap">
+            <button type="button" onClick={() => setMode('practice')} className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-3 py-2 text-xs font-tech uppercase tracking-[0.14em] text-emerald-200 hover:bg-emerald-500/20">
+              <RotateCcw size={11} /> Luyện tập
             </button>
-          ) : (
-            <p className="font-tech text-[10px] uppercase tracking-[0.16em] text-amber-300">
-              Đã hết lượt làm
-            </p>
-          )}
+            <button type="button" onClick={() => setMode('drill')} className="inline-flex items-center gap-1.5 rounded-full border border-amber-400/30 bg-amber-500/10 px-3 py-2 text-xs font-tech uppercase tracking-[0.14em] text-amber-200 hover:bg-amber-500/20">
+              <Zap size={11} /> Drill
+            </button>
+            {attemptsRemaining > 0 ? (
+              <button
+                type="button"
+                onClick={beginAttempt}
+                className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/15 px-5 py-2.5 text-xs font-tech uppercase tracking-[0.16em] text-primary hover:bg-primary/25 transition-colors"
+              >
+                <Sparkles size={12} />
+                {previousAttempts.length === 0 ? 'Bắt đầu làm bài' : 'Làm lại'}
+              </button>
+            ) : (
+              <p className="font-tech text-[10px] uppercase tracking-[0.16em] text-amber-300">
+                Đã hết lượt làm
+              </p>
+            )}
+          </div>
         </div>
       </section>
     );

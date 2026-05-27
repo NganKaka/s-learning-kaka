@@ -3,6 +3,7 @@ import { ArrowRight, BarChart3, Clock, Lock, Play, BookOpen, ChevronDown, CheckC
 import { useEffect, useState } from 'react';
 import PageShell from '../components/PageShell';
 import DocumentHead from '../components/DocumentHead';
+import Leaderboard from '../components/Leaderboard';
 import { useCourse, formatVnd, formatDuration, formatLessonDuration } from '../lib/courses';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -210,6 +211,13 @@ export default function CourseDetail() {
           </div>
         </aside>
       </div>
+
+      {/* Leaderboard */}
+      {isEnrolled && course && (
+        <div className="mt-8 glass-card rounded-2xl p-5">
+          <Leaderboard courseId={course.id} />
+        </div>
+      )}
     </PageShell>
   );
 }
