@@ -268,6 +268,7 @@ function ParentLinker() {
   const [students, setStudents] = useState<Array<{ id: string; display_name: string | null }>>([]);
   const [enrollments, setEnrollments] = useState<Array<{ id: string; user_id: string; course_id: string; course_title: string }>>([]);
   const [selectedParent, setSelectedParent] = useState('');
+  const [selectedCourse, setSelectedCourse] = useState('');
   const [selectedEnrollment, setSelectedEnrollment] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -338,11 +339,16 @@ function ParentLinker() {
     setSaving(false);
   };
 
-  const studentOptions = selectedParent
-    ? enrollments.map((e) => {
-        const name = students.find((s) => s.id === e.user_id)?.display_name ?? e.user_id.slice(0, 8);
-        return { id: e.id, label: `${name} — ${e.course_title}` };
-      })
+  const courseOptions = [...new Map(enrollments.map((e) => [e.course_id, e.course_title])).entries()]
+    .map(([id, title]) => ({ value: id, label: title }));
+
+  const studentOptions = selectedCourse
+    ? enrollments
+        .filter((e) => e.course_id === selectedCourse)
+        .map((e) => {
+          const name = students.find((s) => s.id === e.user_id)?.display_name ?? e.user_id.slice(0, 8);
+          return { id: e.id, label: name };
+        })
     : [];
 
   if (loading) return <div className="flex justify-center py-8"><Loader2 size={20} className="animate-spin text-primary" /></div>;
@@ -353,7 +359,7 @@ function ParentLinker() {
         Gán phụ huynh theo dõi học viên (không cần mã)
       </p>
 
-      <div className="grid sm:grid-cols-2 gap-3">
+      <div className="grid sm:grid-cols-3 gap-3">
         <div className="space-y-1">
           <label className="font-tech text-[10px] uppercase tracking-[0.18em] text-secondary/55">Phụ huynh</label>
           <CustomSelect
@@ -363,11 +369,19 @@ function ParentLinker() {
           />
         </div>
         <div className="space-y-1">
-          <label className="font-tech text-[10px] uppercase tracking-[0.18em] text-secondary/55">Học viên — Khoá học</label>
+          <label className="font-tech text-[10px] uppercase tracking-[0.18em] text-secondary/55">Khoá học</label>
+          <CustomSelect
+            value={selectedCourse}
+            onChange={(v) => { setSelectedCourse(v); setSelectedEnrollment(''); }}
+            options={[{ value: '', label: 'Chọn khoá học…' }, ...courseOptions]}
+          />
+        </div>
+        <div className="space-y-1">
+          <label className="font-tech text-[10px] uppercase tracking-[0.18em] text-secondary/55">Học viên</label>
           <CustomSelect
             value={selectedEnrollment}
             onChange={(v) => setSelectedEnrollment(v)}
-            options={[{ value: '', label: 'Chọn học viên…' }, ...studentOptions.map((s) => ({ value: s.id, label: s.label }))]}
+            options={[{ value: '', label: selectedCourse ? 'Chọn học viên…' : 'Chọn khoá học trước' }, ...studentOptions.map((s) => ({ value: s.id, label: s.label }))]}
           />
         </div>
       </div>
