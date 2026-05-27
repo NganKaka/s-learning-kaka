@@ -5,6 +5,7 @@ import PageShell from '../components/PageShell';
 import LessonCards from '../components/LessonCards';
 import LessonQuiz from '../components/LessonQuiz';
 import LessonNotes from '../components/LessonNotes';
+import LessonDiscussion from '../components/LessonDiscussion';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { incrementGoalProgress } from '../lib/studyGoals';
@@ -271,6 +272,7 @@ export default function Learn() {
           {canPlay && <LessonCards lessonId={lesson.id} />}
           {canPlay && user && <div className="glass-card rounded-2xl p-6"><LessonNotes userId={user.id} lessonId={lesson.id} /></div>}
           {canPlay && user && <LessonQuiz lessonId={lesson.id} userId={user.id} />}
+          {canPlay && user && <div className="glass-card rounded-2xl p-6"><LessonDiscussion lessonId={lesson.id} userId={user.id} /></div>}
 
           {canPlay && lesson.is_preview && !enrolled && (
             <div className="glass-card rounded-2xl p-6 md:p-8 ambient-shadow border-primary/30 bg-gradient-to-br from-primary/[0.06] to-cyan-400/[0.04] space-y-4">
