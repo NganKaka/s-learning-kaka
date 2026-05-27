@@ -389,7 +389,7 @@ function LessonRow({ lesson, index, isOpen, onToggle, onChange, courseId }: Less
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ duration: 0.2, ease: 'easeOut' }}
-              className="relative z-10 w-full max-w-3xl my-8 mx-4 rounded-2xl border border-white/10 bg-[#0a0f1e] p-6 md:p-8 shadow-2xl"
+              className="relative z-10 w-full max-w-3xl mt-24 mb-8 mx-4 rounded-2xl border border-white/10 bg-[#0a0f1e] p-6 md:p-8 shadow-2xl"
             >
               {/* Close button */}
               <button
