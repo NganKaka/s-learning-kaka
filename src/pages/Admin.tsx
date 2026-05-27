@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
-import { Shield, Loader2, Save, Search, Users, Settings } from 'lucide-react';
+import { Shield, Loader2, Save, Search, Users, Settings, Link2 } from 'lucide-react';
 import PageShell from '../components/PageShell';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -20,7 +20,7 @@ interface ConfigEntry {
 
 export default function Admin() {
   const { user, profile, loading } = useAuth();
-  const [tab, setTab] = useState<'roles' | 'config'>('roles');
+  const [tab, setTab] = useState<'roles' | 'config' | 'parents'>('roles');
 
   if (loading) return null;
   if (!user) return <Navigate to="/login" replace />;
@@ -45,10 +45,12 @@ export default function Admin() {
         <div className="flex gap-2">
           <TabBtn active={tab === 'roles'} onClick={() => setTab('roles')} icon={<Users size={11} />} label="Phân quyền" />
           <TabBtn active={tab === 'config'} onClick={() => setTab('config')} icon={<Settings size={11} />} label="Cấu hình" />
+          <TabBtn active={tab === 'parents'} onClick={() => setTab('parents')} icon={<Link2 size={11} />} label="Gán phụ huynh" />
         </div>
 
         {tab === 'roles' && <RoleManager />}
         {tab === 'config' && <ConfigManager userId={user.id} />}
+        {tab === 'parents' && <ParentLinker />}
       </div>
     </PageShell>
   );
@@ -256,5 +258,154 @@ function ConfigInput({ value, onChange }: { value: unknown; onChange: (v: unknow
       }}
       className="w-48 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-1.5 text-sm text-on-surface text-right focus:border-cyan-300/40 focus:outline-none"
     />
+  );
+}
+
+
+function ParentLinker() {
+  const [parents, setParents] = useState<Array<{ id: string; display_name: string | null }>>([]);
+  const [students, setStudents] = useState<Array<{ id: string; display_name: string | null }>>([]);
+  const [enrollments, setEnrollments] = useState<Array<{ id: string; user_id: string; course_id: string; course_title: string }>>([]);
+  const [selectedParent, setSelectedParent] = useState('');
+  const [selectedEnrollment, setSelectedEnrollment] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+  const [links, setLinks] = useState<Array<{ id: string; parent_name: string | null; student_name: string | null; course_title: string }>>([]);
+
+  useEffect(() => {
+    (async () => {
+      const [{ data: profiles }, { data: enrs }, { data: courses }, { data: existingLinks }] = await Promise.all([
+        supabase.from('profiles').select('id, display_name, is_parent'),
+        supabase.from('enrollments').select('id, user_id, course_id').eq('status', 'active'),
+        supabase.from('courses').select('id, title'),
+        supabase.from('parent_links').select('id, parent_id, enrollment_id, tracking_code'),
+      ]);
+
+      const allProfiles = (profiles ?? []) as Array<{ id: string; display_name: string | null; is_parent: boolean }>;
+      setParents(allProfiles.filter((p) => p.is_parent));
+      setStudents(allProfiles);
+
+      const courseMap = new Map((courses ?? []).map((c) => [c.id, c.title as string]));
+      const enrichedEnrollments = (enrs ?? []).map((e) => ({
+        id: e.id as string,
+        user_id: e.user_id as string,
+        course_id: e.course_id as string,
+        course_title: courseMap.get(e.course_id as string) ?? 'Khoá học',
+      }));
+      setEnrollments(enrichedEnrollments);
+
+      // Existing links
+      const profileMap = new Map(allProfiles.map((p) => [p.id, p.display_name]));
+      const existingLinksEnriched = (existingLinks ?? []).map((l) => {
+        const enr = enrichedEnrollments.find((e) => e.id === l.enrollment_id);
+        return {
+          id: l.id as string,
+          parent_name: profileMap.get(l.parent_id as string) ?? null,
+          student_name: enr ? profileMap.get(enr.user_id) ?? null : null,
+          course_title: enr?.course_title ?? '—',
+        };
+      });
+      setLinks(existingLinksEnriched);
+      setLoading(false);
+    })();
+  }, []);
+
+  const handleLink = async () => {
+    if (!selectedParent || !selectedEnrollment) return;
+    setSaving(true);
+    setMessage(null);
+    const enr = enrollments.find((e) => e.id === selectedEnrollment);
+    const code = `ADM-${Date.now().toString(36).toUpperCase()}`;
+
+    const { error } = await supabase.from('parent_links').insert({
+      parent_id: selectedParent,
+      enrollment_id: selectedEnrollment,
+      tracking_code: code,
+    });
+
+    if (error) {
+      setMessage(error.message.includes('unique') ? 'Enrollment này đã được gán.' : error.message);
+    } else {
+      setMessage('Đã gán thành công!');
+      const parentName = parents.find((p) => p.id === selectedParent)?.display_name ?? null;
+      const studentName = students.find((s) => s.id === enr?.user_id)?.display_name ?? null;
+      setLinks((prev) => [...prev, { id: code, parent_name: parentName, student_name: studentName, course_title: enr?.course_title ?? '—' }]);
+      setSelectedParent('');
+      setSelectedEnrollment('');
+    }
+    setSaving(false);
+  };
+
+  const studentOptions = selectedParent
+    ? enrollments.map((e) => {
+        const name = students.find((s) => s.id === e.user_id)?.display_name ?? e.user_id.slice(0, 8);
+        return { id: e.id, label: `${name} — ${e.course_title}` };
+      })
+    : [];
+
+  if (loading) return <div className="flex justify-center py-8"><Loader2 size={20} className="animate-spin text-primary" /></div>;
+
+  return (
+    <div className="glass-card rounded-2xl p-5 space-y-5">
+      <p className="font-tech text-[10px] uppercase tracking-[0.18em] text-secondary/55">
+        Gán phụ huynh theo dõi học viên (không cần mã)
+      </p>
+
+      <div className="grid sm:grid-cols-2 gap-3">
+        <div className="space-y-1">
+          <label className="font-tech text-[10px] uppercase tracking-[0.18em] text-secondary/55">Phụ huynh</label>
+          <select
+            value={selectedParent}
+            onChange={(e) => setSelectedParent(e.target.value)}
+            className="w-full rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-on-surface focus:border-cyan-300/40 focus:outline-none"
+          >
+            <option value="">Chọn phụ huynh…</option>
+            {parents.map((p) => (
+              <option key={p.id} value={p.id}>{p.display_name ?? p.id.slice(0, 8)}</option>
+            ))}
+          </select>
+        </div>
+        <div className="space-y-1">
+          <label className="font-tech text-[10px] uppercase tracking-[0.18em] text-secondary/55">Học viên — Khoá học</label>
+          <select
+            value={selectedEnrollment}
+            onChange={(e) => setSelectedEnrollment(e.target.value)}
+            className="w-full rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-on-surface focus:border-cyan-300/40 focus:outline-none"
+          >
+            <option value="">Chọn học viên…</option>
+            {studentOptions.map((s) => (
+              <option key={s.id} value={s.id}>{s.label}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-3">
+        <button
+          onClick={handleLink}
+          disabled={saving || !selectedParent || !selectedEnrollment}
+          className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/15 px-4 py-2 text-xs font-tech uppercase tracking-[0.16em] text-primary hover:bg-primary/25 disabled:opacity-50"
+        >
+          {saving ? <Loader2 size={12} className="animate-spin" /> : <Link2 size={12} />}
+          Gán
+        </button>
+        {message && <p className={`text-xs ${message.includes('thành công') ? 'text-emerald-300' : 'text-red-300'}`}>{message}</p>}
+      </div>
+
+      {links.length > 0 && (
+        <div className="space-y-2">
+          <p className="font-tech text-[10px] uppercase tracking-[0.18em] text-secondary/55">Đã gán ({links.length})</p>
+          <div className="space-y-1.5 max-h-48 overflow-y-auto">
+            {links.map((l) => (
+              <div key={l.id} className="flex items-center justify-between rounded-lg border border-white/8 bg-white/[0.02] px-3 py-2 text-sm">
+                <span className="text-on-surface">{l.parent_name ?? 'PH'} → {l.student_name ?? 'HV'}</span>
+                <span className="font-tech text-[9px] text-secondary/45">{l.course_title}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
