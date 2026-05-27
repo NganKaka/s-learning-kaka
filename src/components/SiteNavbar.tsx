@@ -35,15 +35,6 @@ export default function SiteNavbar() {
               sLearningKaka
             </Link>
             <LiveClock />
-            <button
-              type="button"
-              onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true }))}
-              aria-label="Mở bảng lệnh"
-              className="hidden md:inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 font-tech text-[10px] uppercase tracking-[0.16em] text-secondary/55 hover:border-cyan-300/40 hover:text-cyan-200 transition-colors"
-            >
-              <span>Press</span>
-              <kbd className="rounded bg-white/[0.06] px-1.5 py-0.5 text-[10px] text-cyan-200">⌘K</kbd>
-            </button>
           </div>
 
           <div className="hidden md:flex items-center space-x-6">
@@ -317,6 +308,14 @@ function UserMenu({ displayName, email, avatarUrl, isInstructor, isAdmin, balanc
               {isAdmin && (
                 <MenuItem to="/admin" icon={Shield} label="Admin" onClose={() => setOpen(false)} accent />
               )}
+              <button
+                type="button"
+                onClick={() => { setOpen(false); window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true })); }}
+                className="w-full flex items-center justify-between gap-2.5 px-4 py-2.5 text-sm text-on-surface hover:bg-white/[0.04] transition-colors"
+              >
+                <span className="flex items-center gap-2.5"><Settings size={14} /> Bảng lệnh</span>
+                <kbd className="rounded bg-white/[0.06] px-1.5 py-0.5 font-tech text-[10px] text-cyan-200">⌘K</kbd>
+              </button>
             </div>
 
             <div className="border-t border-white/10">
