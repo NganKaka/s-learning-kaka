@@ -1,4 +1,4 @@
-import { Menu, X, BookOpen, LogOut, LayoutDashboard, Brain, User, ChevronDown, Settings, Wallet, Shield } from 'lucide-react';
+import { Menu, X, BookOpen, LogOut, LayoutDashboard, Brain, User, Users, ChevronDown, Settings, Wallet, Shield } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -61,6 +61,14 @@ export default function SiteNavbar() {
                 className="font-headline tracking-tighter uppercase text-[12px] font-bold text-amber-300 hover:text-amber-200 px-2 py-1 rounded-md hover:bg-amber-400/10 transition-colors inline-flex items-center gap-1.5"
               >
                 <Shield size={12} /> Admin
+              </Link>
+            )}
+            {profile?.is_parent && (
+              <Link
+                to="/parent"
+                className="font-headline tracking-tighter uppercase text-[12px] font-bold text-emerald-300 hover:text-emerald-200 px-2 py-1 rounded-md hover:bg-emerald-400/10 transition-colors inline-flex items-center gap-1.5"
+              >
+                <Users size={12} /> Phụ huynh
               </Link>
             )}
             <ThemeToggle />
@@ -172,6 +180,15 @@ export default function SiteNavbar() {
                   className="px-3 py-2.5 rounded-lg text-[12px] font-bold uppercase tracking-widest text-amber-300 hover:bg-amber-500/10 transition-colors"
                 >
                   Admin
+                </Link>
+              )}
+              {profile?.is_parent && (
+                <Link
+                  to="/parent"
+                  onClick={() => setOpen(false)}
+                  className="px-3 py-2.5 rounded-lg text-[12px] font-bold uppercase tracking-widest text-emerald-300 hover:bg-emerald-500/10 transition-colors"
+                >
+                  Phụ huynh
                 </Link>
               )}
               {user ? (
