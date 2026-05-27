@@ -163,8 +163,8 @@ export default function QuizConfigEditor({ lessonId }: { lessonId: string }) {
           />
         </ConfigField>
 
-        <div className="grid sm:grid-cols-2 gap-3">
-          <ConfigField label="Giới hạn thời gian (phút) — để trống nếu không giới hạn">
+        <div className="grid sm:grid-cols-2 gap-3 items-end">
+          <ConfigField label="Thời gian (phút)">
             <input
               type="number"
               min={0}
@@ -202,7 +202,7 @@ export default function QuizConfigEditor({ lessonId }: { lessonId: string }) {
             />
           </ConfigField>
 
-          <ConfigField label="Ngưỡng đậu (%) — tuỳ chọn">
+          <ConfigField label="Ngưỡng đậu (%)">
             <input
               type="number"
               min={0}
