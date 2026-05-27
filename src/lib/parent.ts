@@ -80,7 +80,8 @@ export async function getLinkedStudents(parentId: string): Promise<LinkedStudent
   ]);
 
   return links.map((link) => {
-    const enrollment = enrollments.find((e) => e.id === link.enrollment_id)!;
+    const enrollment = enrollments.find((e) => e.id === link.enrollment_id);
+    if (!enrollment) return null;
     const profile = profiles?.find((p) => p.id === enrollment.user_id);
     const course = courses?.find((c) => c.id === enrollment.course_id);
     return {
@@ -90,7 +91,7 @@ export async function getLinkedStudents(parentId: string): Promise<LinkedStudent
       course_id: enrollment.course_id,
       student_id: enrollment.user_id,
     };
-  });
+  }).filter(Boolean) as LinkedStudent[];
 }
 
 export async function getStudentScores(
