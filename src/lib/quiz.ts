@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { cacheGet, cacheSet, CACHE_KEYS, TTL } from './cache';
 
 /**
  * Quiz types + data-access helpers.
@@ -87,6 +88,11 @@ export const MAX_UPLOAD_BYTES = 25 * 1024 * 1024; // 25 MB
 export async function loadQuizForLesson(
   lessonId: string,
 ): Promise<{ quiz: Quiz | null; questions: QuizQuestion[] }> {
+  // Try cache
+  const cacheKey = CACHE_KEYS.quizQuestions(lessonId);
+  const cached = await cacheGet<{ quiz: Quiz | null; questions: QuizQuestion[] }>(cacheKey);
+  if (cached) return cached;
+
   const { data: quiz } = await supabase
     .from('quizzes')
     .select('*')
@@ -101,10 +107,9 @@ export async function loadQuizForLesson(
     .eq('quiz_id', quiz.id)
     .order('order_index', { ascending: true });
 
-  return {
-    quiz: quiz as Quiz,
-    questions: ((questions ?? []) as QuizQuestion[]),
-  };
+  const result = { quiz: quiz as Quiz, questions: ((questions ?? []) as QuizQuestion[]) };
+  cacheSet(cacheKey, result, TTL.quizQuestions);
+  return result;
 }
 
 export async function listUserAttempts(quizId: string, userId: string): Promise<QuizAttempt[]> {

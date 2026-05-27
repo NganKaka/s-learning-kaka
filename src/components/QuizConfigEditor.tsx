@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import CustomSelect from './ui/CustomSelect';
 import { supabase } from '../lib/supabase';
+import { cacheInvalidate, CACHE_KEYS } from '../lib/cache';
 import type { Quiz, QuizQuestion, QuizQuestionType, QuizGradingMode } from '../lib/quiz';
 
 /**
@@ -71,6 +72,7 @@ export default function QuizConfigEditor({ lessonId }: { lessonId: string }) {
       grading_mode: 'max',
     });
     setCreating(false);
+    cacheInvalidate(CACHE_KEYS.quizQuestions(lessonId));
     setTick((n) => n + 1);
   };
 
@@ -78,6 +80,7 @@ export default function QuizConfigEditor({ lessonId }: { lessonId: string }) {
     if (!quiz) return;
     if (!window.confirm('Xoá quiz này và toàn bộ câu hỏi, bài làm?')) return;
     await supabase.from('quizzes').delete().eq('id', quiz.id);
+    cacheInvalidate(CACHE_KEYS.quizQuestions(lessonId));
     setTick((n) => n + 1);
   };
 

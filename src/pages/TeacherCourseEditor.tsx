@@ -7,6 +7,7 @@ import QuizConfigEditor from '../components/QuizConfigEditor';
 import CustomSelect from '../components/ui/CustomSelect';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
+import { cacheInvalidate, CACHE_KEYS } from '../lib/cache';
 import type { Course, Module, Lesson } from '../lib/database.types';
 
 interface Flashcard {
@@ -87,7 +88,10 @@ export default function TeacherCourseEditor() {
     setSavingCourse(true);
     const { error: e } = await supabase.from('courses').update(patch).eq('id', course.id);
     setSavingCourse(false);
-    if (!e) setCourse({ ...course, ...patch });
+    if (!e) {
+      setCourse({ ...course, ...patch });
+      cacheInvalidate(CACHE_KEYS.courseCatalog(), CACHE_KEYS.courseDetail(course.slug));
+    }
   };
 
   const togglePublish = () => {

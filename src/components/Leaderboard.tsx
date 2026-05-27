@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Trophy, Loader2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { cacheGet, cacheSet, CACHE_KEYS, TTL } from '../lib/cache';
 
 interface LeaderboardEntry {
   user_id: string;
@@ -19,6 +20,9 @@ export default function Leaderboard({ courseId }: { courseId: string }) {
     if (!courseId) return;
     let cancelled = false;
     (async () => {
+      const cached = await cacheGet<LeaderboardEntry[]>(CACHE_KEYS.leaderboard(courseId));
+      if (cached && !cancelled) { setEntries(cached); setLoading(false); return; }
+
       const { data } = await supabase
         .from('course_leaderboard')
         .select('*')
@@ -26,8 +30,10 @@ export default function Leaderboard({ courseId }: { courseId: string }) {
         .order('total_score', { ascending: false })
         .limit(20);
       if (!cancelled) {
-        setEntries((data ?? []) as LeaderboardEntry[]);
+        const entries = (data ?? []) as LeaderboardEntry[];
+        setEntries(entries);
         setLoading(false);
+        cacheSet(CACHE_KEYS.leaderboard(courseId), entries, TTL.leaderboard);
       }
     })();
     return () => { cancelled = true; };

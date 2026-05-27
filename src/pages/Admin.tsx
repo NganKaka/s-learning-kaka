@@ -5,6 +5,7 @@ import PageShell from '../components/PageShell';
 import CustomSelect from '../components/ui/CustomSelect';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
+import { cacheInvalidate, CACHE_KEYS } from '../lib/cache';
 
 interface UserRow {
   id: string;
@@ -192,6 +193,7 @@ function ConfigManager({ userId }: { userId: string }) {
     for (const c of configs) {
       await supabase.from('site_config').update({ value: c.value, updated_at: new Date().toISOString(), updated_by: userId }).eq('key', c.key);
     }
+    await cacheInvalidate(CACHE_KEYS.siteConfig());
     setSaving(false);
   };
 

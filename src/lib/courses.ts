@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from './supabase';
+import { cacheGet, cacheSet, CACHE_KEYS, TTL } from './cache';
 import type { Course, CourseWithCurriculum } from './database.types';
 
 interface AsyncState<T> {
@@ -15,6 +16,10 @@ export function usePublishedCourses(): AsyncState<Course[]> {
   useEffect(() => {
     let cancelled = false;
     (async () => {
+      // Try cache first
+      const cached = await cacheGet<Course[]>(CACHE_KEYS.courseCatalog());
+      if (cached && !cancelled) { setState({ data: cached, loading: false, error: null }); return; }
+
       const { data, error } = await supabase
         .from('courses')
         .select('*')
@@ -22,11 +27,13 @@ export function usePublishedCourses(): AsyncState<Course[]> {
         .order('created_at', { ascending: false });
       if (cancelled) return;
       if (error) setState({ data: null, loading: false, error: error.message });
-      else setState({ data: (data ?? []) as Course[], loading: false, error: null });
+      else {
+        const courses = (data ?? []) as Course[];
+        setState({ data: courses, loading: false, error: null });
+        cacheSet(CACHE_KEYS.courseCatalog(), courses, TTL.courseCatalog);
+      }
     })();
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, []);
 
   return state;
@@ -43,6 +50,10 @@ export function useCourse(slug: string | undefined): AsyncState<CourseWithCurric
     }
     let cancelled = false;
     (async () => {
+      // Try cache first
+      const cached = await cacheGet<CourseWithCurriculum>(CACHE_KEYS.courseDetail(slug));
+      if (cached && !cancelled) { setState({ data: cached, loading: false, error: null }); return; }
+
       const { data, error } = await supabase
         .from('courses')
         .select(`
@@ -74,6 +85,7 @@ export function useCourse(slug: string | undefined): AsyncState<CourseWithCurric
         .map((m) => ({ ...m, lessons: [...m.lessons].sort((a, b) => a.order_index - b.order_index) }));
 
       setState({ data: course, loading: false, error: null });
+      cacheSet(CACHE_KEYS.courseDetail(slug), course, TTL.courseDetail);
     })();
     return () => {
       cancelled = true;
