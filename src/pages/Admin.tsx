@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
-import { Shield, Loader2, Save, Search, Users, Settings, Link2 } from 'lucide-react';
+import { Shield, Loader2, Save, Search, Users, Settings, Link2, BarChart3 } from 'lucide-react';
 import PageShell from '../components/PageShell';
 import CustomSelect from '../components/ui/CustomSelect';
+import AdminAnalytics from '../components/AdminAnalytics';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { cacheInvalidate, CACHE_KEYS } from '../lib/cache';
@@ -22,7 +23,7 @@ interface ConfigEntry {
 
 export default function Admin() {
   const { user, profile, loading } = useAuth();
-  const [tab, setTab] = useState<'roles' | 'config' | 'parents'>('roles');
+  const [tab, setTab] = useState<'roles' | 'config' | 'parents' | 'analytics'>('roles');
 
   if (loading) return null;
   if (!user) return <Navigate to="/login" replace />;
@@ -48,11 +49,13 @@ export default function Admin() {
           <TabBtn active={tab === 'roles'} onClick={() => setTab('roles')} icon={<Users size={11} />} label="Phân quyền" />
           <TabBtn active={tab === 'config'} onClick={() => setTab('config')} icon={<Settings size={11} />} label="Cấu hình" />
           <TabBtn active={tab === 'parents'} onClick={() => setTab('parents')} icon={<Link2 size={11} />} label="Gán phụ huynh" />
+          <TabBtn active={tab === 'analytics'} onClick={() => setTab('analytics')} icon={<BarChart3 size={11} />} label="Thống kê" />
         </div>
 
         {tab === 'roles' && <RoleManager />}
         {tab === 'config' && <ConfigManager userId={user.id} />}
         {tab === 'parents' && <ParentLinker />}
+        {tab === 'analytics' && <AdminAnalytics />}
       </div>
     </PageShell>
   );

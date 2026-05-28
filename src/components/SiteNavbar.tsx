@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import ThemeToggle from './ThemeToggle';
 import LiveClock from './LiveClock';
+import NotificationCenter from './NotificationCenter';
 import { useAuth } from '../contexts/AuthContext';
 import { useWalletBalance } from '../lib/wallet';
 import { formatVnd } from '../lib/courses';
@@ -83,6 +84,7 @@ export default function SiteNavbar() {
                     <span className="tabular-nums">{formatVnd(balance)}</span>
                   </Link>
                 )}
+                <NotificationCenter userId={user.id} />
                 <UserMenu
                   displayName={profile?.display_name ?? null}
                   email={user.email ?? ''}
