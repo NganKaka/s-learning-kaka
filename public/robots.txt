@@ -1,0 +1,17 @@
+User-agent: *
+Allow: /
+Allow: /courses
+Allow: /courses/
+Disallow: /dashboard
+Disallow: /teacher
+Disallow: /admin
+Disallow: /parent
+Disallow: /learn
+Disallow: /account
+Disallow: /wallet
+Disallow: /cart
+Disallow: /cards
+Disallow: /messages
+Disallow: /mistakes
+
+Sitemap: https://s-learning-kaka.vercel.app/api/sitemap.xml

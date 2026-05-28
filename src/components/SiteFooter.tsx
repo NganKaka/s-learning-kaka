@@ -27,6 +27,15 @@ export default function SiteFooter() {
           <Link to="/courses" className="text-sm hover:text-cyan-300 transition-colors inline-flex items-center gap-1.5">
             <BookOpen size={14} /> Khoá học
           </Link>
+          <Link to="/courses/toan-12" className="text-sm hover:text-cyan-300 transition-colors">
+            Toán 12
+          </Link>
+          <Link to="/login" className="text-sm hover:text-cyan-300 transition-colors">
+            Đăng nhập
+          </Link>
+          <Link to="/signup" className="text-sm hover:text-cyan-300 transition-colors">
+            Đăng ký
+          </Link>
           <a href="https://github.com/NganKaka" target="_blank" rel="noopener noreferrer" className="text-sm hover:text-cyan-300 transition-colors inline-flex items-center gap-1.5">
             <Github size={14} /> GitHub
           </a>
