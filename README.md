@@ -1,6 +1,6 @@
 # sLearningKaka
 
-Vietnamese-language learning platform for high-school students. Single-instructor MVP launching with **Toán 12** (Math, grade 12), taught by Vo Hoang Ngan. Students watch structured video lessons, drill flashcards with spaced repetition, take end-of-lesson quizzes, and earn a completion certificate.
+Vietnamese-language learning platform for high-school students. Single-instructor MVP launching with **Toán 12** (Math, grade 12), taught by Vo Hoang Ngan. Students watch structured video lessons, drill flashcards with spaced repetition, take end-of-lesson quizzes, generate exam simulations, and earn completion certificates.
 
 Live: https://s-learning-kaka.vercel.app
 
@@ -19,6 +19,9 @@ Live: https://s-learning-kaka.vercel.app
 | Payments | VietQR (Vietcombank), MoMo manual transfer, internal wallet |
 | PDF | `pdf-lib` (client-side certificate generation) |
 | Analytics | Plausible |
+| Caching | Upstash Redis |
+| Charts | Recharts |
+| AI | OpenAI (via Vercel functions for quiz question generation) |
 | Hosting | Vercel (SPA rewrite via `vercel.json`) |
 
 ---
@@ -31,7 +34,11 @@ Live: https://s-learning-kaka.vercel.app
 - Pay by VietQR (auto-filled QR with amount + memo) or top up an internal wallet first and pay from balance.
 - Watch lessons through Bunny Stream embeds; progress persisted per-lesson.
 - Flashcards with SM-2 spaced repetition (`src/lib/srs.ts`), per-card review queue across all enrolled courses.
-- End-of-lesson quizzes (single, multi, text).
+- End-of-lesson quizzes (single-choice, multiple-choice, text).
+- **Mistake notebook** — incorrectly answered quiz questions are auto-logged; students can annotate and mark as understood.
+- **Exam simulation** — timed full-course exam pulling random questions from all lessons (up to 30 questions).
+- Full-text **search** across lessons, flashcards, and quiz questions.
+- **Direct messaging** with instructors.
 - Generate a PDF completion certificate once every lesson in a course is done.
 - Welcome email on first sign-in (idempotent via `user_metadata.welcome_sent_at`).
 - Receipt email on order approval.
@@ -41,8 +48,22 @@ Live: https://s-learning-kaka.vercel.app
 - Approve pending orders → creates enrollment (purchase) or credits wallet (top-up).
 - Revenue dashboard.
 - Course editor (modules + lessons + flashcards + quizzes).
-- Student roster.
+- Student roster with progress tracking.
+- **Grading queue** for text-answer quizzes.
+- **Quiz analytics** — per-question performance, weak topics analysis.
 - Post pinned/unpinned announcements to all enrolled students.
+- **AI question generation** — generate quiz questions via OpenAI.
+
+**Parent (`/parent`)**
+- View linked children's progress, scores, and activity log.
+- Weekly learning goals with completion tracking.
+- Receive weekly email reports on child's activity.
+
+**Admin (`/admin`)**
+- Role management (promote instructors, admins).
+- Site configuration management.
+- Parent-student linking.
+- Platform-wide analytics.
 
 **Polish**
 - Route transitions, scroll progress bar, scroll vignette, film grain, cursor trail, command palette, theme toggle.
@@ -56,24 +77,42 @@ Live: https://s-learning-kaka.vercel.app
 ```
 .
 ├── api/                          # Vercel serverless functions
-│   ├── checkout/wallet.ts        # Pay for a course from wallet balance (atomic debit + enroll)
-│   ├── notify/welcome.ts         # Send welcome email; idempotent via user_metadata
-│   └── orders/approve.ts         # Instructor approves order → enroll or credit wallet, send receipt
+│   ├── ai/
+│   │   └── generate-questions.ts  # OpenAI-powered quiz question generation
+│   ├── checkout/
+│   │   └── wallet.ts             # Pay for a course from wallet balance (atomic debit + enroll)
+│   ├── cron/
+│   │   ├── email-drip.ts         # Automated email drip sequences
+│   │   └── publish-announcements.ts # Publish scheduled announcements
+│   ├── lib/
+│   │   └── supabase-admin.ts     # Service-role Supabase client
+│   ├── notify/
+│   │   ├── parent-alert.ts       # Parent progress alerts
+│   │   ├── welcome.ts             # Send welcome email; idempotent via user_metadata
+│   │   └── weekly-report.ts      # Weekly progress reports to parents
+│   ├── orders/
+│   │   └── approve.ts            # Instructor approves order → enroll or credit wallet
+│   └── sitemap.xml.ts            # Dynamic sitemap generation
 ├── public/
 │   └── og.png                    # Social share image
 ├── src/
 │   ├── App.tsx                   # Router + global UI shells
 │   ├── main.tsx                  # ThemeProvider → ToastProvider → AuthProvider → App
-│   ├── components/               # 30+ reusable UI pieces (PageShell, SiteNavbar, ReceiptUpload, …)
+│   ├── components/              # 40+ reusable UI pieces (PageShell, SiteNavbar, ReceiptUpload, …)
+│   │   ├── admin/               # Admin panel components (RoleManager, ConfigManager, ParentLinker, etc.)
+│   │   ├── dashboard/           # Dashboard-specific components (CourseCard)
+│   │   ├── teacher/             # Teacher editor components (ModulePanel, FlashcardsEditor, etc.)
+│   │   └── ui/                  # Atomic UI primitives (ConfettiBurst, MagneticButton, etc.)
 │   ├── contexts/                 # Auth, Theme, Toast, ActiveSection
 │   ├── data/                     # Static content (profile)
-│   ├── hooks/                    # useBackToTop, …
-│   ├── lib/                      # supabase client, courses, orders, wallet, srs, certificate, welcome
-│   ├── pages/                    # Home, Courses, CourseDetail, Learn, Dashboard, Cards, Login, Signup,
-│   │                             # Cart, Account, Wallet, Teacher (+ 5 sub-pages)
-│   └── index.css
+│   ├── hooks/                    # useBackToTop, useAsyncData
+│   ├── lib/                     # supabase client, courses, orders, wallet, srs, certificate, messages, etc.
+│   ├── pages/                   # Home, Courses, CourseDetail, Learn, Dashboard, Cards, Login, Signup,
+│   │                             # Cart, Account, Wallet, Teacher (+ 8 sub-pages), ParentDashboard,
+│   │                             # Mistakes, ExamSimulation, VerifyCertificate, SearchPage, Messages, Admin
+│   └── types/                    # Shared TypeScript types
 ├── supabase/
-│   ├── migrations/               # 0001 init → 0008 announcements (run in order in SQL editor)
+│   ├── migrations/               # 0001 init → 0024 batch improvements (run in order in SQL editor)
 │   └── seed/math-12.sql          # Launch course content
 ├── index.html                    # Title, OG/Twitter meta, Plausible script, fonts preconnect
 ├── vite.config.ts                # React + Tailwind + image optimizer + manualChunks
@@ -97,6 +136,22 @@ Schema lives in `supabase/migrations/`, applied in numbered order:
 | 0006 | Fix profiles RLS recursion via `is_instructor_uid()` SECURITY DEFINER helper |
 | 0007 | Break orders ↔ profiles mutual recursion using same helper |
 | 0008 | Announcements (instructor-write, enrolled-students-read + public read for instructors with published courses) |
+| 0009 | Preview flashcards (public read for unauthenticated users) |
+| 0010 | Quiz advanced features — image choices, explanation fields |
+| 0011 | Quiz max attempts trigger |
+| 0012 | Parent tracking — `student_parent_links`, `activity_log`, study goals |
+| 0013 | Quiz features — `weak_topics`, `difficulty`, `time_limit_seconds` per quiz |
+| 0014 | Student/parent features — XP, study streaks, milestones |
+| 0015 | Admin role and RLS |
+| 0016 | Quiz image type support |
+| 0017 | Admin read access to all profiles |
+| 0018 | Fix admin RLS recursion |
+| 0019 | Admin read access to enrollments |
+| 0020 | Parent read enrollments of linked students |
+| 0021 | Batch features — exam simulations, mistake notebook, shared decks |
+| 0022 | Messages — full-text search on conversations |
+| 0023 | Improvements — prerequisites, adaptive learning hints |
+| 0024 | Batch improvements — site config, notifications |
 
 Wallet writes go through service-role RPC only — `wallet_credit`/`wallet_debit` are revoked from `anon` and `authenticated`. The Vercel functions are the only callers.
 
@@ -108,6 +163,7 @@ Wallet writes go through service-role RPC only — `wallet_credit`/`wallet_debit
 - Sessions persist in localStorage by default; "Remember me" off migrates them to sessionStorage (see `src/lib/supabase.ts`).
 - All tables have RLS on. Public reads only for `courses.status = 'published'` and preview lessons. Everything else is gated by ownership or active enrollment.
 - Instructor approval of orders bypasses RLS via the service-role key in `/api/orders/approve.ts`, but still authorizes the caller's `auth.uid()` against `profiles.is_instructor`.
+- Admin role grants elevated read access to all profiles and enrollments via SECURITY DEFINER helpers.
 
 ---
 
@@ -131,8 +187,8 @@ npm install
 # Configure
 Copy-Item .env.example .env.local
 # Fill VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY, VietQR account info,
-# VITE_BUNNY_STREAM_LIBRARY_ID. Server-only keys (SERVICE_ROLE, RESEND_API_KEY)
-# are needed only when running Vercel functions locally.
+# VITE_BUNNY_STREAM_LIBRARY_ID. Server-only keys (SERVICE_ROLE, RESEND_API_KEY,
+# OPENAI_API_KEY) are needed only when running Vercel functions locally.
 
 # Run dev server (port 3001, host 0.0.0.0)
 npm run dev
@@ -148,14 +204,14 @@ npm run preview
 ### Bringing up Supabase
 
 1. Create a Supabase project, copy URL + anon key into `.env.local`.
-2. Open SQL editor, run `supabase/migrations/0001_init.sql` … `0008_announcements.sql` in order.
+2. Open SQL editor, run `supabase/migrations/0001_init.sql` … `0024_batch_improvements.sql` in order.
 3. Sign up your instructor account via `/signup`, copy the user id from `auth.users`.
 4. Edit `supabase/seed/math-12.sql` — replace the `<INSTRUCTOR_USER_ID>` placeholder with that uuid, then run it.
 5. Configure Google OAuth in Supabase Auth → Providers (optional).
 
 ### Vercel functions locally
 
-The `/api/*` handlers need `SUPABASE_SERVICE_ROLE_KEY`, `RESEND_API_KEY`, and `BUNNY_STREAM_API_KEY`. Run with `vercel dev` if you want them live.
+The `/api/*` handlers need `SUPABASE_SERVICE_ROLE_KEY`, `RESEND_API_KEY`, `BUNNY_STREAM_API_KEY`, and `OPENAI_API_KEY`. Run with `vercel dev` if you want them live.
 
 ---
 

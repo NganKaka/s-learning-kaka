@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
-import { ArrowRight, BookOpen, Clock, Trophy, Flame, Brain, Award, Loader2 } from 'lucide-react';
+import { ArrowRight, BookOpen, Brain, Flame } from 'lucide-react';
 import PageShell from '../components/PageShell';
 import SectionHeading from '../components/ui/SectionHeading';
 import StudentAnnouncements from '../components/StudentAnnouncements';
@@ -10,7 +10,7 @@ import BadgeDisplay from '../components/BadgeDisplay';
 import WeakTopicAnalysis from '../components/WeakTopicAnalysis';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
-import { formatDuration } from '../lib/courses';
+import { CourseCard } from '../components/dashboard';
 
 interface EnrolledCourse {
   id: string;
@@ -23,11 +23,6 @@ interface EnrolledCourse {
   completed_lessons: number;
 }
 
-interface DailyStats {
-  streak: number;
-  cardsDueToday: number;
-}
-
 interface PendingOrder {
   id: string;
   course_slug: string;
@@ -37,6 +32,11 @@ interface PendingOrder {
   created_at: string;
 }
 
+interface DailyStats {
+  streak: number;
+  cardsDueToday: number;
+}
+
 export default function Dashboard() {
   const { user, profile, loading } = useAuth();
   const [enrolled, setEnrolled] = useState<EnrolledCourse[] | null>(null);
@@ -44,8 +44,6 @@ export default function Dashboard() {
   const [stats, setStats] = useState<DailyStats | null>(null);
   const [tick, setTick] = useState(0);
 
-  // Refetch on focus / page reshow so returning to the tab after teacher
-  // approval pulls the new enrollment without reload.
   useEffect(() => {
     const onFocus = () => setTick((n) => n + 1);
     const onVis = () => {
@@ -62,7 +60,8 @@ export default function Dashboard() {
   useEffect(() => {
     if (!user) return;
     let cancelled = false;
-    (async () => {
+
+    const fetchData = async () => {
       const [{ data: enr }, { data: ord }] = await Promise.all([
         supabase
           .from('enrollments')
@@ -97,7 +96,6 @@ export default function Dashboard() {
         })
         .filter((r): r is Omit<EnrolledCourse, 'total_lessons' | 'completed_lessons'> => r !== null);
 
-      // For each enrolled course, count total lessons + completed
       const courseIds = baseRows.map((r) => r.id);
       let totalsByCourse = new Map<string, number>();
       let completedByCourse = new Map<string, number>();
@@ -144,8 +142,6 @@ export default function Dashboard() {
         })
         .filter((r): r is PendingOrder => r !== null);
 
-      // Streak: count distinct days with a lesson_progress.updated_at,
-      // walking back from today.
       const { data: activity } = await supabase
         .from('lesson_progress')
         .select('updated_at')
@@ -167,10 +163,6 @@ export default function Dashboard() {
         }
       }
 
-      // Cards due today: any card_review with due_at <= now() OR no review row
-      // for an enrolled course's flashcard. We approximate the "no row" case
-      // by counting flashcards in enrolled courses minus existing review rows
-      // with due_at > now.
       let cardsDueToday = 0;
       if (courseIds.length > 0) {
         const [{ data: cards }, { data: futureReviews }] = await Promise.all([
@@ -188,7 +180,9 @@ export default function Dashboard() {
       setEnrolled(enrolledRows);
       setPending(pendingRows);
       setStats({ streak, cardsDueToday });
-    })();
+    };
+
+    void fetchData();
 
     let pollId: number | null = null;
     if (pending && pending.length > 0) {
@@ -221,7 +215,6 @@ export default function Dashboard() {
 
       <StudentAnnouncements />
 
-      {/* Study tools */}
       {user && (
         <div className="mt-8 grid md:grid-cols-2 gap-4">
           <StudyPlanner userId={user.id} />
@@ -236,7 +229,6 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Daily stats */}
       {stats && (
         <div className="mt-8 grid sm:grid-cols-3 gap-4">
           <Link
@@ -322,95 +314,11 @@ export default function Dashboard() {
         )}
       </section>
 
-      {/* Weak topics */}
       {user && enrolled && enrolled.length > 0 && (
         <div className="mt-6 glass-card rounded-2xl p-5">
           <WeakTopicAnalysis userId={user.id} courseId={enrolled[0].id} />
         </div>
       )}
     </PageShell>
-  );
-}
-
-function CourseCard({ course, studentName }: { course: EnrolledCourse; studentName: string }) {
-  const [downloading, setDownloading] = useState(false);
-  const completed = course.total_lessons > 0 && course.completed_lessons >= course.total_lessons;
-
-  const handleDownloadCert = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDownloading(true);
-    const [{ generateCertificatePdf, downloadPdf }] = await Promise.all([import('../lib/certificate')]);
-    const bytes = await generateCertificatePdf({
-      studentName,
-      courseTitle: course.title,
-      completionDate: new Date(),
-    });
-    downloadPdf(bytes, `sLearningKaka-${course.slug}-${studentName.replace(/\s+/g, '_')}.pdf`);
-    setDownloading(false);
-  };
-
-  return (
-    <div className="group glass-card rounded-2xl overflow-hidden transition-all hover:border-cyan-300/35">
-      <Link to={`/courses/${course.slug}`} className="block">
-        {course.cover_image && (
-          <div className="aspect-video overflow-hidden bg-white/[0.02]">
-            <img
-              src={course.cover_image}
-              alt={course.title}
-              className="h-full w-full object-cover opacity-80 transition-all duration-700 group-hover:opacity-100 group-hover:scale-105"
-              loading="lazy"
-            />
-          </div>
-        )}
-      </Link>
-      <div className="p-5 space-y-3">
-        <Link to={`/courses/${course.slug}`}>
-          <h3 className="font-headline text-lg font-bold text-on-surface group-hover:text-cyan-200 transition-colors">
-            {course.title}
-          </h3>
-        </Link>
-
-        {course.total_lessons > 0 && (
-          <div className="space-y-1.5">
-            <div className="flex items-center justify-between font-tech text-[10px] uppercase tracking-[0.14em] text-secondary/55">
-              <span>{course.completed_lessons} / {course.total_lessons} bài</span>
-              <span className="text-cyan-200 tabular-nums">
-                {Math.round((course.completed_lessons / course.total_lessons) * 100)}%
-              </span>
-            </div>
-            <div className="h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
-              <div
-                className="h-full rounded-full bg-gradient-to-r from-primary via-cyan-300 to-cyan-200 transition-[width] duration-500"
-                style={{ width: `${Math.min(100, (course.completed_lessons / course.total_lessons) * 100)}%` }}
-              />
-            </div>
-          </div>
-        )}
-
-        <div className="flex items-center gap-3 font-tech text-[10px] uppercase tracking-[0.14em] text-secondary/55">
-          {course.duration_minutes > 0 && (
-            <span className="inline-flex items-center gap-1.5">
-              <Clock size={11} className="text-cyan-300" /> {formatDuration(course.duration_minutes)}
-            </span>
-          )}
-          <span className="inline-flex items-center gap-1.5 text-cyan-300">
-            <Trophy size={11} /> Đã đăng ký
-          </span>
-        </div>
-
-        {completed && (
-          <button
-            type="button"
-            onClick={handleDownloadCert}
-            disabled={downloading}
-            className="w-full inline-flex items-center justify-center gap-2 rounded-xl border border-primary/40 bg-primary/15 px-4 py-2.5 font-tech text-[11px] uppercase tracking-[0.16em] text-primary hover:bg-primary/25 hover:shadow-[0_0_18px_rgba(233,195,73,0.25)] transition-all disabled:opacity-60"
-          >
-            {downloading ? <Loader2 size={12} className="animate-spin" /> : <Award size={12} />}
-            Tải chứng chỉ
-          </button>
-        )}
-      </div>
-    </div>
   );
 }
