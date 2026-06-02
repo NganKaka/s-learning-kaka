@@ -7,10 +7,9 @@ import StudentAnnouncements from '../components/StudentAnnouncements';
 import StudyPlanner from '../components/StudyPlanner';
 import StudyHeatmap from '../components/StudyHeatmap';
 import BadgeDisplay from '../components/BadgeDisplay';
-import WeakTopicAnalysis from '../components/WeakTopicAnalysis';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
-import { CourseCard } from '../components/dashboard';
+import { CourseCard, XpWidget, FocusAreas, UpNext } from '../components/dashboard';
 
 interface EnrolledCourse {
   id: string;
@@ -229,39 +228,36 @@ export default function Dashboard() {
         </div>
       )}
 
-      {stats && (
+      {stats && user && (
+        <div className="mt-8 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <XpWidget userId={user.id} />
+          {enrolled && enrolled.length > 0 && <UpNext userId={user.id} courseId={enrolled[0].id} />}
+          {enrolled && enrolled.length > 0 && <FocusAreas userId={user.id} courseId={enrolled[0].id} />}
+        </div>
+      )}
+
+      {stats && enrolled && enrolled.length === 0 && (
         <div className="mt-8 grid sm:grid-cols-3 gap-4">
-          <Link
-            to="/cards"
-            className="glass-card rounded-2xl p-5 space-y-2 hover:border-cyan-300/35 transition-colors"
-          >
+          <Link to="/cards" className="glass-card rounded-2xl p-5 space-y-2 hover:border-cyan-300/35 transition-colors">
             <div className="flex items-center gap-2 font-tech text-[10px] uppercase tracking-[0.18em] text-secondary/55">
               <Brain size={12} className="text-cyan-300" />
               <span>Flashcard cần ôn</span>
             </div>
-            <p className="font-headline text-2xl font-extrabold tabular-nums text-cyan-200">
-              {stats.cardsDueToday}
-            </p>
+            <p className="font-headline text-2xl font-extrabold tabular-nums text-cyan-200">{stats.cardsDueToday}</p>
           </Link>
-
           <div className="glass-card rounded-2xl p-5 space-y-2">
             <div className="flex items-center gap-2 font-tech text-[10px] uppercase tracking-[0.18em] text-secondary/55">
               <Flame size={12} className="text-primary" />
               <span>Chuỗi ngày học</span>
             </div>
-            <p className="font-headline text-2xl font-extrabold tabular-nums text-primary">
-              {stats.streak} {stats.streak === 1 ? 'ngày' : 'ngày'}
-            </p>
+            <p className="font-headline text-2xl font-extrabold tabular-nums text-primary">{stats.streak} ngày</p>
           </div>
-
           <div className="glass-card rounded-2xl p-5 space-y-2">
             <div className="flex items-center gap-2 font-tech text-[10px] uppercase tracking-[0.18em] text-secondary/55">
               <BookOpen size={12} className="text-cyan-300" />
               <span>Khoá học</span>
             </div>
-            <p className="font-headline text-2xl font-extrabold tabular-nums text-on-surface">
-              {enrolled?.length ?? 0}
-            </p>
+            <p className="font-headline text-2xl font-extrabold tabular-nums text-on-surface">0</p>
           </div>
         </div>
       )}
@@ -314,11 +310,6 @@ export default function Dashboard() {
         )}
       </section>
 
-      {user && enrolled && enrolled.length > 0 && (
-        <div className="mt-6 glass-card rounded-2xl p-5">
-          <WeakTopicAnalysis userId={user.id} courseId={enrolled[0].id} />
-        </div>
-      )}
     </PageShell>
   );
 }

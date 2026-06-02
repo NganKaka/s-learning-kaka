@@ -1,0 +1,7 @@
+feat: add XP widget, Focus Areas, and Up Next to student Dashboard
+
+- Add XpWidget: level progress bar, total/daily XP, next milestone hint
+- Add FocusAreas: prominent card showing weak topics with direct lesson links
+- Add UpNext: smart action cards for next lesson, due cards, pending mistakes
+- Reorganize Dashboard top row into 3-column grid with XpWidget + UpNext + FocusAreas
+- Remove redundant inline WeakTopicAnalysis (now replaced by FocusAreas)
