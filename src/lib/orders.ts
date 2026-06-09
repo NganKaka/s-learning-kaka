@@ -64,6 +64,28 @@ export async function createOrder(
   return { order: data as Order, error: null };
 }
 
+export interface OrderWithCourse extends Order {
+  /** Joined course (null for top-ups or if the course was removed). */
+  course: { title: string; slug: string } | null;
+}
+
+/**
+ * List the signed-in user's orders (course purchases + wallet top-ups),
+ * newest first, with the course title joined. RLS limits rows to own user_id.
+ */
+export async function listMyOrders(userId: string): Promise<OrderWithCourse[]> {
+  const { data, error } = await supabase
+    .from('orders')
+    .select('*, course:courses(title, slug)')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false });
+  if (error) {
+    console.error('listMyOrders failed:', error.message);
+    return [];
+  }
+  return (data ?? []) as OrderWithCourse[];
+}
+
 /** Live-status hook: poll the order row every 5s while pending. */
 export function useOrderStatus(orderId: string | null) {
   const [order, setOrder] = useState<Order | null>(null);
