@@ -17,6 +17,7 @@ import Home from './pages/Home';
 const Courses = lazy(() => import('./pages/Courses'));
 const CourseDetail = lazy(() => import('./pages/CourseDetail'));
 const Learn = lazy(() => import('./pages/Learn'));
+const Quiz = lazy(() => import('./pages/Quiz'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Cards = lazy(() => import('./pages/Cards'));
 const Login = lazy(() => import('./pages/Login'));
@@ -42,6 +43,7 @@ function AnimatedRoutes() {
           <Route path="/courses" element={<Courses />} />
           <Route path="/courses/:slug" element={<CourseDetail />} />
           <Route path="/learn/:courseSlug/:lessonSlug" element={<Learn />} />
+          <Route path="/learn/:courseSlug/:lessonSlug/quiz" element={<Quiz />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/cards" element={<Cards />} />
           <Route path="/login" element={<Login />} />

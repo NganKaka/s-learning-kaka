@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import QuizReview from './QuizReview';
 import PracticeMode from './PracticeMode';
 import TimedDrill from './TimedDrill';
@@ -18,7 +18,23 @@ import QuizActiveView from './lesson-quiz/QuizActiveView';
  *
  * Public API (props) is unchanged — consumers import this file's default export.
  */
-export default function LessonQuiz({ lessonId, userId }: { lessonId: string; userId: string }) {
+interface LessonQuizProps {
+  lessonId: string;
+  userId: string;
+  /** Fires when an attempt becomes active / inactive — lets a host page (e.g. the
+   *  focused quiz route) hide its "back" affordance during an active attempt. */
+  onAttemptActiveChange?: (active: boolean) => void;
+  /** Fires once after the session resolves — `hasQuiz=false` lets a host page
+   *  render its own empty state instead of this component's `null`. */
+  onLoaded?: (info: { hasQuiz: boolean }) => void;
+}
+
+export default function LessonQuiz({
+  lessonId,
+  userId,
+  onAttemptActiveChange,
+  onLoaded,
+}: LessonQuizProps) {
   const [mode, setMode] = useState<'quiz' | 'review' | 'practice' | 'drill'>('quiz');
   const [reviewAttempt, setReviewAttempt] = useState<QuizAttempt | null>(null);
   const { showToast } = useToast();
@@ -56,6 +72,20 @@ export default function LessonQuiz({ lessonId, userId }: { lessonId: string; use
     submittedRef,
     onTimeout,
   });
+
+  // Notify host when an attempt becomes active/inactive (optional).
+  const attemptActive = !!activeAttempt;
+  useEffect(() => {
+    onAttemptActiveChange?.(attemptActive);
+  }, [attemptActive, onAttemptActiveChange]);
+
+  // Notify host once the session resolves whether a quiz exists (optional).
+  const loadNotifiedRef = useRef(false);
+  useEffect(() => {
+    if (loading || loadNotifiedRef.current) return;
+    loadNotifiedRef.current = true;
+    onLoaded?.({ hasQuiz: !!quiz && questions.length > 0 });
+  }, [loading, quiz, questions.length, onLoaded]);
 
   if (loading) return null;
   if (!quiz || questions.length === 0) return null;
