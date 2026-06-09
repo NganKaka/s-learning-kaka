@@ -3,7 +3,7 @@ import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, BookOpen, Check, Lock, Play } from 'lucide-react';
 import PageShell from '../components/PageShell';
 import LessonCards from '../components/LessonCards';
-import LessonQuiz from '../components/LessonQuiz';
+import QuizEntryCard from '../components/lesson-quiz/QuizEntryCard';
 import LessonNotes from '../components/LessonNotes';
 import LessonDiscussion from '../components/LessonDiscussion';
 import { SkeletonLine } from '../components/ui/Skeleton';
@@ -341,7 +341,14 @@ export default function Learn() {
               <LessonNotes userId={user.id} lessonId={lesson.id} />
             </div>
           )}
-          {canPlay && user && <LessonQuiz lessonId={lesson.id} userId={user.id} />}
+          {canPlay && user && (
+            <QuizEntryCard
+              lessonId={lesson.id}
+              userId={user.id}
+              courseSlug={course.slug}
+              lessonSlug={lesson.slug}
+            />
+          )}
           {canPlay && user && (
             <div className="glass-card rounded-2xl p-6">
               <LessonDiscussion lessonId={lesson.id} userId={user.id} />
