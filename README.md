@@ -194,7 +194,15 @@ Copy-Item .env.example .env.local
 npm run dev
 
 # Type check
-npm run lint    # tsc --noEmit
+npm run typecheck   # tsc --noEmit
+
+# Lint (ESLint) and format (Prettier)
+npm run lint        # eslint .
+npm run format      # prettier --write .
+
+# Unit tests (Vitest)
+npm run test
+npm run test:coverage
 
 # Production build
 npm run build

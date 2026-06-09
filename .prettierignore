@@ -1,0 +1,8 @@
+dist
+node_modules
+coverage
+.claude
+supabase/migrations
+supabase/seed
+package-lock.json
+*.md
