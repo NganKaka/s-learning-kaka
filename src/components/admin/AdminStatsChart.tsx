@@ -77,7 +77,10 @@ export default function AdminStatsChart({ data }: { data: DailyPoint[] }) {
             }}
           />
           <Legend
-            onClick={(e) => toggle(String((e as { dataKey?: unknown }).dataKey))}
+            onClick={(e) => {
+              const key = (e as { dataKey?: unknown }).dataKey;
+              if (typeof key === 'string') toggle(key);
+            }}
             wrapperStyle={{ fontSize: 11, cursor: 'pointer' }}
           />
           {SERIES.map((s) => (

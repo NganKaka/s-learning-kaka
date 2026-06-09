@@ -63,26 +63,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Fetch the current user's profile row. Surfaces errors (a swallowed error
   // here previously made an RLS failure look like "no profile / no roles").
-  const loadProfile = useCallback(async (userId: string): Promise<Profile | null> => {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .maybeSingle();
-    if (error) {
-      console.error('Failed to load profile:', error.message);
-      return null;
-    }
-    return (data ?? null) as Profile | null;
-  }, []);
+  // `error` is reported separately so callers can avoid overwriting a good
+  // profile with null on a transient fetch failure.
+  const loadProfile = useCallback(
+    async (userId: string): Promise<{ profile: Profile | null; error: boolean }> => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .maybeSingle();
+      if (error) {
+        console.error('Failed to load profile:', error.message);
+        return { profile: null, error: true };
+      }
+      return { profile: (data ?? null) as Profile | null, error: false };
+    },
+    [],
+  );
 
-  /** Re-fetch the profile (after edits) so name/avatar update across the app. */
+  /** Re-fetch the profile (after edits) so name/avatar update across the app.
+   *  On a fetch error the existing profile is kept (not wiped to null). */
   const refreshProfile = useCallback(async () => {
     if (!session?.user) {
       setProfile(null);
       return;
     }
-    setProfile(await loadProfile(session.user.id));
+    const { profile, error } = await loadProfile(session.user.id);
+    if (!error) setProfile(profile);
   }, [session?.user, loadProfile]);
 
   // Pull profile row whenever session changes
@@ -92,8 +99,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
     let cancelled = false;
-    loadProfile(session.user.id).then((p) => {
-      if (!cancelled) setProfile(p);
+    loadProfile(session.user.id).then(({ profile, error }) => {
+      if (!cancelled && !error) setProfile(profile);
     });
     return () => {
       cancelled = true;

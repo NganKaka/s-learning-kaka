@@ -68,7 +68,11 @@ export default function QuizEntryCard({
   if (!quiz || questionCount === 0) return null;
 
   const quizPath = `/learn/${courseSlug}/${lessonSlug}/quiz`;
-  const attemptsUsed = attempts.length;
+  // Only completed attempts count against the limit — an in-progress (resumable)
+  // attempt must not inflate "used" or flip the card to "exhausted".
+  const attemptsUsed = attempts.filter(
+    (a) => a.status === 'submitted' || a.status === 'graded',
+  ).length;
   const attemptsRemaining = Math.max(0, quiz.max_attempts - attemptsUsed);
   const aggregate = aggregateGrade(attempts, quiz.grading_mode);
   const exhausted = attemptsRemaining === 0;
