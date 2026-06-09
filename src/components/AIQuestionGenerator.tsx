@@ -37,8 +37,8 @@ export default function AIQuestionGenerator({
       const data = await res.json();
       if (data.error) setError(data.error);
       else setQuestions(data.questions ?? []);
-    } catch (e: any) {
-      setError(e.message);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Lỗi không xác định');
     }
     setGenerating(false);
   };

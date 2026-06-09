@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Megaphone, Pin, ChevronDown } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { useAsyncData } from '../hooks/useAsyncData';
 
 interface Announcement {
   id: string;
@@ -18,50 +19,38 @@ interface Announcement {
  * recent. Used on the student dashboard. Hidden when nothing is published.
  */
 export default function StudentAnnouncements() {
-  const [list, setList] = useState<Announcement[] | null>(null);
-  const [expanded, setExpanded] = useState<string | null>(null);
+  const { data: list } = useAsyncData<Announcement[]>(async () => {
+    const { data: rows } = await supabase
+      .from('announcements')
+      .select('id, title, body_md, pinned, created_at, instructor_id')
+      .order('pinned', { ascending: false })
+      .order('created_at', { ascending: false })
+      .limit(5);
 
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      const { data: rows } = await supabase
-        .from('announcements')
-        .select('id, title, body_md, pinned, created_at, instructor_id')
-        .order('pinned', { ascending: false })
-        .order('created_at', { ascending: false })
-        .limit(5);
-      if (cancelled) return;
-
-      // Resolve instructor name once per unique id
-      const instructorIds = Array.from(new Set((rows ?? []).map((r) => r.instructor_id as string)));
-      const nameById = new Map<string, string>();
-      if (instructorIds.length > 0) {
-        const { data: profiles } = await supabase
-          .from('profiles')
-          .select('id, display_name')
-          .in('id', instructorIds);
-        for (const p of profiles ?? []) {
-          nameById.set(p.id as string, (p.display_name as string | null) ?? 'Giảng viên');
-        }
+    // Resolve instructor name once per unique id
+    const instructorIds = Array.from(new Set((rows ?? []).map((r) => r.instructor_id as string)));
+    const nameById = new Map<string, string>();
+    if (instructorIds.length > 0) {
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, display_name')
+        .in('id', instructorIds);
+      for (const p of profiles ?? []) {
+        nameById.set(p.id as string, (p.display_name as string | null) ?? 'Giảng viên');
       }
+    }
 
-      if (cancelled) return;
-      setList(
-        (rows ?? []).map((r) => ({
-          id: r.id as string,
-          title: (r.title as string | null) ?? null,
-          body_md: r.body_md as string,
-          pinned: !!r.pinned,
-          created_at: r.created_at as string,
-          instructor_id: r.instructor_id as string,
-          instructor_name: nameById.get(r.instructor_id as string) ?? null,
-        })),
-      );
-    })();
-    return () => {
-      cancelled = true;
-    };
+    return (rows ?? []).map((r) => ({
+      id: r.id as string,
+      title: (r.title as string | null) ?? null,
+      body_md: r.body_md as string,
+      pinned: !!r.pinned,
+      created_at: r.created_at as string,
+      instructor_id: r.instructor_id as string,
+      instructor_name: nameById.get(r.instructor_id as string) ?? null,
+    }));
   }, []);
+  const [expanded, setExpanded] = useState<string | null>(null);
 
   if (!list || list.length === 0) return null;
 

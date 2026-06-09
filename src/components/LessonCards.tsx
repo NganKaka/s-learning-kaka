@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Brain, ChevronDown, RotateCcw } from 'lucide-react';
 import { fetchLessonCards } from '../lib/srs';
+import { useAsyncData } from '../hooks/useAsyncData';
 
 /**
  * Inline flashcard reveal-on-click set, rendered below the lesson video.
@@ -9,25 +10,11 @@ import { fetchLessonCards } from '../lib/srs';
  * here; the dedicated /cards review page handles that.
  */
 export default function LessonCards({ lessonId }: { lessonId: string }) {
-  const [cards, setCards] = useState<Array<{
-    id: string;
-    front_md: string;
-    back_md: string;
-    order_index: number;
-  }> | null>(null);
+  const { data: cards } = useAsyncData(
+    () => (lessonId ? fetchLessonCards(lessonId) : Promise.resolve(null)),
+    [lessonId],
+  );
   const [openId, setOpenId] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!lessonId) return;
-    let cancelled = false;
-    fetchLessonCards(lessonId).then((rows) => {
-      if (cancelled) return;
-      setCards(rows);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [lessonId]);
 
   if (!cards || cards.length === 0) return null;
 

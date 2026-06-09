@@ -32,7 +32,12 @@ Living conventions for the sLearningKaka codebase. Keep this short and current.
 ## Data access
 
 - Supabase access is wrapped in `src/lib/*` modules — components don't call `supabase` directly except in page-level effects.
-- Prefer the shared `useAsyncData` hook for page fetch/loading/error state over hand-rolled `useState` + `useEffect`.
+- Lib read functions should surface (not silently swallow) Supabase errors. The hook-based modules (`courses.ts`, `orders.ts`) set an `error` state; plain async readers can use `unwrap()` from `src/lib/db.ts` to log the error and fall back to a default.
+- Prefer the shared `useAsyncData` hook (`src/hooks/useAsyncData.ts`) for component fetch/loading/error state over hand-rolled `useState` + `useEffect` + `cancelled` flags. Reuse the single `AsyncState<T>` from `src/types/common.ts` — don't redefine it.
+
+### Follow-up: `useAsyncData` migration
+
+`useAsyncData` adoption was started (`StudentAnnouncements`, `LessonCards`). ~20 components/pages still hand-roll the fetch pattern. Single-value fetches migrate cleanly; multi-value pages (`Dashboard`, `Cart`, `Learn`, most `Teacher*`) fetch several values per effect and need light restructuring first. Migrate incrementally, verifying each against e2e (behavior-preserving).
 
 ## Known issues
 

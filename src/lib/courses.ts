@@ -2,12 +2,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from './supabase';
 import { cacheGet, cacheSet, CACHE_KEYS, TTL } from './cache';
 import type { Course, CourseWithCurriculum } from './database.types';
-
-interface AsyncState<T> {
-  data: T | null;
-  loading: boolean;
-  error: string | null;
-}
+import type { AsyncState } from '../types/common';
 
 /** Public catalog: every published course. */
 export function usePublishedCourses(): AsyncState<Course[]> {

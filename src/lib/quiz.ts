@@ -1,5 +1,6 @@
 import { supabase } from './supabase';
 import { cacheGet, cacheSet, CACHE_KEYS, TTL } from './cache';
+import { unwrap } from './db';
 
 /**
  * Quiz types + data-access helpers.
@@ -101,25 +102,30 @@ export async function loadQuizForLesson(
 
   if (!quiz) return { quiz: null, questions: [] };
 
-  const { data: questions } = await supabase
-    .from('quiz_questions')
-    .select('*')
-    .eq('quiz_id', quiz.id)
-    .order('order_index', { ascending: true });
+  const questions = await unwrap<QuizQuestion[]>(
+    supabase.from('quiz_questions').select('*').eq('quiz_id', quiz.id).order('order_index', {
+      ascending: true,
+    }),
+    [],
+    'loadQuizForLesson:questions',
+  );
 
-  const result = { quiz: quiz as Quiz, questions: (questions ?? []) as QuizQuestion[] };
+  const result = { quiz: quiz as Quiz, questions };
   cacheSet(cacheKey, result, TTL.quizQuestions);
   return result;
 }
 
 export async function listUserAttempts(quizId: string, userId: string): Promise<QuizAttempt[]> {
-  const { data } = await supabase
-    .from('quiz_attempts')
-    .select('*')
-    .eq('quiz_id', quizId)
-    .eq('user_id', userId)
-    .order('attempt_number', { ascending: true });
-  return (data ?? []) as QuizAttempt[];
+  return unwrap<QuizAttempt[]>(
+    supabase
+      .from('quiz_attempts')
+      .select('*')
+      .eq('quiz_id', quizId)
+      .eq('user_id', userId)
+      .order('attempt_number', { ascending: true }),
+    [],
+    'listUserAttempts',
+  );
 }
 
 // ---------------------------------------------------------------------------
