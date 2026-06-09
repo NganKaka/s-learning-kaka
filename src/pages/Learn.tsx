@@ -13,6 +13,8 @@ import { logActivity } from '../lib/parentHelpers';
 import { logStudySession } from '../lib/studyTime';
 import type { Lesson, Module } from '../lib/database.types';
 import { formatLessonDuration } from '../lib/courses';
+import { Button } from '../components/ui/Button';
+import { Badge } from '../components/ui/Badge';
 
 const BUNNY_LIBRARY_ID = import.meta.env.VITE_BUNNY_STREAM_LIBRARY_ID ?? '';
 
@@ -131,6 +133,12 @@ export default function Learn() {
   const nextLesson =
     currentIdx >= 0 && currentIdx < flatLessons.length - 1 ? flatLessons[currentIdx + 1] : null;
 
+  /** Current module for the mobile context strip — null until course loads. */
+  const currentModule = useMemo(() => {
+    if (!course || !lesson) return null;
+    return course.modules.find((m) => m.lessons.some((l) => l.id === lesson.id)) ?? null;
+  }, [course, lesson]);
+
   // Lesson progress: best-effort upsert on mount
   useEffect(() => {
     if (!user || !lesson) return;
@@ -241,6 +249,19 @@ export default function Learn() {
 
         {/* Main */}
         <section className="space-y-5">
+          {/* Mobile-only context strip: shows current module + lesson so phone users
+              know where they are without the desktop sidebar. Read-only, no interaction. */}
+          {currentModule && (
+            <div className="lg:hidden flex items-center gap-2 glass-card rounded-xl px-3 py-2">
+              <span className="size-1.5 rounded-full bg-cyan-400 shrink-0" aria-hidden="true" />
+              <p className="font-tech text-[10px] uppercase tracking-[0.16em] text-secondary/70 truncate">
+                <span className="text-primary/85">{currentModule.title}</span>
+                <span className="mx-1.5 opacity-40">·</span>
+                <span>{lesson.title}</span>
+              </p>
+            </div>
+          )}
+
           <div>
             <p className="font-tech text-[10px] uppercase tracking-[0.18em] text-secondary/55">
               {course.title}
@@ -250,7 +271,8 @@ export default function Learn() {
             </h1>
           </div>
 
-          <div className="rounded-2xl overflow-hidden border border-white/10 bg-black/40 aspect-video">
+          {/* theme-card-bg keeps the frame on-brand when empty/loading instead of jarring black */}
+          <div className="rounded-2xl overflow-hidden border border-white/10 theme-card-bg aspect-video">
             {canPlay && lesson.bunny_video_id && BUNNY_LIBRARY_ID ? (
               <iframe
                 src={`https://iframe.mediadelivery.net/embed/${BUNNY_LIBRARY_ID}/${lesson.bunny_video_id}?autoplay=false&loop=false`}
@@ -264,9 +286,11 @@ export default function Learn() {
               <div className="w-full h-full flex flex-col items-center justify-center gap-3 p-8 text-center text-secondary/55 text-sm">
                 <Play size={32} className="opacity-40" />
                 <p>
-                  {lesson.bunny_video_id
-                    ? 'Đang tải video…'
-                    : 'Video cho bài này chưa được upload. Quay lại sau.'}
+                  {!canPlay
+                    ? 'Đăng ký khoá học để xem video này.'
+                    : lesson.bunny_video_id
+                      ? 'Đang tải video…'
+                      : 'Chưa có video cho bài học này.'}
                 </p>
               </div>
             )}
@@ -307,34 +331,39 @@ export default function Learn() {
                 Lộ trình ôn luyện Toán 12 đầy đủ — từ Hàm số đến Toạ độ trong không gian. Dạy bởi Vo
                 Hoang Ngan (HKIMO Vàng · AIMO Bạc · cử nhân CS HCMUT).
               </p>
-              <div className="flex flex-wrap gap-3 pt-1">
+              {/* Single primary CTA avoids green/blue collision.
+                  Login link surfaces only for guests so logged-in previewers see one clear action. */}
+              <div className="flex flex-wrap items-center gap-3 pt-1">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => navigate(`/cart?course=${course.slug}`)}
+                >
+                  Đăng ký khoá học
+                </Button>
                 {!user && (
                   <Link
                     to={`/signup?next=/courses/${course.slug}`}
-                    className="bg-primary text-background px-5 py-2.5 rounded-xl text-xs font-bold tracking-[0.14em] uppercase border border-primary/50 shadow-[0_0_24px_rgba(233,195,73,0.55)] hover:shadow-[0_0_32px_rgba(233,195,73,0.9)] transition-shadow"
+                    className="font-tech text-[11px] uppercase tracking-[0.14em] text-secondary/70 hover:text-on-surface transition-colors"
                   >
-                    Tạo tài khoản miễn phí
+                    Đăng nhập
                   </Link>
                 )}
-                <Link
-                  to={`/cart?course=${course.slug}`}
-                  className="px-5 py-2.5 rounded-xl text-xs font-bold tracking-[0.14em] uppercase border border-cyan-400/40 bg-cyan-400/10 text-cyan-200 hover:border-cyan-300/60 hover:bg-cyan-400/15 hover:text-cyan-100 transition-colors"
-                >
-                  Đăng ký khoá học
-                </Link>
               </div>
             </div>
           )}
 
           <div className="flex items-center justify-between gap-3 pt-2">
-            <button
-              type="button"
+            {/* Prev: ghost Button primitive; disabled when no previous lesson */}
+            <Button
+              variant="ghost"
+              size="sm"
               disabled={!prevLesson}
               onClick={() => prevLesson && navigate(`/learn/${course.slug}/${prevLesson.slug}`)}
-              className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-4 py-2 text-xs font-tech uppercase tracking-[0.16em] text-secondary hover:border-cyan-300/40 hover:text-cyan-200 transition-colors disabled:opacity-40"
+              className="rounded-full"
             >
               <ArrowLeft size={12} /> Bài trước
-            </button>
+            </Button>
 
             {lesson.duration_seconds > 0 && (
               <span className="font-tech text-[10px] tabular-nums text-secondary/55">
@@ -343,17 +372,20 @@ export default function Learn() {
             )}
 
             {nextLesson ? (
-              <button
-                type="button"
+              /* Next: primary Button primitive */
+              <Button
+                variant="primary"
+                size="sm"
                 onClick={() => navigate(`/learn/${course.slug}/${nextLesson.slug}`)}
-                className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/15 px-4 py-2 text-xs font-tech uppercase tracking-[0.16em] text-primary hover:bg-primary/25 transition-all"
+                className="rounded-full"
               >
                 Bài tiếp <ArrowRight size={12} />
-              </button>
+              </Button>
             ) : (
-              <span className="inline-flex items-center gap-2 rounded-full border border-cyan-300/30 bg-cyan-400/10 px-4 py-2 text-xs font-tech uppercase tracking-[0.16em] text-cyan-200">
-                <Check size={12} /> Bài cuối
-              </span>
+              /* Terminal lesson: non-actionable Badge so it no longer reads as a button */
+              <Badge tone="neutral" icon={<Check size={12} />}>
+                Bài cuối
+              </Badge>
             )}
           </div>
         </section>
