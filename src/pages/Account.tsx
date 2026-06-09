@@ -2,7 +2,7 @@ import { Navigate, useNavigate } from 'react-router-dom';
 import { LogOut } from 'lucide-react';
 import PageShell from '../components/PageShell';
 import SectionHeading from '../components/ui/SectionHeading';
-import Avatar from '../components/navbar/Avatar';
+import AvatarUpload from '../components/account/AvatarUpload';
 import EditProfileSection from '../components/account/EditProfileSection';
 import AccountInfoPanel from '../components/account/AccountInfoPanel';
 import { Button } from '../components/ui/Button';
@@ -28,13 +28,9 @@ export default function Account() {
         subtitle="Hồ sơ, lịch sử mua khoá học, quản lý tài khoản — tất cả ở đây."
       />
 
-      {/* Header: avatar + name/email */}
-      <div className="mt-10 flex items-center gap-4">
-        <Avatar
-          displayName={profile?.display_name ?? null}
-          avatarUrl={profile?.avatar_url ?? null}
-          large
-        />
+      {/* Header: avatar upload + name/email */}
+      <div className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-4">
+        <AvatarUpload />
         <div className="min-w-0">
           <p className="font-headline text-lg font-bold text-on-surface truncate">
             {profile?.display_name ?? 'Học viên'}
