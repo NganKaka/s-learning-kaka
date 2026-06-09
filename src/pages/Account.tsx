@@ -5,6 +5,8 @@ import SectionHeading from '../components/ui/SectionHeading';
 import AvatarUpload from '../components/account/AvatarUpload';
 import EditProfileSection from '../components/account/EditProfileSection';
 import AccountInfoPanel from '../components/account/AccountInfoPanel';
+import PurchaseHistory from '../components/account/PurchaseHistory';
+import DangerZone from '../components/account/DangerZone';
 import { Button } from '../components/ui/Button';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -44,10 +46,18 @@ export default function Account() {
         <AccountInfoPanel />
       </div>
 
+      <div className="mt-5">
+        <PurchaseHistory />
+      </div>
+
       <div className="mt-6">
         <Button variant="ghost" size="sm" onClick={handleSignOut}>
           <LogOut size={14} aria-hidden="true" /> Đăng xuất
         </Button>
+      </div>
+
+      <div className="mt-10">
+        <DangerZone />
       </div>
     </PageShell>
   );
