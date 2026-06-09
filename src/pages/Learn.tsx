@@ -14,6 +14,7 @@ import { logActivity } from '../lib/parentHelpers';
 import { logStudySession } from '../lib/studyTime';
 import type { Lesson, Module } from '../lib/database.types';
 import { formatLessonDuration } from '../lib/courses';
+import { canPlayLesson } from '../hooks/useLessonAccess';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 
@@ -109,8 +110,9 @@ export default function Learn() {
         setLoadError('lesson_not_found');
         return;
       }
-      // If lesson is locked (not preview, user not enrolled) → redirect
-      if (!targetLesson.is_preview && !isEnrolled) {
+      // If lesson is locked (not preview, user not enrolled) → redirect.
+      // Shared decision with the quiz route via canPlayLesson (no guard drift).
+      if (!canPlayLesson(targetLesson, isEnrolled)) {
         setLoadError('locked');
       }
     })();
@@ -143,7 +145,7 @@ export default function Learn() {
   // Lesson progress: best-effort upsert on mount
   useEffect(() => {
     if (!user || !lesson) return;
-    if (!enrolled && !lesson.is_preview) return;
+    if (!canPlayLesson(lesson, enrolled ?? false)) return;
     supabase
       .from('lesson_progress')
       .upsert(
