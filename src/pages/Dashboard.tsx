@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
-import { ArrowRight, BookOpen, Brain, Flame } from 'lucide-react';
+import { AlertTriangle, ArrowRight, BookOpen, Brain, Flame } from 'lucide-react';
 import PageShell from '../components/PageShell';
 import SectionHeading from '../components/ui/SectionHeading';
 import StudentAnnouncements from '../components/StudentAnnouncements';
@@ -236,48 +236,55 @@ export default function Dashboard() {
         </div>
       )}
 
-      {stats && user && (
-        <div className="mt-8 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <XpWidget userId={user.id} />
-          {enrolled && enrolled.length > 0 && <UpNext userId={user.id} courseId={enrolled[0].id} />}
-          {enrolled && enrolled.length > 0 && (
-            <FocusAreas userId={user.id} courseId={enrolled[0].id} />
-          )}
-        </div>
-      )}
-
-      {stats && enrolled && enrolled.length === 0 && (
-        <div className="mt-8 grid sm:grid-cols-3 gap-4">
-          <Link
-            to="/cards"
-            className="glass-card rounded-2xl p-5 space-y-2 hover:border-cyan-300/35 transition-colors"
-          >
-            <div className="flex items-center gap-2 font-tech text-[10px] uppercase tracking-[0.18em] text-secondary/55">
-              <Brain size={12} className="text-cyan-300" />
-              <span>Flashcard cần ôn</span>
+      {/* Reserve stat-widget space whether or not data has loaded to prevent CLS */}
+      <div className="mt-8 grid sm:grid-cols-2 lg:grid-cols-3 gap-4 min-h-[120px]">
+        {stats && user && (
+          <>
+            <XpWidget userId={user.id} />
+            {enrolled && enrolled.length > 0 && (
+              <UpNext userId={user.id} courseId={enrolled[0].id} />
+            )}
+            {enrolled && enrolled.length > 0 && (
+              <FocusAreas userId={user.id} courseId={enrolled[0].id} />
+            )}
+          </>
+        )}
+        {/* Neutral stub when enrollments have loaded but user has none (no CLS) */}
+        {stats && enrolled && enrolled.length === 0 && (
+          <>
+            <Link
+              to="/cards"
+              className="glass-card rounded-2xl p-5 space-y-2 hover:border-cyan-300/35 transition-colors"
+            >
+              <div className="flex items-center gap-2 font-tech text-[10px] uppercase tracking-[0.18em] text-secondary/55">
+                <Brain size={12} className="text-cyan-300" aria-hidden="true" />
+                <span>Flashcard cần ôn</span>
+              </div>
+              <p className="font-headline text-2xl font-extrabold tabular-nums text-on-surface">
+                {stats.cardsDueToday}
+              </p>
+            </Link>
+            <div className="glass-card rounded-2xl p-5 space-y-2">
+              <div className="flex items-center gap-2 font-tech text-[10px] uppercase tracking-[0.18em] text-secondary/55">
+                <Flame size={12} className="text-primary" aria-hidden="true" />
+                <span>Chuỗi ngày học</span>
+              </div>
+              <p className="font-headline text-2xl font-extrabold tabular-nums text-on-surface">
+                {stats.streak} ngày
+              </p>
             </div>
-            <p className="font-headline text-2xl font-extrabold tabular-nums text-cyan-200">
-              {stats.cardsDueToday}
-            </p>
-          </Link>
-          <div className="glass-card rounded-2xl p-5 space-y-2">
-            <div className="flex items-center gap-2 font-tech text-[10px] uppercase tracking-[0.18em] text-secondary/55">
-              <Flame size={12} className="text-primary" />
-              <span>Chuỗi ngày học</span>
+            <div className="glass-card rounded-2xl p-5 space-y-2">
+              <div className="flex items-center gap-2 font-tech text-[10px] uppercase tracking-[0.18em] text-secondary/55">
+                <BookOpen size={12} className="text-cyan-300" aria-hidden="true" />
+                <span>Khoá học</span>
+              </div>
+              <p className="font-headline text-2xl font-extrabold tabular-nums text-on-surface">
+                0
+              </p>
             </div>
-            <p className="font-headline text-2xl font-extrabold tabular-nums text-primary">
-              {stats.streak} ngày
-            </p>
-          </div>
-          <div className="glass-card rounded-2xl p-5 space-y-2">
-            <div className="flex items-center gap-2 font-tech text-[10px] uppercase tracking-[0.18em] text-secondary/55">
-              <BookOpen size={12} className="text-cyan-300" />
-              <span>Khoá học</span>
-            </div>
-            <p className="font-headline text-2xl font-extrabold tabular-nums text-on-surface">0</p>
-          </div>
-        </div>
-      )}
+          </>
+        )}
+      </div>
 
       {pending && pending.length > 0 && (
         <section className="mt-8 space-y-3">
@@ -287,16 +294,24 @@ export default function Dashboard() {
           {pending.map((order) => (
             <div
               key={order.id}
-              className="glass-card rounded-2xl p-5 flex items-center justify-between gap-4 flex-wrap"
+              className="glass-card rounded-2xl p-5 flex items-center justify-between gap-4 flex-wrap border border-amber-400/40"
             >
-              <div>
-                <p className="font-headline font-bold text-on-surface">{order.course_title}</p>
-                <p className="font-tech text-[10px] uppercase tracking-[0.14em] text-secondary/60 mt-1">
-                  Mã đơn: <span className="text-primary">{order.memo_code}</span>
-                </p>
+              <div className="flex items-start gap-3">
+                <AlertTriangle
+                  size={15}
+                  className="text-amber-400 shrink-0 mt-0.5"
+                  aria-hidden="true"
+                />
+                <div>
+                  <p className="font-headline font-bold text-on-surface">{order.course_title}</p>
+                  <p className="font-tech text-[10px] uppercase tracking-[0.14em] text-secondary/60 mt-1">
+                    Mã đơn: <span className="text-primary">{order.memo_code}</span>
+                  </p>
+                </div>
               </div>
               <Link
                 to={`/cart?course=${order.course_slug}`}
+                aria-label={`Xem trạng thái đơn hàng khoá học ${order.course_title}`}
                 className="font-tech text-[10px] uppercase tracking-[0.14em] text-cyan-300 hover:text-cyan-200"
               >
                 Xem trạng thái →

@@ -97,7 +97,8 @@ export default function CourseDetail() {
         {/* Left: hero + curriculum */}
         <div className="space-y-10">
           <div className="space-y-5">
-            <div className="flex items-center gap-3 font-tech text-[10px] uppercase tracking-[0.18em] text-secondary/55">
+            {/* Breadcrumb: bumped from text-[10px] to ≥11px per a11y audit */}
+            <div className="flex items-center gap-3 font-tech text-[11px] uppercase tracking-[0.18em] text-secondary/55">
               <Link to="/courses" className="hover:text-cyan-300 transition-colors">
                 Khoá học
               </Link>
@@ -173,7 +174,7 @@ export default function CourseDetail() {
                 {course.instructor.avatar_url && (
                   <img
                     src={course.instructor.avatar_url}
-                    alt=""
+                    alt={`Ảnh đại diện ${course.instructor.display_name ?? 'giảng viên'}`}
                     className="w-14 h-14 rounded-full border border-white/10 object-cover"
                   />
                 )}
@@ -279,10 +280,12 @@ function ModulePanel({ module, index, courseSlug }: ModulePanelProps) {
 
   return (
     <div className="glass-card rounded-2xl overflow-hidden">
+      {/* min-h-[44px] ensures ≥40px tap zone for the module toggle */}
       <button
         type="button"
         onClick={() => setOpen((p) => !p)}
-        className="w-full flex items-center justify-between gap-4 px-5 py-4 text-left hover:bg-white/[0.03] transition-colors"
+        aria-expanded={open}
+        className="w-full flex items-center justify-between gap-4 px-5 py-4 min-h-[44px] text-left hover:bg-white/[0.03] transition-colors"
       >
         <div className="flex items-center gap-3">
           <span className="font-tech text-[10px] uppercase tracking-[0.18em] text-primary tabular-nums">
@@ -294,10 +297,14 @@ function ModulePanel({ module, index, courseSlug }: ModulePanelProps) {
           <span>{module.lessons.length} bài</span>
           {totalSeconds > 0 && <span>·</span>}
           {totalSeconds > 0 && <span>{Math.round(totalSeconds / 60)} phút</span>}
-          <ChevronDown
-            size={14}
-            className={`text-secondary transition-transform ${open ? 'rotate-180' : ''}`}
-          />
+          {/* Wrap chevron in a padded span so the hit zone covers it comfortably */}
+          <span className="inline-flex items-center justify-center w-7 h-7">
+            <ChevronDown
+              size={14}
+              className={`text-secondary transition-transform ${open ? 'rotate-180' : ''}`}
+              aria-hidden="true"
+            />
+          </span>
         </div>
       </button>
       {open && (
@@ -310,14 +317,16 @@ function ModulePanel({ module, index, courseSlug }: ModulePanelProps) {
                   <Icon
                     size={12}
                     className={
-                      lesson.is_preview ? 'text-cyan-300 shrink-0' : 'text-secondary/40 shrink-0'
+                      lesson.is_preview ? 'text-cyan-300 shrink-0' : 'text-amber-400/70 shrink-0'
                     }
+                    aria-hidden="true"
                   />
                   <span className="font-tech text-[10px] uppercase tracking-[0.14em] text-secondary/45 tabular-nums shrink-0">
                     {String(li + 1).padStart(2, '0')}
                   </span>
+                  {/* Locked lessons use amber tint for grayscale-distinguishable contrast */}
                   <span
-                    className={`text-sm truncate ${lesson.is_preview ? 'text-on-surface' : 'text-secondary/70'}`}
+                    className={`text-sm truncate ${lesson.is_preview ? 'text-on-surface' : 'text-amber-200/60'}`}
                   >
                     {lesson.title}
                   </span>

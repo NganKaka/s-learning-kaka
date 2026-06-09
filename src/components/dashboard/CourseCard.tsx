@@ -3,8 +3,10 @@
  */
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Award, Clock, Loader2, Trophy } from 'lucide-react';
+import { Award, Clock, Trophy } from 'lucide-react';
 import { formatDuration } from '../../lib/courses';
+import { Button } from '../ui/Button';
+import { Badge } from '../ui/Badge';
 
 interface EnrolledCourse {
   id: string;
@@ -53,16 +55,17 @@ export function CourseCard({ course, studentName }: CourseCardProps) {
   return (
     <div className="group glass-card rounded-2xl overflow-hidden transition-all hover:border-cyan-300/35">
       <Link to={`/courses/${course.slug}`} className="block">
-        {course.cover_image && (
-          <div className="aspect-video overflow-hidden bg-white/[0.02]">
+        {/* Neutral placeholder bg prevents image pop-in flash */}
+        <div className="aspect-video overflow-hidden bg-white/[0.06]">
+          {course.cover_image && (
             <img
               src={course.cover_image}
               alt={course.title}
               className="h-full w-full object-cover opacity-80 transition-all duration-700 group-hover:opacity-100 group-hover:scale-105"
               loading="lazy"
             />
-          </div>
-        )}
+          )}
+        </div>
       </Link>
       <div className="p-5 space-y-3">
         <Link to={`/courses/${course.slug}`}>
@@ -91,25 +94,28 @@ export function CourseCard({ course, studentName }: CourseCardProps) {
         <div className="flex items-center gap-3 font-tech text-[10px] uppercase tracking-[0.14em] text-secondary/55">
           {course.duration_minutes > 0 && (
             <span className="inline-flex items-center gap-1.5">
-              <Clock size={11} className="text-cyan-300" />{' '}
+              <Clock size={11} className="text-cyan-300" aria-hidden="true" />{' '}
               {formatDuration(course.duration_minutes)}
             </span>
           )}
-          <span className="inline-flex items-center gap-1.5 text-cyan-300">
-            <Trophy size={11} /> Đã đăng ký
-          </span>
+          {/* Badge replaces the inline ad-hoc pill */}
+          <Badge tone="info" size="sm" icon={<Trophy size={10} />}>
+            Đã đăng ký
+          </Badge>
         </div>
 
         {completed && (
-          <button
-            type="button"
+          // Button primitive replaces the ad-hoc cert download button
+          <Button
+            variant="primary"
+            size="sm"
+            loading={downloading}
             onClick={handleDownloadCert}
-            disabled={downloading}
-            className="w-full inline-flex items-center justify-center gap-2 rounded-xl border border-primary/40 bg-primary/15 px-4 py-2.5 font-tech text-[11px] uppercase tracking-[0.16em] text-primary hover:bg-primary/25 hover:shadow-[0_0_18px_rgba(233,195,73,0.25)] transition-all disabled:opacity-60"
+            className="w-full"
           >
-            {downloading ? <Loader2 size={12} className="animate-spin" /> : <Award size={12} />}
+            {!downloading && <Award size={12} aria-hidden="true" />}
             Tải chứng chỉ
-          </button>
+          </Button>
         )}
       </div>
     </div>

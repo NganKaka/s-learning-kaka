@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import PageShell from '../components/PageShell';
 import DocumentHead from '../components/DocumentHead';
 import SectionHeading from '../components/ui/SectionHeading';
+import { Badge } from '../components/ui/Badge';
 import { usePublishedCourses, formatVnd, formatDuration } from '../lib/courses';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -119,9 +120,10 @@ export default function Courses() {
           )}
         </div>
 
+        {/* Ownership filter — only shown for logged-in users; hidden cleanly (no gap) for anon */}
         {user && (
           <div className="flex items-center gap-2 flex-wrap">
-            <p className="font-tech text-[9px] uppercase tracking-[0.18em] text-secondary/45 mr-1">
+            <p className="font-tech text-[11px] uppercase tracking-[0.18em] text-secondary/45 mr-1">
               Trạng thái
             </p>
             {OWNERSHIP_FILTERS.map((o) => {
@@ -131,7 +133,8 @@ export default function Courses() {
                 <button
                   key={o.id}
                   onClick={() => setOwnership(o.id as 'all' | 'owned' | 'available')}
-                  className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[10px] font-tech uppercase tracking-[0.14em] transition-all ${
+                  aria-pressed={isActive}
+                  className={`inline-flex items-center gap-1.5 rounded-full px-3 min-h-[40px] text-[11px] font-tech uppercase tracking-[0.14em] transition-all ${
                     isActive
                       ? 'border border-cyan-300/50 bg-cyan-400/15 text-cyan-200'
                       : 'border border-white/10 bg-white/[0.03] text-secondary/70 hover:border-cyan-300/30 hover:text-cyan-200'
@@ -151,7 +154,7 @@ export default function Courses() {
         )}
 
         <div className="flex items-center gap-2 flex-wrap">
-          <p className="font-tech text-[9px] uppercase tracking-[0.18em] text-secondary/45 mr-1">
+          <p className="font-tech text-[11px] uppercase tracking-[0.18em] text-secondary/45 mr-1">
             Trình độ
           </p>
           {LEVELS.map((l) => {
@@ -160,7 +163,8 @@ export default function Courses() {
               <button
                 key={l.id}
                 onClick={() => setLevel(l.id)}
-                className={`rounded-full px-3 py-1.5 text-[10px] font-tech uppercase tracking-[0.14em] transition-all ${
+                aria-pressed={isActive}
+                className={`inline-flex items-center justify-center rounded-full px-3 min-h-[40px] text-[11px] font-tech uppercase tracking-[0.14em] transition-all ${
                   isActive
                     ? 'border border-primary/40 bg-primary/15 text-primary'
                     : 'border border-white/10 bg-white/[0.03] text-secondary/70 hover:border-cyan-300/30 hover:text-cyan-200'
@@ -220,13 +224,15 @@ export default function Courses() {
                 className="group glass-card block rounded-2xl overflow-hidden transition-all hover:border-cyan-300/35 relative"
               >
                 {owned && (
-                  <div className="absolute top-3 right-3 z-10 inline-flex items-center gap-1.5 rounded-full border border-cyan-300/40 bg-cyan-400/15 px-2.5 py-1 font-tech text-[9px] uppercase tracking-[0.16em] text-cyan-100 backdrop-blur-sm">
-                    <CheckCircle2 size={10} />
-                    Đã đăng ký
+                  <div className="absolute top-3 right-3 z-10 backdrop-blur-sm">
+                    <Badge tone="info" size="sm" icon={<CheckCircle2 size={10} />}>
+                      Đã đăng ký
+                    </Badge>
                   </div>
                 )}
-                {course.cover_image && (
-                  <div className="aspect-video overflow-hidden bg-white/[0.02]">
+                {/* Image with neutral placeholder bg to prevent pop-in */}
+                <div className="aspect-video overflow-hidden bg-white/[0.06]">
+                  {course.cover_image && (
                     <img
                       src={course.cover_image}
                       alt={course.title}
@@ -234,8 +240,8 @@ export default function Courses() {
                       loading="lazy"
                       decoding="async"
                     />
-                  </div>
-                )}
+                  )}
+                </div>
 
                 <div className="p-5 space-y-3">
                   <div className="flex items-center gap-2 font-tech text-[10px] uppercase tracking-[0.18em] text-secondary/55">
