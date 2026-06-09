@@ -1,6 +1,7 @@
 // Certificate PDF RENDERER — client-side PDF generation via pdf-lib.
 // For Supabase persistence / verify-code lookup, see `certificates.ts`.
-import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
+import { PDFDocument, rgb } from 'pdf-lib';
+import { embedCertificateFonts } from './certificateFonts';
 
 interface CertificateInput {
   studentName: string;
@@ -19,9 +20,11 @@ export async function generateCertificatePdf(input: CertificateInput): Promise<U
   const page = pdf.addPage([842, 595]); // A4 landscape
   const { width, height } = page.getSize();
 
-  const helvetica = await pdf.embedFont(StandardFonts.Helvetica);
-  const helveticaBold = await pdf.embedFont(StandardFonts.HelveticaBold);
-  const helveticaOblique = await pdf.embedFont(StandardFonts.HelveticaOblique);
+  const {
+    regular: helvetica,
+    bold: helveticaBold,
+    oblique: helveticaOblique,
+  } = await embedCertificateFonts(pdf);
 
   // Background
   page.drawRectangle({

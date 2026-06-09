@@ -39,6 +39,6 @@ Living conventions for the sLearningKaka codebase. Keep this short and current.
 
 `useAsyncData` adoption was started (`StudentAnnouncements`, `LessonCards`). ~20 components/pages still hand-roll the fetch pattern. Single-value fetches migrate cleanly; multi-value pages (`Dashboard`, `Cart`, `Learn`, most `Teacher*`) fetch several values per effect and need light restructuring first. Migrate incrementally, verifying each against e2e (behavior-preserving).
 
-## Known issues
+## Certificate fonts
 
-- **Certificate PDF / Vietnamese names**: `certificatePdf.ts` embeds standard Helvetica (WinAnsi), which cannot encode Vietnamese diacritics outside Latin-1 (e.g. `ễ`, `ữ`). Generation throws for many real student names. Fix requires embedding a Unicode TTF via `@pdf-lib/fontkit`. Characterized by a test in `certificatePdf.test.ts`.
+`certificatePdf.ts` embeds **Be Vietnam Pro** (a Unicode TTF covering Vietnamese) via `@pdf-lib/fontkit`, loaded lazily from `/public/fonts/` (`certificateFonts.ts`). This fixed a prior crash where standard WinAnsi Helvetica could not encode Vietnamese diacritics (`ễ`, `ữ`). If the font fails to load, it falls back to Helvetica (ASCII-only) so Latin names still render offline. Regression-tested in `certificatePdf.test.ts`.
