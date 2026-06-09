@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useCallback, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Brain, Loader2, CheckCircle2, ArrowRight, RotateCcw } from 'lucide-react';
@@ -12,11 +12,13 @@ const RATING_BUTTONS: Array<{
   label: string;
   sub: string;
   tone: 'red' | 'orange' | 'cyan' | 'green';
+  /** Non-color glyph so meaning survives grayscale / color-blindness */
+  glyph: string;
 }> = [
-  { rating: 0, label: 'Lại', sub: '~10 phút', tone: 'red' },
-  { rating: 1, label: 'Khó', sub: 'sớm hơn', tone: 'orange' },
-  { rating: 2, label: 'Tốt', sub: 'theo lịch', tone: 'cyan' },
-  { rating: 3, label: 'Dễ', sub: 'lâu hơn', tone: 'green' },
+  { rating: 0, label: 'Lại', sub: '~10 phút', tone: 'red', glyph: '✗' },
+  { rating: 1, label: 'Khó', sub: 'sớm hơn', tone: 'orange', glyph: '△' },
+  { rating: 2, label: 'Tốt', sub: 'theo lịch', tone: 'cyan', glyph: '✓' },
+  { rating: 3, label: 'Dễ', sub: 'lâu hơn', tone: 'green', glyph: '✓✓' },
 ];
 
 const TONE_CLASS: Record<'red' | 'orange' | 'cyan' | 'green', string> = {
@@ -50,6 +52,40 @@ export default function Cards() {
     };
   }, [user?.id]);
 
+  const handleRate = useCallback(
+    async (rating: Rating) => {
+      if (!cards || !cards[index] || submitting) return;
+      const card = cards[index];
+      setSubmitting(true);
+      await submitReview({ userId: user!.id, cardId: card.id, rating });
+      setSubmitting(false);
+      setReviewedCount((n) => n + 1);
+      setIndex((i) => i + 1);
+      setFlipped(false);
+    },
+    [cards, index, submitting, user],
+  );
+
+  // Digit keys 1–4 rate the card while the back face is shown.
+  // Scoped to this view; ignored when an input/textarea is focused.
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      // Ignore key auto-repeat (held key) — closes a double-submit window
+      // where a second keydown could read stale `submitting` before re-render.
+      if (e.repeat) return;
+      const tag = (e.target as HTMLElement)?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+      if (!flipped) return;
+      const digit = parseInt(e.key, 10);
+      if (digit >= 1 && digit <= 4) {
+        // RATING_BUTTONS indices are 0-based; digit 1 → index 0, etc.
+        handleRate(RATING_BUTTONS[digit - 1].rating);
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [flipped, handleRate]);
+
   if (authLoading) {
     return (
       <PageShell>
@@ -63,16 +99,6 @@ export default function Cards() {
   const total = cards?.length ?? 0;
   const card = cards?.[index] ?? null;
   const done = cards !== null && index >= total;
-
-  const handleRate = async (rating: Rating) => {
-    if (!card || submitting) return;
-    setSubmitting(true);
-    await submitReview({ userId: user.id, cardId: card.id, rating });
-    setSubmitting(false);
-    setReviewedCount((n) => n + 1);
-    setIndex((i) => i + 1);
-    setFlipped(false);
-  };
 
   const handleRestart = async () => {
     if (!user) return;
@@ -124,8 +150,15 @@ export default function Cards() {
         </div>
       ) : card ? (
         <div className="mt-10 space-y-5">
-          {/* Progress */}
-          <div className="flex items-center gap-3 font-tech text-[10px] uppercase tracking-[0.18em] text-secondary/55">
+          {/* Progress — aria-label conveys current/total for screen readers */}
+          <div
+            role="progressbar"
+            aria-valuenow={index + 1}
+            aria-valuemin={1}
+            aria-valuemax={total}
+            aria-label={`Thẻ ${index + 1} trong tổng số ${total}`}
+            className="flex items-center gap-3 font-tech text-[10px] uppercase tracking-[0.18em] text-secondary/55"
+          >
             <span className="tabular-nums text-primary">{String(index + 1).padStart(2, '0')}</span>
             <span className="text-secondary/30">/</span>
             <span className="tabular-nums">{String(total).padStart(2, '0')}</span>
@@ -139,67 +172,88 @@ export default function Cards() {
             )}
           </div>
 
-          {/* Card */}
+          {/* Card — rendered as a <button> so it is keyboard-operable.
+              appearance-none + text-left resets browser button defaults so
+              pointer-user layout stays identical to the previous motion.div. */}
           <div className="relative" style={{ perspective: '1200px' }}>
-            <motion.div
-              className="relative cursor-pointer"
-              animate={{ rotateY: flipped ? 180 : 0 }}
-              transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-              style={{ transformStyle: 'preserve-3d', minHeight: 300 }}
+            <button
+              type="button"
+              aria-label={flipped ? 'Lật lại mặt trước' : 'Xem đáp án (Enter hoặc Space)'}
+              aria-pressed={flipped}
               onClick={() => setFlipped((p) => !p)}
+              className="appearance-none text-left w-full cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/70 rounded-3xl"
+              style={{ background: 'none', border: 'none', padding: 0 }}
             >
-              <div
-                className="glass-card absolute inset-0 rounded-3xl p-8 md:p-12 flex items-center justify-center text-center"
-                style={{ backfaceVisibility: 'hidden' }}
+              <motion.div
+                animate={{ rotateY: flipped ? 180 : 0 }}
+                transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+                style={{ transformStyle: 'preserve-3d', minHeight: 300 }}
               >
-                <div className="space-y-3">
-                  <p className="font-tech text-[10px] uppercase tracking-[0.2em] text-primary">
-                    Mặt trước
-                  </p>
-                  <p className="font-headline text-2xl md:text-3xl text-on-surface whitespace-pre-line">
-                    {card.front_md}
-                  </p>
-                  <p className="font-tech text-[10px] uppercase tracking-[0.16em] text-secondary/45">
-                    Nhấn để xem đáp án
-                  </p>
+                {/* Front face */}
+                <div
+                  className="glass-card absolute inset-0 rounded-3xl p-8 md:p-12 flex items-center justify-center text-center"
+                  style={{ backfaceVisibility: 'hidden' }}
+                  aria-hidden={flipped}
+                >
+                  <div className="space-y-3">
+                    <p className="font-tech text-[10px] uppercase tracking-[0.2em] text-primary">
+                      Mặt trước
+                    </p>
+                    <p className="font-headline text-2xl md:text-3xl text-on-surface whitespace-pre-line">
+                      {card.front_md}
+                    </p>
+                    <p className="font-tech text-[10px] uppercase tracking-[0.16em] text-secondary/45">
+                      Nhấn để xem đáp án
+                    </p>
+                  </div>
                 </div>
-              </div>
-              <div
-                className="glass-card absolute inset-0 rounded-3xl p-8 md:p-12 flex items-center justify-center text-center"
-                style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
-              >
-                <div className="space-y-3">
-                  <p className="font-tech text-[10px] uppercase tracking-[0.2em] text-cyan-300">
-                    Đáp án
-                  </p>
-                  <p className="font-headline text-xl md:text-2xl text-on-surface whitespace-pre-line">
-                    {card.back_md}
-                  </p>
-                  <p className="font-tech text-[10px] uppercase tracking-[0.16em] text-secondary/45">
-                    Đánh giá độ khó bên dưới
-                  </p>
+                {/* Back face */}
+                <div
+                  className="glass-card absolute inset-0 rounded-3xl p-8 md:p-12 flex items-center justify-center text-center"
+                  style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
+                  aria-hidden={!flipped}
+                >
+                  <div className="space-y-3">
+                    <p className="font-tech text-[10px] uppercase tracking-[0.2em] text-cyan-300">
+                      Đáp án
+                    </p>
+                    <p className="font-headline text-xl md:text-2xl text-on-surface whitespace-pre-line">
+                      {card.back_md}
+                    </p>
+                    <p className="font-tech text-[10px] uppercase tracking-[0.16em] text-secondary/45">
+                      Đánh giá độ khó bên dưới
+                    </p>
+                  </div>
                 </div>
-              </div>
-            </motion.div>
+              </motion.div>
+            </button>
           </div>
 
-          {/* Controls */}
+          {/* Rating buttons — shown after flip.
+              aria-keyshortcuts documents the 1-4 digit shortcuts for AT users. */}
           <AnimatePresence>
             {flipped && (
               <motion.div
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
+                role="group"
+                aria-label="Đánh giá độ khó (phím 1–4)"
                 className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-2"
               >
-                {RATING_BUTTONS.map((btn) => (
+                {RATING_BUTTONS.map((btn, idx) => (
                   <button
                     key={btn.rating}
                     type="button"
                     disabled={submitting}
                     onClick={() => handleRate(btn.rating)}
+                    aria-keyshortcuts={String(idx + 1)}
                     className={`flex flex-col items-center gap-1 rounded-xl border px-4 py-4 transition-all ${TONE_CLASS[btn.tone]} disabled:opacity-50`}
                   >
+                    {/* Non-color glyph ensures meaning in grayscale / for color-blind users */}
+                    <span className="font-tech text-[13px] leading-none" aria-hidden="true">
+                      {btn.glyph}
+                    </span>
                     <span className="font-headline font-bold text-base">{btn.label}</span>
                     <span className="font-tech text-[9px] uppercase tracking-[0.14em] opacity-80">
                       {btn.sub}

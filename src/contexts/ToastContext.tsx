@@ -59,7 +59,17 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext.Provider value={{ showToast }}>
       {children}
-      <div className="fixed bottom-6 right-6 z-[100] flex flex-col gap-3 pointer-events-none">
+      {/*
+        aria-live="polite" + role="status" — screen readers announce new toast
+        messages without interrupting ongoing speech. The container is always
+        in the DOM so the live region is registered before any toasts fire.
+      */}
+      <div
+        role="status"
+        aria-live="polite"
+        aria-atomic="false"
+        className="fixed bottom-6 right-6 z-[100] flex flex-col gap-3 pointer-events-none"
+      >
         <AnimatePresence>
           {toasts.map((toast) => (
             <motion.div
