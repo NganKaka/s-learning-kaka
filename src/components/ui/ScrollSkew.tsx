@@ -1,5 +1,12 @@
 import { ReactNode, useEffect } from 'react';
-import { motion, useMotionValue, useSpring, useTransform, useVelocity, useScroll } from 'framer-motion';
+import {
+  motion,
+  useMotionValue,
+  useSpring,
+  useTransform,
+  useVelocity,
+  useScroll,
+} from 'framer-motion';
 
 interface ScrollSkewProps {
   children: ReactNode;
@@ -30,26 +37,17 @@ export default function ScrollSkew({
   });
 
   // Map velocity (px/sec) to skew degrees - clamp at ±2500 for stability
-  const skewY = useTransform(
-    smoothVelocity,
-    [-2500, 0, 2500],
-    [-maxSkew, 0, maxSkew],
-    { clamp: true },
-  );
+  const skewY = useTransform(smoothVelocity, [-2500, 0, 2500], [-maxSkew, 0, maxSkew], {
+    clamp: true,
+  });
 
   // Slight Y-scale (squash/stretch) tied to velocity sign
-  const scaleY = useTransform(
-    smoothVelocity,
-    [-2500, 0, 2500],
-    [maxScale, 1, maxScale],
-    { clamp: true },
-  );
+  const scaleY = useTransform(smoothVelocity, [-2500, 0, 2500], [maxScale, 1, maxScale], {
+    clamp: true,
+  });
 
   return (
-    <motion.div
-      style={{ skewY, scaleY }}
-      className={className}
-    >
+    <motion.div style={{ skewY, scaleY }} className={className}>
       {children}
     </motion.div>
   );

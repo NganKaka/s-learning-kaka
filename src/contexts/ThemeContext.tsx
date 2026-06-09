@@ -33,7 +33,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
     if (theme === 'system') {
       // Use system preference
-      const systemTheme = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+      const systemTheme = window.matchMedia('(prefers-color-scheme: light)').matches
+        ? 'light'
+        : 'dark';
       resolved = systemTheme;
     } else {
       resolved = theme;

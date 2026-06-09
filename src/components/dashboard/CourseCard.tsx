@@ -31,7 +31,9 @@ export function CourseCard({ course, studentName }: CourseCardProps) {
     e.stopPropagation();
     setDownloading(true);
     try {
-      const [{ generateCertificatePdf, downloadPdf }] = await Promise.all([import('../../lib/certificate')]);
+      const [{ generateCertificatePdf, downloadPdf }] = await Promise.all([
+        import('../../lib/certificate'),
+      ]);
       const bytes = await generateCertificatePdf({
         studentName,
         courseTitle: course.title,
@@ -43,9 +45,10 @@ export function CourseCard({ course, studentName }: CourseCardProps) {
     }
   };
 
-  const progressPercent = course.total_lessons > 0
-    ? Math.round((course.completed_lessons / course.total_lessons) * 100)
-    : 0;
+  const progressPercent =
+    course.total_lessons > 0
+      ? Math.round((course.completed_lessons / course.total_lessons) * 100)
+      : 0;
 
   return (
     <div className="group glass-card rounded-2xl overflow-hidden transition-all hover:border-cyan-300/35">
@@ -71,7 +74,9 @@ export function CourseCard({ course, studentName }: CourseCardProps) {
         {course.total_lessons > 0 && (
           <div className="space-y-1.5">
             <div className="flex items-center justify-between font-tech text-[10px] uppercase tracking-[0.14em] text-secondary/55">
-              <span>{course.completed_lessons} / {course.total_lessons} bài</span>
+              <span>
+                {course.completed_lessons} / {course.total_lessons} bài
+              </span>
               <span className="text-cyan-200 tabular-nums">{progressPercent}%</span>
             </div>
             <div className="h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
@@ -86,7 +91,8 @@ export function CourseCard({ course, studentName }: CourseCardProps) {
         <div className="flex items-center gap-3 font-tech text-[10px] uppercase tracking-[0.14em] text-secondary/55">
           {course.duration_minutes > 0 && (
             <span className="inline-flex items-center gap-1.5">
-              <Clock size={11} className="text-cyan-300" /> {formatDuration(course.duration_minutes)}
+              <Clock size={11} className="text-cyan-300" />{' '}
+              {formatDuration(course.duration_minutes)}
             </span>
           )}
           <span className="inline-flex items-center gap-1.5 text-cyan-300">

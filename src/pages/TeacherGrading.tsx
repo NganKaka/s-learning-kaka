@@ -32,7 +32,10 @@ export default function TeacherGrading() {
         .eq('status', 'submitted')
         .order('submitted_at', { ascending: true });
 
-      if (cancelled || !attempts) { setLoading(false); return; }
+      if (cancelled || !attempts) {
+        setLoading(false);
+        return;
+      }
 
       const pending: PendingAttempt[] = [];
       for (const a of attempts as QuizAttempt[]) {
@@ -90,7 +93,9 @@ export default function TeacherGrading() {
         setLoading(false);
       }
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [user]);
 
   const startGrading = (item: PendingAttempt) => {
@@ -101,8 +106,12 @@ export default function TeacherGrading() {
     for (const q of item.questions) {
       if (q.type === 'file' || (q.type === 'text' && !(q.expected_text ?? '').trim())) {
         fb[q.id] = {
-          points: (existing as Record<string, { points: number; comment: string | null }>)[q.id]?.points ?? 0,
-          comment: (existing as Record<string, { points: number; comment: string | null }>)[q.id]?.comment ?? '',
+          points:
+            (existing as Record<string, { points: number; comment: string | null }>)[q.id]
+              ?.points ?? 0,
+          comment:
+            (existing as Record<string, { points: number; comment: string | null }>)[q.id]
+              ?.comment ?? '',
         };
       }
     }
@@ -130,7 +139,10 @@ export default function TeacherGrading() {
             awardedPoints += q.points;
           }
         } else if (q.type === 'text' && q.expected_text) {
-          const got = answers[q.id]?.kind === 'text' ? (answers[q.id] as { kind: 'text'; text: string }).text.trim().toLowerCase() : '';
+          const got =
+            answers[q.id]?.kind === 'text'
+              ? (answers[q.id] as { kind: 'text'; text: string }).text.trim().toLowerCase()
+              : '';
           if (got === q.expected_text.trim().toLowerCase()) awardedPoints += q.points;
         }
       }
@@ -199,27 +211,42 @@ export default function TeacherGrading() {
             {activeId === item.attempt.id && (
               <div className="space-y-4">
                 {item.questions
-                  .filter((q) => q.type === 'file' || (q.type === 'text' && !(q.expected_text ?? '').trim()))
+                  .filter(
+                    (q) =>
+                      q.type === 'file' || (q.type === 'text' && !(q.expected_text ?? '').trim()),
+                  )
                   .map((q, qi) => {
                     const answer = (item.attempt.answers_jsonb ?? {})[q.id];
                     return (
-                      <div key={q.id} className="rounded-xl border border-white/10 bg-white/[0.02] p-4 space-y-3">
+                      <div
+                        key={q.id}
+                        className="rounded-xl border border-white/10 bg-white/[0.02] p-4 space-y-3"
+                      >
                         <p className="text-sm font-bold text-on-surface">
                           <span className="text-primary mr-2">{qi + 1}.</span>
                           {q.prompt_md}
-                          <span className="ml-2 font-tech text-[9px] text-secondary/55">({q.points} đ)</span>
+                          <span className="ml-2 font-tech text-[9px] text-secondary/55">
+                            ({q.points} đ)
+                          </span>
                         </p>
 
                         {q.type === 'text' && (
                           <div className="rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-sm">
-                            {answer?.kind === 'text' ? answer.text || <em className="text-secondary/50">Trống</em> : <em className="text-secondary/50">Trống</em>}
+                            {answer?.kind === 'text' ? (
+                              answer.text || <em className="text-secondary/50">Trống</em>
+                            ) : (
+                              <em className="text-secondary/50">Trống</em>
+                            )}
                           </div>
                         )}
 
                         {q.type === 'file' && answer?.kind === 'file' && (
                           <div className="space-y-1">
                             {answer.file_ids.map((fid) => (
-                              <p key={fid} className="inline-flex items-center gap-1 text-xs text-cyan-200">
+                              <p
+                                key={fid}
+                                className="inline-flex items-center gap-1 text-xs text-cyan-200"
+                              >
                                 <FileText size={11} /> {fid.slice(0, 8)}…
                                 <ExternalLink size={10} />
                               </p>
@@ -239,7 +266,13 @@ export default function TeacherGrading() {
                             onChange={(e) =>
                               setFeedback((f) => ({
                                 ...f,
-                                [q.id]: { ...f[q.id], points: Math.min(q.points, Math.max(0, Number(e.target.value) || 0)) },
+                                [q.id]: {
+                                  ...f[q.id],
+                                  points: Math.min(
+                                    q.points,
+                                    Math.max(0, Number(e.target.value) || 0),
+                                  ),
+                                },
                               }))
                             }
                             className="w-20 rounded-lg border border-white/10 bg-white/[0.03] px-2 py-1 text-sm text-on-surface focus:border-cyan-300/40 focus:outline-none"
@@ -251,7 +284,14 @@ export default function TeacherGrading() {
                           placeholder="Nhận xét (tuỳ chọn)…"
                           value={feedback[q.id]?.comment ?? ''}
                           onChange={(e) =>
-                            setFeedback((f) => ({ ...f, [q.id]: { ...f[q.id], points: f[q.id]?.points ?? 0, comment: e.target.value } }))
+                            setFeedback((f) => ({
+                              ...f,
+                              [q.id]: {
+                                ...f[q.id],
+                                points: f[q.id]?.points ?? 0,
+                                comment: e.target.value,
+                              },
+                            }))
                           }
                           className="w-full rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-on-surface focus:border-cyan-300/40 focus:outline-none"
                         />
@@ -265,7 +305,11 @@ export default function TeacherGrading() {
                     disabled={saving}
                     className="inline-flex items-center gap-2 rounded-full border border-emerald-400/40 bg-emerald-500/15 px-5 py-2.5 text-xs font-tech uppercase tracking-[0.16em] text-emerald-200 hover:bg-emerald-500/25 disabled:opacity-50"
                   >
-                    {saving ? <Loader2 size={12} className="animate-spin" /> : <CheckCircle2 size={12} />}
+                    {saving ? (
+                      <Loader2 size={12} className="animate-spin" />
+                    ) : (
+                      <CheckCircle2 size={12} />
+                    )}
                     Hoàn tất chấm
                   </button>
                 </div>

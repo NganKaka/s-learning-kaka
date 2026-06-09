@@ -1,6 +1,21 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, ArrowRight, Hash, FileText, Mail, Github, Sun, Moon, Monitor, BookOpen, Brain, LayoutDashboard, LogIn, UserPlus } from 'lucide-react';
+import {
+  Search,
+  ArrowRight,
+  Hash,
+  FileText,
+  Mail,
+  Github,
+  Sun,
+  Moon,
+  Monitor,
+  BookOpen,
+  Brain,
+  LayoutDashboard,
+  LogIn,
+  UserPlus,
+} from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../contexts/ThemeContext';
 import { profile } from '../data/profile';
@@ -258,7 +273,9 @@ export default function CommandPalette({ open, onClose }: { open: boolean; onClo
                 placeholder="Tìm khoá học, chuyển trang, đổi giao diện…"
                 className="flex-1 bg-transparent text-sm text-on-surface placeholder:text-secondary/45 focus:outline-none"
               />
-              <span className="font-tech text-[10px] uppercase tracking-[0.16em] text-secondary/55">esc</span>
+              <span className="font-tech text-[10px] uppercase tracking-[0.16em] text-secondary/55">
+                esc
+              </span>
             </div>
 
             <div className="max-h-[55vh] overflow-y-auto py-2">

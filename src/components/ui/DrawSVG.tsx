@@ -18,12 +18,7 @@ export default function DrawSVG({
   const isInView = useInView(ref, { once: true, margin: '-100px' });
 
   return (
-    <svg
-      ref={ref}
-      viewBox="0 0 200 80"
-      className={className}
-      xmlns="http://www.w3.org/2000/svg"
-    >
+    <svg ref={ref} viewBox="0 0 200 80" className={className} xmlns="http://www.w3.org/2000/svg">
       <motion.path
         d="M 10 40 Q 50 10 100 40 T 190 40"
         fill="none"

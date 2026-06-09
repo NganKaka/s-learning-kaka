@@ -52,7 +52,14 @@ export async function generateCertificatePdf(input: CertificateInput): Promise<U
 
   // Top label
   drawCenteredText(page, 'sLEARNINGKAKA', helveticaBold, 16, height - 90, rgb(0.914, 0.765, 0.286));
-  drawCenteredText(page, 'CERTIFICATE OF COMPLETION', helvetica, 11, height - 110, rgb(0.733, 0.788, 0.815));
+  drawCenteredText(
+    page,
+    'CERTIFICATE OF COMPLETION',
+    helvetica,
+    11,
+    height - 110,
+    rgb(0.733, 0.788, 0.815),
+  );
 
   // Decorative line
   page.drawLine({
@@ -63,8 +70,22 @@ export async function generateCertificatePdf(input: CertificateInput): Promise<U
   });
 
   // Body
-  drawCenteredText(page, 'This is to certify that', helveticaOblique, 16, height - 200, rgb(0.733, 0.788, 0.815));
-  drawCenteredText(page, input.studentName, helveticaBold, 36, height - 250, rgb(0.882, 0.886, 0.906));
+  drawCenteredText(
+    page,
+    'This is to certify that',
+    helveticaOblique,
+    16,
+    height - 200,
+    rgb(0.733, 0.788, 0.815),
+  );
+  drawCenteredText(
+    page,
+    input.studentName,
+    helveticaBold,
+    36,
+    height - 250,
+    rgb(0.882, 0.886, 0.906),
+  );
 
   // Underline below name
   const nameWidth = helveticaBold.widthOfTextAtSize(input.studentName, 36);
@@ -76,8 +97,22 @@ export async function generateCertificatePdf(input: CertificateInput): Promise<U
     opacity: 0.7,
   });
 
-  drawCenteredText(page, 'has successfully completed the course', helveticaOblique, 14, height - 305, rgb(0.733, 0.788, 0.815));
-  drawCenteredText(page, input.courseTitle, helveticaBold, 22, height - 345, rgb(0.133, 0.827, 0.933));
+  drawCenteredText(
+    page,
+    'has successfully completed the course',
+    helveticaOblique,
+    14,
+    height - 305,
+    rgb(0.733, 0.788, 0.815),
+  );
+  drawCenteredText(
+    page,
+    input.courseTitle,
+    helveticaBold,
+    22,
+    height - 345,
+    rgb(0.133, 0.827, 0.933),
+  );
 
   // Footer block: date + signature
   const dateStr = input.completionDate.toLocaleDateString('en-US', {

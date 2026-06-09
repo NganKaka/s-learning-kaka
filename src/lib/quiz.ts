@@ -42,8 +42,8 @@ export interface QuizQuestion {
 
 export type AnswerValue =
   | { kind: 'choice'; choices: number[] } // single/multi (1+ indexes)
-  | { kind: 'text'; text: string }        // text answer
-  | { kind: 'file'; file_ids: string[] }  // file: refs to quiz_submission_files.id
+  | { kind: 'text'; text: string } // text answer
+  | { kind: 'file'; file_ids: string[] } // file: refs to quiz_submission_files.id
   | { kind: 'empty' };
 
 export interface QuizAttempt {
@@ -57,11 +57,11 @@ export interface QuizAttempt {
   time_spent_seconds: number;
   tab_switches: number;
   answers_jsonb: Record<string, AnswerValue> | null;
-  score: number;            // # of correctly auto-graded questions
-  total: number;            // # of auto-gradable questions
-  auto_score: number | null;   // 0-100 percentage of points auto-graded
-  final_score: number | null;  // 0-100 percentage after teacher grading
-  max_score: number;        // total points across all questions
+  score: number; // # of correctly auto-graded questions
+  total: number; // # of auto-gradable questions
+  auto_score: number | null; // 0-100 percentage of points auto-graded
+  final_score: number | null; // 0-100 percentage after teacher grading
+  max_score: number; // total points across all questions
   teacher_feedback: Record<string, { points: number; comment: string | null }> | null;
   created_at: string;
 }
@@ -107,7 +107,7 @@ export async function loadQuizForLesson(
     .eq('quiz_id', quiz.id)
     .order('order_index', { ascending: true });
 
-  const result = { quiz: quiz as Quiz, questions: ((questions ?? []) as QuizQuestion[]) };
+  const result = { quiz: quiz as Quiz, questions: (questions ?? []) as QuizQuestion[] };
   cacheSet(cacheKey, result, TTL.quizQuestions);
   return result;
 }
@@ -269,7 +269,9 @@ export function gradeAttempt(
       const correct = (q.correct_jsonb ?? []).slice().sort();
       const got = a?.kind === 'choice' ? a.choices.slice().sort() : [];
       const isCorrect =
-        correct.length === got.length && correct.every((v, i) => v === got[i]) && correct.length > 0;
+        correct.length === got.length &&
+        correct.every((v, i) => v === got[i]) &&
+        correct.length > 0;
       if (isCorrect) {
         autoGradedPoints += q.points;
         autoCorrect += 1;
@@ -350,7 +352,8 @@ export function aggregateGrade(
   if (submitted.length === 0) return { effectivePct: null, from: 'auto', count: 0 };
 
   const scores = submitted.map((a) => {
-    if (a.final_score !== null && a.final_score !== undefined) return { value: a.final_score, from: 'final' as const };
+    if (a.final_score !== null && a.final_score !== undefined)
+      return { value: a.final_score, from: 'final' as const };
     return { value: a.auto_score ?? 0, from: 'auto' as const };
   });
 

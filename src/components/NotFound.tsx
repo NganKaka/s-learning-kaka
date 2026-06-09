@@ -77,7 +77,8 @@ export default function NotFound() {
           transition={{ delay: 0.6, duration: 0.5 }}
           className="text-secondary/80 text-base md:text-lg"
         >
-          Looks like you've ventured into uncharted territory. The page you're looking for has either moved or never existed.
+          Looks like you've ventured into uncharted territory. The page you're looking for has
+          either moved or never existed.
         </motion.p>
 
         {/* Actions */}

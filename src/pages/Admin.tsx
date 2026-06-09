@@ -27,14 +27,36 @@ export default function Admin() {
       <div className="max-w-4xl mx-auto space-y-6">
         <div className="flex items-center gap-3">
           <Shield size={20} className="text-primary" />
-          <h1 className="font-headline text-2xl font-extrabold text-on-surface">Quản trị hệ thống</h1>
+          <h1 className="font-headline text-2xl font-extrabold text-on-surface">
+            Quản trị hệ thống
+          </h1>
         </div>
 
         <div className="flex gap-2">
-          <TabBtn active={tab === 'roles'} onClick={() => setTab('roles')} icon={<Users size={11} />} label="Phân quyền" />
-          <TabBtn active={tab === 'config'} onClick={() => setTab('config')} icon={<Settings size={11} />} label="Cấu hình" />
-          <TabBtn active={tab === 'parents'} onClick={() => setTab('parents')} icon={<Link2 size={11} />} label="Gán phụ huynh" />
-          <TabBtn active={tab === 'analytics'} onClick={() => setTab('analytics')} icon={<BarChart3 size={11} />} label="Thống kê" />
+          <TabBtn
+            active={tab === 'roles'}
+            onClick={() => setTab('roles')}
+            icon={<Users size={11} />}
+            label="Phân quyền"
+          />
+          <TabBtn
+            active={tab === 'config'}
+            onClick={() => setTab('config')}
+            icon={<Settings size={11} />}
+            label="Cấu hình"
+          />
+          <TabBtn
+            active={tab === 'parents'}
+            onClick={() => setTab('parents')}
+            icon={<Link2 size={11} />}
+            label="Gán phụ huynh"
+          />
+          <TabBtn
+            active={tab === 'analytics'}
+            onClick={() => setTab('analytics')}
+            icon={<BarChart3 size={11} />}
+            label="Thống kê"
+          />
         </div>
 
         {tab === 'roles' && <RoleManager />}

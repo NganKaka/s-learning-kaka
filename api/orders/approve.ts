@@ -74,18 +74,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (!order.course_id) {
       return res.status(400).json({ error: 'Purchase order missing course_id' });
     }
-    const { error: enrollErr } = await admin
-      .from('enrollments')
-      .upsert(
-        {
-          user_id: order.user_id,
-          course_id: order.course_id,
-          order_id: order.id,
-          status: 'active',
-          granted_at: new Date().toISOString(),
-        },
-        { onConflict: 'user_id,course_id' },
-      );
+    const { error: enrollErr } = await admin.from('enrollments').upsert(
+      {
+        user_id: order.user_id,
+        course_id: order.course_id,
+        order_id: order.id,
+        status: 'active',
+        granted_at: new Date().toISOString(),
+      },
+      { onConflict: 'user_id,course_id' },
+    );
     if (enrollErr) return res.status(500).json({ error: enrollErr.message });
   }
 
@@ -160,5 +158,8 @@ function receiptHtml({
 }
 
 function escapeHtml(s: string): string {
-  return s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
+  return s.replace(
+    /[&<>"']/g,
+    (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!,
+  );
 }

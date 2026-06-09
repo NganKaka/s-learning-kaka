@@ -54,7 +54,10 @@ export default function LiquidDivider({
         </defs>
       </svg>
 
-      <div className="absolute inset-0 flex items-center justify-around" style={{ filter: 'url(#liquid-goo)' }}>
+      <div
+        className="absolute inset-0 flex items-center justify-around"
+        style={{ filter: 'url(#liquid-goo)' }}
+      >
         <motion.div
           style={{ y: offset1, scaleY, backgroundColor: color }}
           className="h-20 w-20 rounded-full blur-[2px]"

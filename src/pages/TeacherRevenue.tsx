@@ -41,7 +41,9 @@ export default function TeacherRevenue() {
       setOrders(null);
       let q = supabase
         .from('orders')
-        .select('id, amount_vnd, kind, payment_method, memo_code, confirmed_at, user_id, course_id, courses(title)')
+        .select(
+          'id, amount_vnd, kind, payment_method, memo_code, confirmed_at, user_id, course_id, courses(title)',
+        )
         .eq('status', 'confirmed')
         .order('confirmed_at', { ascending: false });
 
@@ -65,7 +67,7 @@ export default function TeacherRevenue() {
         return {
           id: row.id as string,
           amount_vnd: row.amount_vnd as number,
-          kind: ((row as { kind?: 'purchase' | 'topup' }).kind ?? 'purchase'),
+          kind: (row as { kind?: 'purchase' | 'topup' }).kind ?? 'purchase',
           payment_method: row.payment_method as string,
           memo_code: row.memo_code as string,
           confirmed_at: row.confirmed_at as string,
@@ -142,9 +144,27 @@ export default function TeacherRevenue() {
       {/* Stat cards */}
       {stats && (
         <div className="mt-6 grid sm:grid-cols-3 gap-4">
-          <Card icon={Wallet} label="Tổng doanh thu" value={formatVnd(stats.total)} tone="gold" sub={`${stats.orderCount} đơn`} />
-          <Card icon={BookOpen} label="Bán khoá học" value={formatVnd(stats.purchaseTotal)} tone="cyan" sub={`${stats.purchaseCount} đơn`} />
-          <Card icon={TrendingUp} label="Nạp tiền" value={formatVnd(stats.topupTotal)} tone="cyan" sub={`${stats.topupCount} đơn`} />
+          <Card
+            icon={Wallet}
+            label="Tổng doanh thu"
+            value={formatVnd(stats.total)}
+            tone="gold"
+            sub={`${stats.orderCount} đơn`}
+          />
+          <Card
+            icon={BookOpen}
+            label="Bán khoá học"
+            value={formatVnd(stats.purchaseTotal)}
+            tone="cyan"
+            sub={`${stats.purchaseCount} đơn`}
+          />
+          <Card
+            icon={TrendingUp}
+            label="Nạp tiền"
+            value={formatVnd(stats.topupTotal)}
+            tone="cyan"
+            sub={`${stats.topupCount} đơn`}
+          />
         </div>
       )}
 
@@ -163,7 +183,11 @@ export default function TeacherRevenue() {
             {dailyTotals.map((d) => {
               const heightPct = peak > 0 ? (d.total / peak) * 100 : 0;
               return (
-                <div key={d.day} className="flex-1 flex flex-col items-center gap-1.5 min-w-0" title={`${d.day}: ${formatVnd(d.total)}`}>
+                <div
+                  key={d.day}
+                  className="flex-1 flex flex-col items-center gap-1.5 min-w-0"
+                  title={`${d.day}: ${formatVnd(d.total)}`}
+                >
                   <div className="w-full flex-1 flex items-end">
                     <motion.div
                       initial={{ height: 0 }}
@@ -185,11 +209,11 @@ export default function TeacherRevenue() {
 
       {/* Order list */}
       <div className="mt-8 space-y-3">
-        <p className="font-tech text-[10px] uppercase tracking-[0.2em] text-primary">Đơn đã xác nhận</p>
+        <p className="font-tech text-[10px] uppercase tracking-[0.2em] text-primary">
+          Đơn đã xác nhận
+        </p>
 
-        {orders === null && (
-          <div className="glass-card rounded-2xl p-12 animate-pulse h-32" />
-        )}
+        {orders === null && <div className="glass-card rounded-2xl p-12 animate-pulse h-32" />}
 
         {orders && orders.length === 0 && (
           <div className="glass-card rounded-2xl p-12 text-center">
@@ -200,21 +224,34 @@ export default function TeacherRevenue() {
         {orders && orders.length > 0 && (
           <div className="glass-card rounded-2xl divide-y divide-white/5 overflow-hidden">
             {orders.map((o) => (
-              <div key={o.id} className="flex items-center justify-between gap-3 px-5 py-3 flex-wrap">
+              <div
+                key={o.id}
+                className="flex items-center justify-between gap-3 px-5 py-3 flex-wrap"
+              >
                 <div className="min-w-0 flex items-center gap-3">
-                  <span className={`rounded-full px-2 py-0.5 font-tech text-[9px] uppercase tracking-[0.16em] shrink-0 ${
-                    o.kind === 'topup'
-                      ? 'border border-cyan-300/40 bg-cyan-400/10 text-cyan-200'
-                      : 'border border-primary/30 bg-primary/10 text-primary'
-                  }`}>
+                  <span
+                    className={`rounded-full px-2 py-0.5 font-tech text-[9px] uppercase tracking-[0.16em] shrink-0 ${
+                      o.kind === 'topup'
+                        ? 'border border-cyan-300/40 bg-cyan-400/10 text-cyan-200'
+                        : 'border border-primary/30 bg-primary/10 text-primary'
+                    }`}
+                  >
                     {o.kind === 'topup' ? 'Nạp' : 'Khoá'}
                   </span>
-                  <span className="font-tech text-[10px] uppercase tracking-[0.16em] text-primary tabular-nums shrink-0">{o.memo_code}</span>
-                  <span className="text-sm text-on-surface truncate">{o.kind === 'topup' ? 'Nạp số dư' : (o.course_title ?? '—')}</span>
+                  <span className="font-tech text-[10px] uppercase tracking-[0.16em] text-primary tabular-nums shrink-0">
+                    {o.memo_code}
+                  </span>
+                  <span className="text-sm text-on-surface truncate">
+                    {o.kind === 'topup' ? 'Nạp số dư' : (o.course_title ?? '—')}
+                  </span>
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
-                  <span className="font-headline font-bold text-primary tabular-nums">{formatVnd(o.amount_vnd)}</span>
-                  <span className="font-tech text-[10px] tabular-nums text-secondary/55">{formatDate(o.confirmed_at)}</span>
+                  <span className="font-headline font-bold text-primary tabular-nums">
+                    {formatVnd(o.amount_vnd)}
+                  </span>
+                  <span className="font-tech text-[10px] tabular-nums text-secondary/55">
+                    {formatDate(o.confirmed_at)}
+                  </span>
                 </div>
               </div>
             ))}
@@ -225,21 +262,42 @@ export default function TeacherRevenue() {
   );
 }
 
-function Card({ icon: Icon, label, value, tone, sub }: { icon: React.ComponentType<{ size?: number }>; label: string; value: string; tone: 'gold' | 'cyan'; sub?: string }) {
+function Card({
+  icon: Icon,
+  label,
+  value,
+  tone,
+  sub,
+}: {
+  icon: React.ComponentType<{ size?: number }>;
+  label: string;
+  value: string;
+  tone: 'gold' | 'cyan';
+  sub?: string;
+}) {
   return (
     <div className="glass-card rounded-2xl p-5 space-y-2">
       <div className="flex items-center gap-2 font-tech text-[10px] uppercase tracking-[0.18em] text-secondary/55">
         <Icon size={12} />
         <span>{label}</span>
       </div>
-      <p className={`font-headline text-2xl font-extrabold tabular-nums ${tone === 'gold' ? 'text-primary' : 'text-cyan-200'}`}>
+      <p
+        className={`font-headline text-2xl font-extrabold tabular-nums ${tone === 'gold' ? 'text-primary' : 'text-cyan-200'}`}
+      >
         {value}
       </p>
-      {sub && <p className="font-tech text-[10px] uppercase tracking-[0.14em] text-secondary/45">{sub}</p>}
+      {sub && (
+        <p className="font-tech text-[10px] uppercase tracking-[0.14em] text-secondary/45">{sub}</p>
+      )}
     </div>
   );
 }
 
 function formatDate(iso: string): string {
-  return new Date(iso).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+  return new Date(iso).toLocaleString('vi-VN', {
+    day: '2-digit',
+    month: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
 }

@@ -1,7 +1,21 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Wallet, Plus, ArrowDownToLine, ArrowUpFromLine, Loader2, Copy, Check, AlertCircle, Landmark, HeartHandshake, Upload, Image as ImageIcon, X } from 'lucide-react';
+import {
+  Wallet,
+  Plus,
+  ArrowDownToLine,
+  ArrowUpFromLine,
+  Loader2,
+  Copy,
+  Check,
+  AlertCircle,
+  Landmark,
+  HeartHandshake,
+  Upload,
+  Image as ImageIcon,
+  X,
+} from 'lucide-react';
 import PageShell from '../components/PageShell';
 import SectionHeading from '../components/ui/SectionHeading';
 import { useAuth } from '../contexts/AuthContext';
@@ -94,21 +108,19 @@ export default function WalletPage() {
           )}
 
           {step === 'pay' && order && (
-            <PayPanel
-              bank={bank}
-              order={order}
-              onSubmitted={() => setStep('submitted')}
-            />
+            <PayPanel bank={bank} order={order} onSubmitted={() => setStep('submitted')} />
           )}
 
-          {step === 'submitted' && order && (
-            <SubmittedPanel order={order} />
-          )}
+          {step === 'submitted' && order && <SubmittedPanel order={order} />}
 
           {/* Transaction history */}
           <div className="glass-card rounded-2xl p-6 space-y-4">
-            <p className="font-tech text-[10px] uppercase tracking-[0.2em] text-primary">Lịch sử giao dịch</p>
-            {transactions === null && <div className="h-32 animate-pulse bg-white/[0.03] rounded-lg" />}
+            <p className="font-tech text-[10px] uppercase tracking-[0.2em] text-primary">
+              Lịch sử giao dịch
+            </p>
+            {transactions === null && (
+              <div className="h-32 animate-pulse bg-white/[0.03] rounded-lg" />
+            )}
             {transactions && transactions.length === 0 && (
               <p className="text-sm text-secondary/60 text-center py-6">Chưa có giao dịch nào.</p>
             )}
@@ -124,7 +136,11 @@ export default function WalletPage() {
                             : 'border-red-400/30 bg-red-500/10 text-red-300'
                         }`}
                       >
-                        {tx.amount_vnd > 0 ? <ArrowDownToLine size={14} /> : <ArrowUpFromLine size={14} />}
+                        {tx.amount_vnd > 0 ? (
+                          <ArrowDownToLine size={14} />
+                        ) : (
+                          <ArrowUpFromLine size={14} />
+                        )}
                       </div>
                       <div className="min-w-0">
                         <p className="text-sm text-on-surface truncate">{kindLabel(tx.kind)}</p>
@@ -132,7 +148,9 @@ export default function WalletPage() {
                       </div>
                     </div>
                     <div className="text-right shrink-0">
-                      <p className={`font-headline font-bold tabular-nums ${tx.amount_vnd > 0 ? 'text-emerald-300' : 'text-red-300'}`}>
+                      <p
+                        className={`font-headline font-bold tabular-nums ${tx.amount_vnd > 0 ? 'text-emerald-300' : 'text-red-300'}`}
+                      >
                         {tx.amount_vnd > 0 ? '+' : ''}
                         {formatVnd(tx.amount_vnd)}
                       </p>
@@ -173,7 +191,23 @@ export default function WalletPage() {
   );
 }
 
-function AmountPanel({ amount, setAmount, bank, setBank, submitting, errorMsg, onContinue }: { amount: number; setAmount: (n: number) => void; bank: 'vcb' | 'momo'; setBank: (b: 'vcb' | 'momo') => void; submitting: boolean; errorMsg: string | null; onContinue: () => void }) {
+function AmountPanel({
+  amount,
+  setAmount,
+  bank,
+  setBank,
+  submitting,
+  errorMsg,
+  onContinue,
+}: {
+  amount: number;
+  setAmount: (n: number) => void;
+  bank: 'vcb' | 'momo';
+  setBank: (b: 'vcb' | 'momo') => void;
+  submitting: boolean;
+  errorMsg: string | null;
+  onContinue: () => void;
+}) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -181,7 +215,9 @@ function AmountPanel({ amount, setAmount, bank, setBank, submitting, errorMsg, o
       transition={{ duration: 0.3 }}
       className="glass-card rounded-2xl p-6 md:p-8 space-y-5"
     >
-      <p className="font-tech text-[10px] uppercase tracking-[0.2em] text-primary">Bước 1 — Số tiền nạp</p>
+      <p className="font-tech text-[10px] uppercase tracking-[0.2em] text-primary">
+        Bước 1 — Số tiền nạp
+      </p>
 
       <div className="space-y-3">
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -210,15 +246,31 @@ function AmountPanel({ amount, setAmount, bank, setBank, submitting, errorMsg, o
             onChange={(e) => setAmount(Math.max(0, parseInt(e.target.value, 10) || 0))}
             className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 pr-14 text-base text-on-surface tabular-nums focus:border-cyan-300/50 focus:outline-none"
           />
-          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-secondary/55 font-tech text-xs">VND</span>
+          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-secondary/55 font-tech text-xs">
+            VND
+          </span>
         </div>
       </div>
 
       <div>
-        <p className="font-tech text-[10px] uppercase tracking-[0.18em] text-secondary/55 mb-2">Phương thức</p>
+        <p className="font-tech text-[10px] uppercase tracking-[0.18em] text-secondary/55 mb-2">
+          Phương thức
+        </p>
         <div className="grid sm:grid-cols-2 gap-3">
-          <BankOption icon={Landmark} name="Vietcombank" subtitle="Chuyển khoản (VietQR)" active={bank === 'vcb'} onClick={() => setBank('vcb')} />
-          <BankOption icon={HeartHandshake} name="MoMo" subtitle="Ví điện tử" active={bank === 'momo'} onClick={() => setBank('momo')} />
+          <BankOption
+            icon={Landmark}
+            name="Vietcombank"
+            subtitle="Chuyển khoản (VietQR)"
+            active={bank === 'vcb'}
+            onClick={() => setBank('vcb')}
+          />
+          <BankOption
+            icon={HeartHandshake}
+            name="MoMo"
+            subtitle="Ví điện tử"
+            active={bank === 'momo'}
+            onClick={() => setBank('momo')}
+          />
         </div>
       </div>
 
@@ -235,13 +287,33 @@ function AmountPanel({ amount, setAmount, bank, setBank, submitting, errorMsg, o
         onClick={onContinue}
         className="w-full bg-primary text-background px-6 py-3 rounded-xl text-xs font-bold tracking-[0.14em] uppercase border border-primary/50 shadow-[0_0_24px_rgba(233,195,73,0.55)] hover:shadow-[0_0_32px_rgba(233,195,73,0.9)] transition-shadow disabled:opacity-60 inline-flex items-center justify-center gap-2"
       >
-        {submitting ? <><Loader2 size={14} className="animate-spin" /> Đang tạo đơn...</> : <><Plus size={14} /> Nạp {formatVnd(amount)}</>}
+        {submitting ? (
+          <>
+            <Loader2 size={14} className="animate-spin" /> Đang tạo đơn...
+          </>
+        ) : (
+          <>
+            <Plus size={14} /> Nạp {formatVnd(amount)}
+          </>
+        )}
       </button>
     </motion.div>
   );
 }
 
-function BankOption({ icon: Icon, name, subtitle, active, onClick }: { icon: React.ComponentType<{ size?: number }>; name: string; subtitle: string; active: boolean; onClick: () => void }) {
+function BankOption({
+  icon: Icon,
+  name,
+  subtitle,
+  active,
+  onClick,
+}: {
+  icon: React.ComponentType<{ size?: number }>;
+  name: string;
+  subtitle: string;
+  active: boolean;
+  onClick: () => void;
+}) {
   return (
     <button
       type="button"
@@ -253,7 +325,9 @@ function BankOption({ icon: Icon, name, subtitle, active, onClick }: { icon: Rea
       }`}
     >
       <div className="flex items-center gap-3">
-        <div className={`flex h-10 w-10 items-center justify-center rounded-full ${active ? 'bg-primary/15 text-primary border border-primary/30' : 'bg-white/[0.05] text-cyan-300 border border-white/10'}`}>
+        <div
+          className={`flex h-10 w-10 items-center justify-center rounded-full ${active ? 'bg-primary/15 text-primary border border-primary/30' : 'bg-white/[0.05] text-cyan-300 border border-white/10'}`}
+        >
           <Icon size={16} />
         </div>
         <div>
@@ -265,7 +339,15 @@ function BankOption({ icon: Icon, name, subtitle, active, onClick }: { icon: Rea
   );
 }
 
-function PayPanel({ bank, order, onSubmitted }: { bank: 'vcb' | 'momo'; order: { id: string; memo_code: string; amount_vnd: number }; onSubmitted: () => void }) {
+function PayPanel({
+  bank,
+  order,
+  onSubmitted,
+}: {
+  bank: 'vcb' | 'momo';
+  order: { id: string; memo_code: string; amount_vnd: number };
+  onSubmitted: () => void;
+}) {
   const info = getBankInfo(bank);
   const qrUrl = useMemo(
     () => buildVietQrImageUrl({ bank, amountVnd: order.amount_vnd, memo: order.memo_code }),
@@ -273,14 +355,24 @@ function PayPanel({ bank, order, onSubmitted }: { bank: 'vcb' | 'momo'; order: {
   );
 
   return (
-    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-5">
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="space-y-5"
+    >
       <div className="glass-card rounded-2xl p-6 md:p-8 space-y-5">
-        <p className="font-tech text-[10px] uppercase tracking-[0.2em] text-primary">Bước 2 — Chuyển khoản</p>
+        <p className="font-tech text-[10px] uppercase tracking-[0.2em] text-primary">
+          Bước 2 — Chuyển khoản
+        </p>
 
         <div className="grid md:grid-cols-[200px_1fr] gap-5 items-start">
           <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-3">
             {qrUrl ? (
-              <img src={qrUrl} alt="VietQR" className="w-full aspect-square rounded-lg object-contain bg-white" />
+              <img
+                src={qrUrl}
+                alt="VietQR"
+                className="w-full aspect-square rounded-lg object-contain bg-white"
+              />
             ) : (
               <div className="aspect-square rounded-lg bg-white/[0.05] flex items-center justify-center text-xs text-secondary/55 text-center px-4">
                 MoMo không hỗ trợ VietQR — chuyển khoản thủ công theo thông tin bên phải.
@@ -298,8 +390,11 @@ function PayPanel({ bank, order, onSubmitted }: { bank: 'vcb' | 'momo'; order: {
         </div>
 
         <div className="rounded-xl border border-cyan-300/20 bg-cyan-400/[0.04] p-4 text-sm text-cyan-100/85">
-          <p className="font-tech text-[10px] uppercase tracking-[0.18em] text-cyan-200 mb-1">Quan trọng</p>
-          Nội dung chuyển khoản phải đúng <strong className="text-cyan-200 font-tech">{order.memo_code}</strong>.
+          <p className="font-tech text-[10px] uppercase tracking-[0.18em] text-cyan-200 mb-1">
+            Quan trọng
+          </p>
+          Nội dung chuyển khoản phải đúng{' '}
+          <strong className="text-cyan-200 font-tech">{order.memo_code}</strong>.
         </div>
       </div>
 
@@ -316,20 +411,40 @@ function PayPanel({ bank, order, onSubmitted }: { bank: 'vcb' | 'momo'; order: {
   );
 }
 
-function Row({ label, value, copyable, highlight }: { label: string; value: string; copyable?: boolean; highlight?: boolean }) {
+function Row({
+  label,
+  value,
+  copyable,
+  highlight,
+}: {
+  label: string;
+  value: string;
+  copyable?: boolean;
+  highlight?: boolean;
+}) {
   const [copied, setCopied] = useState(false);
   const onCopy = async () => {
     try {
       await navigator.clipboard.writeText(value);
       setCopied(true);
       setTimeout(() => setCopied(false), 1200);
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   };
   return (
-    <div className={`flex items-center justify-between gap-3 rounded-lg border px-4 py-3 ${highlight ? 'border-primary/30 bg-primary/[0.06]' : 'border-white/10 bg-white/[0.03]'}`}>
+    <div
+      className={`flex items-center justify-between gap-3 rounded-lg border px-4 py-3 ${highlight ? 'border-primary/30 bg-primary/[0.06]' : 'border-white/10 bg-white/[0.03]'}`}
+    >
       <div className="min-w-0">
-        <p className="font-tech text-[9px] uppercase tracking-[0.18em] text-secondary/55">{label}</p>
-        <p className={`mt-0.5 font-tech tabular-nums truncate ${highlight ? 'text-primary' : 'text-on-surface'}`}>{value}</p>
+        <p className="font-tech text-[9px] uppercase tracking-[0.18em] text-secondary/55">
+          {label}
+        </p>
+        <p
+          className={`mt-0.5 font-tech tabular-nums truncate ${highlight ? 'text-primary' : 'text-on-surface'}`}
+        >
+          {value}
+        </p>
       </div>
       {copyable && (
         <button
@@ -349,11 +464,18 @@ function SubmittedPanel({ order }: { order: { status: string } }) {
   const isConfirmed = order.status === 'confirmed';
   return (
     <AnimatePresence mode="wait">
-      <motion.div key={order.status} initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} className="glass-card rounded-2xl p-8 md:p-10 text-center space-y-3">
+      <motion.div
+        key={order.status}
+        initial={{ opacity: 0, scale: 0.96 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="glass-card rounded-2xl p-8 md:p-10 text-center space-y-3"
+      >
         {isConfirmed ? (
           <>
             <Check size={36} className="text-primary mx-auto" />
-            <p className="font-headline text-xl font-bold text-on-surface">Đã nạp tiền thành công!</p>
+            <p className="font-headline text-xl font-bold text-on-surface">
+              Đã nạp tiền thành công!
+            </p>
             <p className="text-sm text-secondary/80">Số dư đã được cập nhật.</p>
           </>
         ) : (
@@ -376,5 +498,10 @@ function kindLabel(kind: string): string {
 }
 
 function formatDate(iso: string): string {
-  return new Date(iso).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+  return new Date(iso).toLocaleString('vi-VN', {
+    day: '2-digit',
+    month: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
 }

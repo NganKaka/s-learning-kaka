@@ -1,4 +1,17 @@
-import { Menu, X, BookOpen, LogOut, LayoutDashboard, Brain, User, Users, ChevronDown, Settings, Wallet, Shield } from 'lucide-react';
+import {
+  Menu,
+  X,
+  BookOpen,
+  LogOut,
+  LayoutDashboard,
+  Brain,
+  User,
+  Users,
+  ChevronDown,
+  Settings,
+  Wallet,
+  Shield,
+} from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -31,7 +44,10 @@ export default function SiteNavbar() {
       <div className="max-w-7xl mx-auto px-6 md:px-12 py-6">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-4">
-            <Link to="/" className="inline-flex items-center gap-2 text-xl font-black text-primary tracking-tighter">
+            <Link
+              to="/"
+              className="inline-flex items-center gap-2 text-xl font-black text-primary tracking-tighter"
+            >
               <BookOpen size={20} />
               sLearningKaka
             </Link>
@@ -129,7 +145,10 @@ export default function SiteNavbar() {
             >
               {user && (
                 <div className="flex items-center gap-3 px-3 py-3 rounded-lg bg-white/[0.03] border border-white/10 mb-1">
-                  <Avatar displayName={profile?.display_name ?? null} avatarUrl={profile?.avatar_url ?? null} />
+                  <Avatar
+                    displayName={profile?.display_name ?? null}
+                    avatarUrl={profile?.avatar_url ?? null}
+                  />
                   <div className="min-w-0 flex-1">
                     <p className="font-headline text-sm font-bold text-on-surface truncate">
                       {profile?.display_name ?? 'Học viên'}
@@ -240,7 +259,15 @@ interface UserMenuProps {
   onSignOut: () => void;
 }
 
-function UserMenu({ displayName, email, avatarUrl, isInstructor, isAdmin, balanceVnd, onSignOut }: UserMenuProps) {
+function UserMenu({
+  displayName,
+  email,
+  avatarUrl,
+  isInstructor,
+  isAdmin,
+  balanceVnd,
+  onSignOut,
+}: UserMenuProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -270,7 +297,10 @@ function UserMenu({ displayName, email, avatarUrl, isInstructor, isAdmin, balanc
         className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-2 py-1 hover:border-cyan-300/40 hover:bg-cyan-400/[0.05] transition-colors"
       >
         <Avatar displayName={displayName} avatarUrl={avatarUrl} />
-        <ChevronDown size={12} className={`text-secondary/60 transition-transform mr-1 ${open ? 'rotate-180' : ''}`} />
+        <ChevronDown
+          size={12}
+          className={`text-secondary/60 transition-transform mr-1 ${open ? 'rotate-180' : ''}`}
+        />
       </button>
 
       <AnimatePresence>
@@ -317,23 +347,62 @@ function UserMenu({ displayName, email, avatarUrl, isInstructor, isAdmin, balanc
             )}
 
             <div className="py-1">
-              <MenuItem to="/dashboard" icon={LayoutDashboard} label="Bảng điều khiển" onClose={() => setOpen(false)} />
-              <MenuItem to="/cards" icon={Brain} label="Thẻ ghi nhớ" onClose={() => setOpen(false)} />
-              <MenuItem to="/wallet" icon={Wallet} label="Nạp tiền" onClose={() => setOpen(false)} />
-              <MenuItem to="/account" icon={Settings} label="Tài khoản" onClose={() => setOpen(false)} />
+              <MenuItem
+                to="/dashboard"
+                icon={LayoutDashboard}
+                label="Bảng điều khiển"
+                onClose={() => setOpen(false)}
+              />
+              <MenuItem
+                to="/cards"
+                icon={Brain}
+                label="Thẻ ghi nhớ"
+                onClose={() => setOpen(false)}
+              />
+              <MenuItem
+                to="/wallet"
+                icon={Wallet}
+                label="Nạp tiền"
+                onClose={() => setOpen(false)}
+              />
+              <MenuItem
+                to="/account"
+                icon={Settings}
+                label="Tài khoản"
+                onClose={() => setOpen(false)}
+              />
               {isInstructor && (
-                <MenuItem to="/teacher" icon={LayoutDashboard} label="Teacher" onClose={() => setOpen(false)} accent />
+                <MenuItem
+                  to="/teacher"
+                  icon={LayoutDashboard}
+                  label="Teacher"
+                  onClose={() => setOpen(false)}
+                  accent
+                />
               )}
               {isAdmin && (
-                <MenuItem to="/admin" icon={Shield} label="Admin" onClose={() => setOpen(false)} accent />
+                <MenuItem
+                  to="/admin"
+                  icon={Shield}
+                  label="Admin"
+                  onClose={() => setOpen(false)}
+                  accent
+                />
               )}
               <button
                 type="button"
-                onClick={() => { setOpen(false); window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true })); }}
+                onClick={() => {
+                  setOpen(false);
+                  window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true }));
+                }}
                 className="w-full flex items-center justify-between gap-2.5 px-4 py-2.5 text-sm text-on-surface hover:bg-white/[0.04] transition-colors"
               >
-                <span className="flex items-center gap-2.5"><Settings size={14} /> Bảng lệnh</span>
-                <kbd className="rounded bg-white/[0.06] px-1.5 py-0.5 font-tech text-[10px] text-cyan-200">⌘K</kbd>
+                <span className="flex items-center gap-2.5">
+                  <Settings size={14} /> Bảng lệnh
+                </span>
+                <kbd className="rounded bg-white/[0.06] px-1.5 py-0.5 font-tech text-[10px] text-cyan-200">
+                  ⌘K
+                </kbd>
               </button>
             </div>
 

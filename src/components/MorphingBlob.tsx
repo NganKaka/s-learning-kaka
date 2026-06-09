@@ -19,7 +19,10 @@ export default function MorphingBlob({
   size = 400,
 }: MorphingBlobProps) {
   return (
-    <div className={`absolute pointer-events-none ${className}`} style={{ width: size, height: size }}>
+    <div
+      className={`absolute pointer-events-none ${className}`}
+      style={{ width: size, height: size }}
+    >
       <svg
         viewBox="-100 -100 200 200"
         xmlns="http://www.w3.org/2000/svg"

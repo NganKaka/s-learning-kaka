@@ -8,7 +8,11 @@ const CELL = 130;
 
 const Constellations = memo(function Constellations() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const mouseRef = useRef<{ x: number; y: number; active: boolean }>({ x: -9999, y: -9999, active: false });
+  const mouseRef = useRef<{ x: number; y: number; active: boolean }>({
+    x: -9999,
+    y: -9999,
+    active: false,
+  });
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -200,7 +204,12 @@ const Constellations = memo(function Constellations() {
     };
   }, []);
 
-  return <canvas ref={canvasRef} className="absolute inset-0 h-full w-full pointer-events-none mix-blend-screen" />;
+  return (
+    <canvas
+      ref={canvasRef}
+      className="absolute inset-0 h-full w-full pointer-events-none mix-blend-screen"
+    />
+  );
 });
 
 export default Constellations;

@@ -33,13 +33,17 @@ export default function TeacherCourses() {
     if (!user) return;
     const title = window.prompt('Tên khoá học mới?');
     if (!title) return;
-    const slug = window.prompt('Slug (lowercase, không dấu, dùng -)?', title
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[̀-ͯ]/g, '')
-      .replace(/đ/g, 'd')
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-|-$/g, '')) ?? '';
+    const slug =
+      window.prompt(
+        'Slug (lowercase, không dấu, dùng -)?',
+        title
+          .toLowerCase()
+          .normalize('NFD')
+          .replace(/[̀-ͯ]/g, '')
+          .replace(/đ/g, 'd')
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/^-|-$/g, ''),
+      ) ?? '';
     if (!slug) return;
 
     setCreating(true);
@@ -60,7 +64,7 @@ export default function TeacherCourses() {
       window.alert(`Lỗi: ${error.message}`);
       return;
     }
-    setCourses((cur) => [(data as Course), ...(cur ?? [])]);
+    setCourses((cur) => [data as Course, ...(cur ?? [])]);
   };
 
   return (
@@ -101,12 +105,18 @@ export default function TeacherCourses() {
               <div className="min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <p className="font-headline font-bold text-on-surface truncate">{course.title}</p>
-                  <span className={`rounded-full px-2 py-0.5 font-tech text-[9px] uppercase tracking-[0.18em] ${
-                    course.status === 'published'
-                      ? 'border border-emerald-400/40 bg-emerald-500/10 text-emerald-200'
-                      : 'border border-secondary/40 bg-white/[0.04] text-secondary/65'
-                  }`}>
-                    {course.status === 'published' ? 'Đã xuất bản' : course.status === 'draft' ? 'Nháp' : 'Lưu trữ'}
+                  <span
+                    className={`rounded-full px-2 py-0.5 font-tech text-[9px] uppercase tracking-[0.18em] ${
+                      course.status === 'published'
+                        ? 'border border-emerald-400/40 bg-emerald-500/10 text-emerald-200'
+                        : 'border border-secondary/40 bg-white/[0.04] text-secondary/65'
+                    }`}
+                  >
+                    {course.status === 'published'
+                      ? 'Đã xuất bản'
+                      : course.status === 'draft'
+                        ? 'Nháp'
+                        : 'Lưu trữ'}
                   </span>
                 </div>
                 <p className="font-tech text-[10px] uppercase tracking-[0.14em] text-secondary/55 mt-1">

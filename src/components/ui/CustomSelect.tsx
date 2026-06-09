@@ -35,7 +35,10 @@ export default function CustomSelect({
   }, [open]);
 
   return (
-    <div className={`relative ${className ?? ''} ${disabled ? 'opacity-50 pointer-events-none' : ''}`} ref={ref}>
+    <div
+      className={`relative ${className ?? ''} ${disabled ? 'opacity-50 pointer-events-none' : ''}`}
+      ref={ref}
+    >
       <button
         type="button"
         onClick={() => !disabled && setOpen(!open)}
@@ -43,7 +46,10 @@ export default function CustomSelect({
         className="w-full flex items-center justify-between gap-2 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-on-surface hover:border-cyan-300/30 focus:border-cyan-300/40 focus:outline-none transition-colors disabled:cursor-not-allowed"
       >
         <span className="truncate">{selected?.label ?? '—'}</span>
-        <ChevronDown size={14} className={`text-secondary/55 shrink-0 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
+        <ChevronDown
+          size={14}
+          className={`text-secondary/55 shrink-0 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+        />
       </button>
       <AnimatePresence>
         {open && (
@@ -58,7 +64,10 @@ export default function CustomSelect({
               <button
                 key={opt.value}
                 type="button"
-                onClick={() => { onChange(opt.value); setOpen(false); }}
+                onClick={() => {
+                  onChange(opt.value);
+                  setOpen(false);
+                }}
                 className={`w-full text-left px-3 py-2 text-sm transition-colors ${
                   opt.value === value
                     ? 'bg-cyan-400/10 text-cyan-200'

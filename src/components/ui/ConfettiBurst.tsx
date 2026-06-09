@@ -30,7 +30,9 @@ export default function ConfettiBurst({
   particleCount = 16,
   colors = ['#e9c349', '#22d3ee', '#a855f7', '#ffffff'],
 }: ConfettiBurstProps) {
-  const [bursts, setBursts] = useState<Array<{ id: number; x: number; y: number; particles: Particle[] }>>([]);
+  const [bursts, setBursts] = useState<
+    Array<{ id: number; x: number; y: number; particles: Particle[] }>
+  >([]);
 
   const handleClick = (e: MouseEvent<HTMLButtonElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();

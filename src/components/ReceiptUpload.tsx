@@ -106,7 +106,9 @@ export default function ReceiptUpload({ orderId }: { orderId: string }) {
         <p className="inline-flex items-center gap-2 font-tech text-[10px] uppercase tracking-[0.2em] text-primary">
           <ImageIcon size={12} /> Ảnh xác nhận chuyển khoản
         </p>
-        <p className="font-tech text-[9px] uppercase tracking-[0.16em] text-secondary/45">tuỳ chọn · tăng tốc duyệt</p>
+        <p className="font-tech text-[9px] uppercase tracking-[0.16em] text-secondary/45">
+          tuỳ chọn · tăng tốc duyệt
+        </p>
       </div>
 
       {!done ? (
@@ -128,8 +130,16 @@ export default function ReceiptUpload({ orderId }: { orderId: string }) {
           {uploading ? (
             <>
               <Loader2 size={22} className="animate-spin text-cyan-300" />
-              <p className="font-tech text-[10px] uppercase tracking-[0.18em] text-cyan-200">Đang tải lên…</p>
-              {preview && <img src={preview} alt="" className="mt-2 max-h-40 rounded-lg border border-white/10" />}
+              <p className="font-tech text-[10px] uppercase tracking-[0.18em] text-cyan-200">
+                Đang tải lên…
+              </p>
+              {preview && (
+                <img
+                  src={preview}
+                  alt=""
+                  className="mt-2 max-h-40 rounded-lg border border-white/10"
+                />
+              )}
             </>
           ) : (
             <>

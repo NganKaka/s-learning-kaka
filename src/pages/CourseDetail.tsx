@@ -1,5 +1,14 @@
 import { Link, Navigate, useParams } from 'react-router-dom';
-import { ArrowRight, BarChart3, Clock, Lock, Play, BookOpen, ChevronDown, CheckCircle2 } from 'lucide-react';
+import {
+  ArrowRight,
+  BarChart3,
+  Clock,
+  Lock,
+  Play,
+  BookOpen,
+  ChevronDown,
+  CheckCircle2,
+} from 'lucide-react';
 import { useEffect, useState } from 'react';
 import PageShell from '../components/PageShell';
 import DocumentHead from '../components/DocumentHead';
@@ -75,7 +84,11 @@ export default function CourseDetail() {
     <PageShell>
       <DocumentHead
         title={`${course.title} — sLearningKaka`}
-        description={course.subtitle ?? course.description?.slice(0, 160) ?? `Khoá học ${course.title} trên sLearningKaka.`}
+        description={
+          course.subtitle ??
+          course.description?.slice(0, 160) ??
+          `Khoá học ${course.title} trên sLearningKaka.`
+        }
         image={course.cover_image ?? undefined}
         url={`https://s-learning-kaka.vercel.app/courses/${course.slug}`}
         type="article"
@@ -85,7 +98,9 @@ export default function CourseDetail() {
         <div className="space-y-10">
           <div className="space-y-5">
             <div className="flex items-center gap-3 font-tech text-[10px] uppercase tracking-[0.18em] text-secondary/55">
-              <Link to="/courses" className="hover:text-cyan-300 transition-colors">Khoá học</Link>
+              <Link to="/courses" className="hover:text-cyan-300 transition-colors">
+                Khoá học
+              </Link>
               <span className="text-secondary/30">/</span>
               <span className="text-cyan-200">{course.slug}</span>
             </div>
@@ -118,20 +133,30 @@ export default function CourseDetail() {
 
           {course.cover_image && (
             <div className="overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03]">
-              <img src={course.cover_image} alt={course.title} className="w-full aspect-video object-cover" />
+              <img
+                src={course.cover_image}
+                alt={course.title}
+                className="w-full aspect-video object-cover"
+              />
             </div>
           )}
 
           {course.description && (
             <section className="glass-card rounded-2xl p-6 md:p-8 space-y-3">
-              <p className="font-tech text-[10px] uppercase tracking-[0.2em] text-primary">Giới thiệu khoá học</p>
-              <p className="text-secondary/90 leading-loose whitespace-pre-line">{course.description}</p>
+              <p className="font-tech text-[10px] uppercase tracking-[0.2em] text-primary">
+                Giới thiệu khoá học
+              </p>
+              <p className="text-secondary/90 leading-loose whitespace-pre-line">
+                {course.description}
+              </p>
             </section>
           )}
 
           {/* Curriculum */}
           <section className="space-y-4">
-            <p className="font-tech text-[10px] uppercase tracking-[0.2em] text-primary">Giáo trình</p>
+            <p className="font-tech text-[10px] uppercase tracking-[0.2em] text-primary">
+              Giáo trình
+            </p>
             <div className="space-y-3">
               {course.modules.map((module, mi) => (
                 <ModulePanel key={module.id} module={module} index={mi} courseSlug={course.slug} />
@@ -141,16 +166,24 @@ export default function CourseDetail() {
 
           {course.instructor && (
             <section className="glass-card rounded-2xl p-6 md:p-8 space-y-4">
-              <p className="font-tech text-[10px] uppercase tracking-[0.2em] text-primary">Giảng viên</p>
+              <p className="font-tech text-[10px] uppercase tracking-[0.2em] text-primary">
+                Giảng viên
+              </p>
               <div className="flex items-center gap-4">
                 {course.instructor.avatar_url && (
-                  <img src={course.instructor.avatar_url} alt="" className="w-14 h-14 rounded-full border border-white/10 object-cover" />
+                  <img
+                    src={course.instructor.avatar_url}
+                    alt=""
+                    className="w-14 h-14 rounded-full border border-white/10 object-cover"
+                  />
                 )}
                 <div>
                   <p className="font-headline text-lg font-bold text-on-surface">
                     {course.instructor.display_name ?? 'Giảng viên'}
                   </p>
-                  <p className="text-xs font-tech uppercase tracking-[0.14em] text-secondary/55">sLearningKaka</p>
+                  <p className="text-xs font-tech uppercase tracking-[0.14em] text-secondary/55">
+                    sLearningKaka
+                  </p>
                 </div>
               </div>
             </section>
@@ -167,7 +200,9 @@ export default function CourseDetail() {
               </div>
             ) : (
               <div>
-                <p className="font-tech text-[10px] uppercase tracking-[0.2em] text-secondary/55">Học phí</p>
+                <p className="font-tech text-[10px] uppercase tracking-[0.2em] text-secondary/55">
+                  Học phí
+                </p>
                 <p className="mt-1 font-headline text-3xl font-extrabold text-primary tabular-nums">
                   {course.price_vnd === 0 ? 'Miễn phí' : formatVnd(course.price_vnd)}
                 </p>
@@ -223,7 +258,17 @@ export default function CourseDetail() {
 }
 
 interface ModulePanelProps {
-  module: { id: string; title: string; lessons: Array<{ id: string; slug: string; title: string; duration_seconds: number; is_preview: boolean }> };
+  module: {
+    id: string;
+    title: string;
+    lessons: Array<{
+      id: string;
+      slug: string;
+      title: string;
+      duration_seconds: number;
+      is_preview: boolean;
+    }>;
+  };
   index: number;
   courseSlug: string;
 }
@@ -249,7 +294,10 @@ function ModulePanel({ module, index, courseSlug }: ModulePanelProps) {
           <span>{module.lessons.length} bài</span>
           {totalSeconds > 0 && <span>·</span>}
           {totalSeconds > 0 && <span>{Math.round(totalSeconds / 60)} phút</span>}
-          <ChevronDown size={14} className={`text-secondary transition-transform ${open ? 'rotate-180' : ''}`} />
+          <ChevronDown
+            size={14}
+            className={`text-secondary transition-transform ${open ? 'rotate-180' : ''}`}
+          />
         </div>
       </button>
       {open && (
@@ -259,15 +307,24 @@ function ModulePanel({ module, index, courseSlug }: ModulePanelProps) {
             const inner = (
               <>
                 <div className="flex items-center gap-3 min-w-0">
-                  <Icon size={12} className={lesson.is_preview ? 'text-cyan-300 shrink-0' : 'text-secondary/40 shrink-0'} />
+                  <Icon
+                    size={12}
+                    className={
+                      lesson.is_preview ? 'text-cyan-300 shrink-0' : 'text-secondary/40 shrink-0'
+                    }
+                  />
                   <span className="font-tech text-[10px] uppercase tracking-[0.14em] text-secondary/45 tabular-nums shrink-0">
                     {String(li + 1).padStart(2, '0')}
                   </span>
-                  <span className={`text-sm truncate ${lesson.is_preview ? 'text-on-surface' : 'text-secondary/70'}`}>
+                  <span
+                    className={`text-sm truncate ${lesson.is_preview ? 'text-on-surface' : 'text-secondary/70'}`}
+                  >
                     {lesson.title}
                   </span>
                   {lesson.is_preview && (
-                    <span className="font-tech text-[9px] uppercase tracking-[0.16em] text-cyan-300/85 shrink-0">Xem thử</span>
+                    <span className="font-tech text-[9px] uppercase tracking-[0.16em] text-cyan-300/85 shrink-0">
+                      Xem thử
+                    </span>
                   )}
                 </div>
                 {lesson.duration_seconds > 0 && (
@@ -287,9 +344,7 @@ function ModulePanel({ module, index, courseSlug }: ModulePanelProps) {
                     {inner}
                   </Link>
                 ) : (
-                  <div className="flex items-center justify-between gap-3 px-5 py-3">
-                    {inner}
-                  </div>
+                  <div className="flex items-center justify-between gap-3 px-5 py-3">{inner}</div>
                 )}
               </li>
             );

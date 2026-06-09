@@ -26,14 +26,17 @@ export async function addMistake(params: {
   wrongAnswer: AnswerValue;
   correctAnswer: AnswerValue;
 }): Promise<void> {
-  await supabase.from('mistake_notebook').upsert({
-    user_id: params.userId,
-    question_id: params.questionId,
-    quiz_id: params.quizId,
-    course_id: params.courseId,
-    wrong_answer: params.wrongAnswer,
-    correct_answer: params.correctAnswer,
-  }, { onConflict: 'user_id,question_id' });
+  await supabase.from('mistake_notebook').upsert(
+    {
+      user_id: params.userId,
+      question_id: params.questionId,
+      quiz_id: params.quizId,
+      course_id: params.courseId,
+      wrong_answer: params.wrongAnswer,
+      correct_answer: params.correctAnswer,
+    },
+    { onConflict: 'user_id,question_id' },
+  );
 }
 
 export async function getMistakes(userId: string, courseId?: string): Promise<MistakeEntry[]> {
@@ -48,10 +51,13 @@ export async function getMistakes(userId: string, courseId?: string): Promise<Mi
 }
 
 export async function resolveMistake(id: string): Promise<void> {
-  await supabase.from('mistake_notebook').update({
-    is_resolved: true,
-    resolved_at: new Date().toISOString(),
-  }).eq('id', id);
+  await supabase
+    .from('mistake_notebook')
+    .update({
+      is_resolved: true,
+      resolved_at: new Date().toISOString(),
+    })
+    .eq('id', id);
 }
 
 export async function updateMistakeNote(id: string, note: string): Promise<void> {

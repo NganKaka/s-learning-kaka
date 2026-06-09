@@ -34,10 +34,13 @@ export function RoleManager() {
   const toggleRole = async (
     userId: string,
     field: 'is_instructor' | 'is_parent' | 'is_admin',
-    current: boolean
+    current: boolean,
   ) => {
     setSaving(userId + field);
-    await supabase.from('profiles').update({ [field]: !current }).eq('id', userId);
+    await supabase
+      .from('profiles')
+      .update({ [field]: !current })
+      .eq('id', userId);
     setUsers((prev) => prev.map((u) => (u.id === userId ? { ...u, [field]: !current } : u)));
     setSaving(null);
   };
@@ -46,7 +49,7 @@ export function RoleManager() {
     (u) =>
       !search ||
       (u.display_name ?? '').toLowerCase().includes(search.toLowerCase()) ||
-      u.id.includes(search)
+      u.id.includes(search),
   );
 
   if (loading)

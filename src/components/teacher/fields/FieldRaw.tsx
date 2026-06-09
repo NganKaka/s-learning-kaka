@@ -13,7 +13,9 @@ interface FieldRawProps {
 export function FieldRaw({ label, value, onChange, multiline, placeholder, type }: FieldRawProps) {
   return (
     <div className="space-y-1">
-      <label className="font-tech text-[10px] uppercase tracking-[0.18em] text-secondary/55">{label}</label>
+      <label className="font-tech text-[10px] uppercase tracking-[0.18em] text-secondary/55">
+        {label}
+      </label>
       {multiline ? (
         <textarea
           value={value}

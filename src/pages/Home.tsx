@@ -23,7 +23,10 @@ export default function Home() {
         description="Lộ trình ôn luyện Toán 12 cho kỳ thi Tốt nghiệp THPT: video bài giảng, flashcard SRS, quiz cuối bài, chứng chỉ hoàn thành. Học thử miễn phí ngay."
         url="https://s-learning-kaka.vercel.app/"
       />
-      <section id="hero" className="relative pt-12 md:pt-20 grid lg:grid-cols-[1.2fr_0.8fr] gap-10 items-center">
+      <section
+        id="hero"
+        className="relative pt-12 md:pt-20 grid lg:grid-cols-[1.2fr_0.8fr] gap-10 items-center"
+      >
         <div className="space-y-7">
           <div className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-3 py-1.5 font-tech text-[10px] uppercase tracking-[0.18em] text-primary">
             <span>Toán 12 · TN THPT 2027</span>
@@ -35,13 +38,16 @@ export default function Home() {
             <GradientText text="Lộ trình Toán 12 đầy đủ — dạy bởi Vo Hoang Ngan" />
           </p>
           <p className="text-secondary/85 leading-relaxed max-w-xl">
-            Hàm số · Mũ và logarit · Tích phân · Số phức · Hình không gian · Toạ độ.
-            Mỗi bài có video giảng chi tiết, flashcard ôn theo phương pháp lặp lại ngắt quãng,
-            và quiz cuối bài để bạn biết mình đang ở đâu trước khi bước tiếp.
+            Hàm số · Mũ và logarit · Tích phân · Số phức · Hình không gian · Toạ độ. Mỗi bài có
+            video giảng chi tiết, flashcard ôn theo phương pháp lặp lại ngắt quãng, và quiz cuối bài
+            để bạn biết mình đang ở đâu trước khi bước tiếp.
           </p>
           <div className="flex flex-wrap items-center gap-2 font-tech text-[10px] uppercase tracking-[0.16em] text-secondary/70">
             {['HKIMO Gold', 'AIMO Silver', 'VMO 3rd', 'CS HCMUT'].map((tag) => (
-              <span key={tag} className="rounded-full border border-cyan-300/25 bg-cyan-950/15 px-2.5 py-1 text-cyan-100/80">
+              <span
+                key={tag}
+                className="rounded-full border border-cyan-300/25 bg-cyan-950/15 px-2.5 py-1 text-cyan-100/80"
+              >
                 {tag}
               </span>
             ))}
@@ -102,7 +108,9 @@ export default function Home() {
               </h2>
 
               {featured.subtitle && (
-                <p className="text-sm text-secondary/80 leading-relaxed line-clamp-2">{featured.subtitle}</p>
+                <p className="text-sm text-secondary/80 leading-relaxed line-clamp-2">
+                  {featured.subtitle}
+                </p>
               )}
 
               <div className="flex items-center justify-between pt-2">
@@ -124,12 +132,17 @@ export default function Home() {
                 { icon: Brain, label: 'Flashcard cần ôn', value: '0' },
                 { icon: Trophy, label: 'Streak', value: '0 ngày' },
               ].map((row) => (
-                <div key={row.label} className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3">
+                <div
+                  key={row.label}
+                  className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3"
+                >
                   <div className="flex items-center gap-3">
                     <row.icon size={16} className="text-cyan-300" />
                     <span className="text-sm text-secondary/80">{row.label}</span>
                   </div>
-                  <span className="font-headline text-lg font-bold text-on-surface tabular-nums">{row.value}</span>
+                  <span className="font-headline text-lg font-bold text-on-surface tabular-nums">
+                    {row.value}
+                  </span>
                 </div>
               ))}
             </div>
@@ -183,13 +196,22 @@ export default function Home() {
           <div className="mt-8 grid md:grid-cols-[1fr_auto] items-center gap-6 glass-card rounded-2xl p-6 md:p-8 ambient-shadow">
             <div className="space-y-4">
               <p className="text-secondary/85 leading-relaxed">
-                Giảng viên kiêm kỹ sư phần mềm tại HCM. Nền tảng Toán mạnh từ thời kỳ chuyên Toán
-                Lê Hồng Phong, kết hợp kinh nghiệm xây dựng sản phẩm thật giúp việc giảng dạy
-                không chỉ ở mức "biết làm bài" — học sinh hiểu được tại sao và áp dụng được.
+                Giảng viên kiêm kỹ sư phần mềm tại HCM. Nền tảng Toán mạnh từ thời kỳ chuyên Toán Lê
+                Hồng Phong, kết hợp kinh nghiệm xây dựng sản phẩm thật giúp việc giảng dạy không chỉ
+                ở mức "biết làm bài" — học sinh hiểu được tại sao và áp dụng được.
               </p>
               <div className="flex flex-wrap gap-2">
-                {['VMO 3rd', 'HKIMO Gold', 'AIMO Silver', 'IGO Aluminium', 'Le Hong Phong Math'].map((tag) => (
-                  <span key={tag} className="rounded-full border border-cyan-300/20 bg-cyan-950/15 px-3 py-1 font-tech text-[10px] uppercase tracking-[0.14em] text-cyan-100/75">
+                {[
+                  'VMO 3rd',
+                  'HKIMO Gold',
+                  'AIMO Silver',
+                  'IGO Aluminium',
+                  'Le Hong Phong Math',
+                ].map((tag) => (
+                  <span
+                    key={tag}
+                    className="rounded-full border border-cyan-300/20 bg-cyan-950/15 px-3 py-1 font-tech text-[10px] uppercase tracking-[0.14em] text-cyan-100/75"
+                  >
                     {tag}
                   </span>
                 ))}

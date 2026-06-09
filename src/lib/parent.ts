@@ -56,10 +56,7 @@ export async function linkCode(parentId: string, code: string): Promise<{ error?
 }
 
 export async function getLinkedStudents(parentId: string): Promise<LinkedStudent[]> {
-  const { data: links } = await supabase
-    .from('parent_links')
-    .select('*')
-    .eq('parent_id', parentId);
+  const { data: links } = await supabase.from('parent_links').select('*').eq('parent_id', parentId);
 
   if (!links || links.length === 0) return [];
 
@@ -79,19 +76,21 @@ export async function getLinkedStudents(parentId: string): Promise<LinkedStudent
     supabase.from('courses').select('id, title').in('id', courseIds),
   ]);
 
-  return links.map((link) => {
-    const enrollment = enrollments.find((e) => e.id === link.enrollment_id);
-    if (!enrollment) return null;
-    const profile = profiles?.find((p) => p.id === enrollment.user_id);
-    const course = courses?.find((c) => c.id === enrollment.course_id);
-    return {
-      link: link as ParentLink,
-      student_name: profile?.display_name ?? null,
-      course_title: course?.title ?? 'Khoá học',
-      course_id: enrollment.course_id,
-      student_id: enrollment.user_id,
-    };
-  }).filter(Boolean) as LinkedStudent[];
+  return links
+    .map((link) => {
+      const enrollment = enrollments.find((e) => e.id === link.enrollment_id);
+      if (!enrollment) return null;
+      const profile = profiles?.find((p) => p.id === enrollment.user_id);
+      const course = courses?.find((c) => c.id === enrollment.course_id);
+      return {
+        link: link as ParentLink,
+        student_name: profile?.display_name ?? null,
+        course_title: course?.title ?? 'Khoá học',
+        course_id: enrollment.course_id,
+        student_id: enrollment.user_id,
+      };
+    })
+    .filter(Boolean) as LinkedStudent[];
 }
 
 export async function getStudentScores(

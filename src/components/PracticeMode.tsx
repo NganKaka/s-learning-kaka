@@ -89,7 +89,9 @@ export default function PracticeMode({
 
       <div className="space-y-3">
         <p className="font-headline text-base font-bold text-on-surface">
-          <span className="text-primary mr-2 tabular-nums">{currentIdx + 1}/{questions.length}</span>
+          <span className="text-primary mr-2 tabular-nums">
+            {currentIdx + 1}/{questions.length}
+          </span>
           {q.prompt_md}
         </p>
 
@@ -111,10 +113,14 @@ export default function PracticeMode({
                   disabled={revealed}
                   className={`w-full flex items-center gap-3 rounded-lg border px-4 py-2.5 text-left text-sm transition-all ${cls}`}
                 >
-                  <span className="font-tech text-[10px] text-secondary/55">{String.fromCharCode(65 + ci)}</span>
+                  <span className="font-tech text-[10px] text-secondary/55">
+                    {String.fromCharCode(65 + ci)}
+                  </span>
                   <span className="flex-1">{choice}</span>
                   {revealed && isRight && <CheckCircle2 size={14} className="text-emerald-400" />}
-                  {revealed && isPicked && !isRight && <XCircle size={14} className="text-red-400" />}
+                  {revealed && isPicked && !isRight && (
+                    <XCircle size={14} className="text-red-400" />
+                  )}
                 </button>
               );
             })}
@@ -139,7 +145,9 @@ export default function PracticeMode({
 
         {revealed && q.explanation_md && (
           <div className="rounded-lg border border-cyan-300/20 bg-cyan-400/[0.04] px-3 py-2">
-            <p className="font-tech text-[9px] uppercase tracking-[0.14em] text-cyan-300 mb-1">Giải thích</p>
+            <p className="font-tech text-[9px] uppercase tracking-[0.14em] text-cyan-300 mb-1">
+              Giải thích
+            </p>
             <p className="text-sm text-secondary/80">{q.explanation_md}</p>
           </div>
         )}

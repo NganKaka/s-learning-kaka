@@ -66,7 +66,11 @@ export default function DistortionImage({
   }, [range, maxStrength]);
 
   return (
-    <div ref={containerRef} className={`relative ${className}`} style={{ filter: `url(#${filterId})` }}>
+    <div
+      ref={containerRef}
+      className={`relative ${className}`}
+      style={{ filter: `url(#${filterId})` }}
+    >
       <svg width="0" height="0" className="absolute" aria-hidden>
         <defs>
           <filter id={filterId}>

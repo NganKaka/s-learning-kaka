@@ -95,12 +95,17 @@ export default function StudentAnnouncements() {
                       {a.instructor_name ?? 'Giảng viên'} · {formatRelative(a.created_at)}
                     </span>
                   </div>
-                  {a.title && <p className="mt-1 font-headline font-bold text-on-surface">{a.title}</p>}
+                  {a.title && (
+                    <p className="mt-1 font-headline font-bold text-on-surface">{a.title}</p>
+                  )}
                   {!isOpen && (
                     <p className="mt-1 text-sm text-secondary/80 line-clamp-1">{a.body_md}</p>
                   )}
                 </div>
-                <ChevronDown size={14} className={`text-secondary/45 mt-1 transition-transform shrink-0 ${isOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown
+                  size={14}
+                  className={`text-secondary/45 mt-1 transition-transform shrink-0 ${isOpen ? 'rotate-180' : ''}`}
+                />
               </div>
               <AnimatePresence>
                 {isOpen && (
@@ -111,7 +116,9 @@ export default function StudentAnnouncements() {
                     transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
                     className="overflow-hidden"
                   >
-                    <p className="text-sm text-secondary/85 leading-relaxed whitespace-pre-line">{a.body_md}</p>
+                    <p className="text-sm text-secondary/85 leading-relaxed whitespace-pre-line">
+                      {a.body_md}
+                    </p>
                   </motion.div>
                 )}
               </AnimatePresence>

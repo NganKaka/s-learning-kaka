@@ -105,10 +105,15 @@ export default function TimedDrill({
           <Zap size={12} /> Drill · {idx + 1}/{questions.length}
         </p>
         <div className="flex items-center gap-3">
-          <span className={`font-tech text-sm tabular-nums font-bold ${timeLeft <= 5 ? 'text-red-300 animate-pulse' : 'text-cyan-200'}`}>
+          <span
+            className={`font-tech text-sm tabular-nums font-bold ${timeLeft <= 5 ? 'text-red-300 animate-pulse' : 'text-cyan-200'}`}
+          >
             {timeLeft}s
           </span>
-          <button onClick={onExit} className="font-tech text-[10px] uppercase text-secondary/60 hover:text-cyan-200">
+          <button
+            onClick={onExit}
+            className="font-tech text-[10px] uppercase text-secondary/60 hover:text-cyan-200"
+          >
             Thoát
           </button>
         </div>
@@ -140,12 +145,17 @@ export default function TimedDrill({
               onClick={() => {
                 if (revealed) return;
                 if (q.type === 'single') setPicked([ci]);
-                else setPicked((p) => p.includes(ci) ? p.filter((x) => x !== ci) : [...p, ci].sort());
+                else
+                  setPicked((p) =>
+                    p.includes(ci) ? p.filter((x) => x !== ci) : [...p, ci].sort(),
+                  );
               }}
               disabled={revealed}
               className={`w-full flex items-center gap-3 rounded-lg border px-4 py-2.5 text-left text-sm transition-all ${cls}`}
             >
-              <span className="font-tech text-[10px] text-secondary/55">{String.fromCharCode(65 + ci)}</span>
+              <span className="font-tech text-[10px] text-secondary/55">
+                {String.fromCharCode(65 + ci)}
+              </span>
               <span className="flex-1">{choice}</span>
               {revealed && isRight && <CheckCircle2 size={14} className="text-emerald-400" />}
               {revealed && isPicked && !isRight && <XCircle size={14} className="text-red-400" />}

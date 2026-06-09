@@ -13,7 +13,11 @@ const SPAWN_INTERVAL = 28;
 export default function CursorTrail() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const dotsRef = useRef<Dot[]>([]);
-  const mouseRef = useRef<{ x: number; y: number; active: boolean }>({ x: -9999, y: -9999, active: false });
+  const mouseRef = useRef<{ x: number; y: number; active: boolean }>({
+    x: -9999,
+    y: -9999,
+    active: false,
+  });
   const lastSpawnRef = useRef(0);
 
   useEffect(() => {
@@ -126,9 +130,6 @@ export default function CursorTrail() {
   }, []);
 
   return (
-    <canvas
-      ref={canvasRef}
-      className="pointer-events-none fixed inset-0 z-[60] hidden md:block"
-    />
+    <canvas ref={canvasRef} className="pointer-events-none fixed inset-0 z-[60] hidden md:block" />
   );
 }

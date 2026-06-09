@@ -16,7 +16,13 @@ interface DocumentHeadProps {
 
 const DEFAULT_IMAGE = '/og.png';
 
-export default function DocumentHead({ title, description, image, url, type = 'website' }: DocumentHeadProps) {
+export default function DocumentHead({
+  title,
+  description,
+  image,
+  url,
+  type = 'website',
+}: DocumentHeadProps) {
   useEffect(() => {
     const fullTitle = title.includes('sLearningKaka') ? title : `${title} — sLearningKaka`;
     const desc =
@@ -28,20 +34,47 @@ export default function DocumentHead({ title, description, image, url, type = 'w
     const prevTitle = document.title;
     document.title = fullTitle;
 
-    const tags: Array<{ selector: string; attr: 'name' | 'property'; key: string; value: string }> = [
-      { selector: 'meta[name="description"]', attr: 'name', key: 'description', value: desc },
-      { selector: 'meta[property="og:title"]', attr: 'property', key: 'og:title', value: fullTitle },
-      { selector: 'meta[property="og:description"]', attr: 'property', key: 'og:description', value: desc },
-      { selector: 'meta[property="og:image"]', attr: 'property', key: 'og:image', value: img },
-      { selector: 'meta[property="og:url"]', attr: 'property', key: 'og:url', value: fullUrl },
-      { selector: 'meta[property="og:type"]', attr: 'property', key: 'og:type', value: type },
-      { selector: 'meta[name="twitter:card"]', attr: 'name', key: 'twitter:card', value: 'summary_large_image' },
-      { selector: 'meta[name="twitter:title"]', attr: 'name', key: 'twitter:title', value: fullTitle },
-      { selector: 'meta[name="twitter:description"]', attr: 'name', key: 'twitter:description', value: desc },
-      { selector: 'meta[name="twitter:image"]', attr: 'name', key: 'twitter:image', value: img },
-    ];
+    const tags: Array<{ selector: string; attr: 'name' | 'property'; key: string; value: string }> =
+      [
+        { selector: 'meta[name="description"]', attr: 'name', key: 'description', value: desc },
+        {
+          selector: 'meta[property="og:title"]',
+          attr: 'property',
+          key: 'og:title',
+          value: fullTitle,
+        },
+        {
+          selector: 'meta[property="og:description"]',
+          attr: 'property',
+          key: 'og:description',
+          value: desc,
+        },
+        { selector: 'meta[property="og:image"]', attr: 'property', key: 'og:image', value: img },
+        { selector: 'meta[property="og:url"]', attr: 'property', key: 'og:url', value: fullUrl },
+        { selector: 'meta[property="og:type"]', attr: 'property', key: 'og:type', value: type },
+        {
+          selector: 'meta[name="twitter:card"]',
+          attr: 'name',
+          key: 'twitter:card',
+          value: 'summary_large_image',
+        },
+        {
+          selector: 'meta[name="twitter:title"]',
+          attr: 'name',
+          key: 'twitter:title',
+          value: fullTitle,
+        },
+        {
+          selector: 'meta[name="twitter:description"]',
+          attr: 'name',
+          key: 'twitter:description',
+          value: desc,
+        },
+        { selector: 'meta[name="twitter:image"]', attr: 'name', key: 'twitter:image', value: img },
+      ];
 
-    const previousValues: Array<{ el: HTMLMetaElement; prev: string | null; created: boolean }> = [];
+    const previousValues: Array<{ el: HTMLMetaElement; prev: string | null; created: boolean }> =
+      [];
 
     for (const tag of tags) {
       let el = document.head.querySelector<HTMLMetaElement>(tag.selector);

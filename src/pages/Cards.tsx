@@ -7,7 +7,12 @@ import SectionHeading from '../components/ui/SectionHeading';
 import { useAuth } from '../contexts/AuthContext';
 import { fetchDueCards, submitReview, type DueCard, type Rating } from '../lib/srs';
 
-const RATING_BUTTONS: Array<{ rating: Rating; label: string; sub: string; tone: 'red' | 'orange' | 'cyan' | 'green' }> = [
+const RATING_BUTTONS: Array<{
+  rating: Rating;
+  label: string;
+  sub: string;
+  tone: 'red' | 'orange' | 'cyan' | 'green';
+}> = [
   { rating: 0, label: 'Lại', sub: '~10 phút', tone: 'red' },
   { rating: 1, label: 'Khó', sub: 'sớm hơn', tone: 'orange' },
   { rating: 2, label: 'Tốt', sub: 'theo lịch', tone: 'cyan' },
@@ -92,7 +97,9 @@ export default function Cards() {
       ) : total === 0 ? (
         <div className="mt-10 glass-card rounded-2xl p-12 text-center space-y-3">
           <Brain size={28} className="text-cyan-300 mx-auto" />
-          <p className="font-headline text-xl font-bold text-on-surface">Hôm nay không có thẻ cần ôn</p>
+          <p className="font-headline text-xl font-bold text-on-surface">
+            Hôm nay không có thẻ cần ôn
+          </p>
           <p className="text-sm text-secondary/75">
             Khi giảng viên thêm flashcard vào bài học bạn đã đăng ký, các thẻ sẽ xuất hiện ở đây.
           </p>
@@ -100,9 +107,12 @@ export default function Cards() {
       ) : done ? (
         <div className="mt-10 glass-card rounded-2xl p-12 text-center space-y-4">
           <CheckCircle2 size={36} className="text-primary mx-auto" />
-          <p className="font-headline text-2xl font-bold text-on-surface">Hoàn thành phiên ôn tập!</p>
+          <p className="font-headline text-2xl font-bold text-on-surface">
+            Hoàn thành phiên ôn tập!
+          </p>
           <p className="text-sm text-secondary/80">
-            Bạn vừa ôn <strong className="text-cyan-200">{reviewedCount}</strong> thẻ. Hẹn gặp lại ngày mai.
+            Bạn vừa ôn <strong className="text-cyan-200">{reviewedCount}</strong> thẻ. Hẹn gặp lại
+            ngày mai.
           </p>
           <button
             type="button"
@@ -143,7 +153,9 @@ export default function Cards() {
                 style={{ backfaceVisibility: 'hidden' }}
               >
                 <div className="space-y-3">
-                  <p className="font-tech text-[10px] uppercase tracking-[0.2em] text-primary">Mặt trước</p>
+                  <p className="font-tech text-[10px] uppercase tracking-[0.2em] text-primary">
+                    Mặt trước
+                  </p>
                   <p className="font-headline text-2xl md:text-3xl text-on-surface whitespace-pre-line">
                     {card.front_md}
                   </p>
@@ -157,7 +169,9 @@ export default function Cards() {
                 style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
               >
                 <div className="space-y-3">
-                  <p className="font-tech text-[10px] uppercase tracking-[0.2em] text-cyan-300">Đáp án</p>
+                  <p className="font-tech text-[10px] uppercase tracking-[0.2em] text-cyan-300">
+                    Đáp án
+                  </p>
                   <p className="font-headline text-xl md:text-2xl text-on-surface whitespace-pre-line">
                     {card.back_md}
                   </p>
@@ -187,7 +201,9 @@ export default function Cards() {
                     className={`flex flex-col items-center gap-1 rounded-xl border px-4 py-4 transition-all ${TONE_CLASS[btn.tone]} disabled:opacity-50`}
                   >
                     <span className="font-headline font-bold text-base">{btn.label}</span>
-                    <span className="font-tech text-[9px] uppercase tracking-[0.14em] opacity-80">{btn.sub}</span>
+                    <span className="font-tech text-[9px] uppercase tracking-[0.14em] opacity-80">
+                      {btn.sub}
+                    </span>
                   </button>
                 ))}
               </motion.div>
@@ -200,7 +216,11 @@ export default function Cards() {
               onClick={() => setFlipped(true)}
               className="block mx-auto mt-4 inline-flex items-center gap-2 rounded-full border border-cyan-300/40 bg-cyan-400/10 px-5 py-2.5 text-xs font-tech uppercase tracking-[0.16em] text-cyan-200 hover:bg-cyan-400/20"
             >
-              {submitting ? <Loader2 size={12} className="animate-spin" /> : <ArrowRight size={12} />}
+              {submitting ? (
+                <Loader2 size={12} className="animate-spin" />
+              ) : (
+                <ArrowRight size={12} />
+              )}
               Xem đáp án
             </button>
           )}

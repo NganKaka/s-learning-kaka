@@ -37,7 +37,8 @@ export default function Marquee({
       className={`relative overflow-hidden py-8 ${className}`}
       style={{
         maskImage: 'linear-gradient(to right, transparent, black 10%, black 90%, transparent)',
-        WebkitMaskImage: 'linear-gradient(to right, transparent, black 10%, black 90%, transparent)',
+        WebkitMaskImage:
+          'linear-gradient(to right, transparent, black 10%, black 90%, transparent)',
         minHeight: '110px',
       }}
     >

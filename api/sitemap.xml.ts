@@ -6,9 +6,14 @@ const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const SITE_URL = 'https://s-learning-kaka.vercel.app';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  const admin = createClient(SUPABASE_URL!, SERVICE_ROLE_KEY!, { auth: { autoRefreshToken: false, persistSession: false } });
+  const admin = createClient(SUPABASE_URL!, SERVICE_ROLE_KEY!, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  });
 
-  const { data: courses } = await admin.from('courses').select('slug, updated_at').eq('status', 'published');
+  const { data: courses } = await admin
+    .from('courses')
+    .select('slug, updated_at')
+    .eq('status', 'published');
 
   const urls = [
     { loc: '/', priority: '1.0', changefreq: 'weekly' },
@@ -23,12 +28,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${urls.map((u) => `  <url>
+${urls
+  .map(
+    (u) => `  <url>
     <loc>${SITE_URL}${u.loc}</loc>
     <changefreq>${u.changefreq}</changefreq>
     <priority>${u.priority}</priority>
     ${u.lastmod ? `<lastmod>${u.lastmod}</lastmod>` : ''}
-  </url>`).join('\n')}
+  </url>`,
+  )
+  .join('\n')}
 </urlset>`;
 
   res.setHeader('Content-Type', 'application/xml');

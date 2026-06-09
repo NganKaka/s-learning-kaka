@@ -25,7 +25,12 @@ export default function StudyHeatmap({ userId }: { userId: string }) {
     });
   }, [userId]);
 
-  if (loading) return <div className="flex justify-center py-4"><Loader2 size={16} className="animate-spin text-primary" /></div>;
+  if (loading)
+    return (
+      <div className="flex justify-center py-4">
+        <Loader2 size={16} className="animate-spin text-primary" />
+      </div>
+    );
 
   // Generate 12 weeks (84 days) of cells
   const cells: { date: string; minutes: number }[] = [];
@@ -57,7 +62,10 @@ export default function StudyHeatmap({ userId }: { userId: string }) {
             <div
               key={cell.date}
               className="aspect-square rounded-sm"
-              style={{ backgroundColor: intensity > 0 ? `rgba(103, 232, 249, ${intensity})` : 'rgba(255,255,255,0.04)' }}
+              style={{
+                backgroundColor:
+                  intensity > 0 ? `rgba(103, 232, 249, ${intensity})` : 'rgba(255,255,255,0.04)',
+              }}
               title={`${cell.date}: ${cell.minutes} phút`}
             />
           );
@@ -67,7 +75,11 @@ export default function StudyHeatmap({ userId }: { userId: string }) {
       <div className="flex items-center gap-2 justify-end">
         <span className="font-tech text-[8px] text-secondary/45">Ít</span>
         {[0.15, 0.35, 0.6, 0.85].map((op) => (
-          <div key={op} className="w-3 h-3 rounded-sm" style={{ backgroundColor: `rgba(103, 232, 249, ${op})` }} />
+          <div
+            key={op}
+            className="w-3 h-3 rounded-sm"
+            style={{ backgroundColor: `rgba(103, 232, 249, ${op})` }}
+          />
         ))}
         <span className="font-tech text-[8px] text-secondary/45">Nhiều</span>
       </div>

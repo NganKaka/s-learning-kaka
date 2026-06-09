@@ -11,7 +11,10 @@ export async function getPrerequisites(lessonId: string): Promise<Prerequisite[]
   return (data ?? []) as Prerequisite[];
 }
 
-export async function checkPrerequisitesMet(userId: string, lessonId: string): Promise<{ met: boolean; missing: string[] }> {
+export async function checkPrerequisitesMet(
+  userId: string,
+  lessonId: string,
+): Promise<{ met: boolean; missing: string[] }> {
   const prereqs = await getPrerequisites(lessonId);
   if (prereqs.length === 0) return { met: true, missing: [] };
 
@@ -28,9 +31,21 @@ export async function checkPrerequisitesMet(userId: string, lessonId: string): P
 }
 
 export async function addPrerequisite(lessonId: string, requiredLessonId: string): Promise<void> {
-  await supabase.from('prerequisites').upsert({ lesson_id: lessonId, required_lesson_id: requiredLessonId }, { onConflict: 'lesson_id,required_lesson_id' });
+  await supabase
+    .from('prerequisites')
+    .upsert(
+      { lesson_id: lessonId, required_lesson_id: requiredLessonId },
+      { onConflict: 'lesson_id,required_lesson_id' },
+    );
 }
 
-export async function removePrerequisite(lessonId: string, requiredLessonId: string): Promise<void> {
-  await supabase.from('prerequisites').delete().eq('lesson_id', lessonId).eq('required_lesson_id', requiredLessonId);
+export async function removePrerequisite(
+  lessonId: string,
+  requiredLessonId: string,
+): Promise<void> {
+  await supabase
+    .from('prerequisites')
+    .delete()
+    .eq('lesson_id', lessonId)
+    .eq('required_lesson_id', requiredLessonId);
 }

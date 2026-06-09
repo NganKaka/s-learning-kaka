@@ -85,10 +85,7 @@ export default function LessonQuiz({ lessonId, userId }: { lessonId: string; use
   const [reviewAttempt, setReviewAttempt] = useState<QuizAttempt | null>(null);
   const [retryWrongOnly, setRetryWrongOnly] = useState(false);
 
-  const totalMaxPoints = useMemo(
-    () => questions.reduce((s, q) => s + q.points, 0),
-    [questions],
-  );
+  const totalMaxPoints = useMemo(() => questions.reduce((s, q) => s + q.points, 0), [questions]);
 
   // ----- Load quiz + previous attempts -----
   useEffect(() => {
@@ -190,8 +187,7 @@ export default function LessonQuiz({ lessonId, userId }: { lessonId: string; use
   // ----- Begin a new attempt -----
   const beginAttempt = useCallback(async () => {
     if (!quiz) return;
-    const nextNumber =
-      Math.max(0, ...previousAttempts.map((a) => a.attempt_number)) + 1;
+    const nextNumber = Math.max(0, ...previousAttempts.map((a) => a.attempt_number)) + 1;
     const created = await startAttempt({
       quizId: quiz.id,
       userId,
@@ -292,17 +288,26 @@ export default function LessonQuiz({ lessonId, userId }: { lessonId: string; use
       setSubmitting(false);
 
       // Post-submission: XP, badges, mistakes, goals
-      awardXp({ userId, source: 'quiz_submit', referenceId: activeAttempt.id }).then(({ streak }) => {
-        const score = graded.finalPctIfNoTeacherGrading;
-        checkAndAwardBadges(userId, { quizScore: score ?? undefined, streak });
-      });
+      awardXp({ userId, source: 'quiz_submit', referenceId: activeAttempt.id }).then(
+        ({ streak }) => {
+          const score = graded.finalPctIfNoTeacherGrading;
+          checkAndAwardBadges(userId, { quizScore: score ?? undefined, streak });
+        },
+      );
       incrementGoalProgress(userId, 'quizzes_done');
       // Log wrong answers to mistake notebook
       for (const pq of graded.perQuestion) {
         if (pq.autoGradable && pq.isCorrect === false) {
           const q = questions.find((qq) => qq.id === pq.questionId);
           if (q && quiz) {
-            addMistake({ userId, questionId: q.id, quizId: quiz.id, courseId: '', wrongAnswer: finalAnswers[q.id] ?? { kind: 'empty' }, correctAnswer: { kind: 'empty' } });
+            addMistake({
+              userId,
+              questionId: q.id,
+              quizId: quiz.id,
+              courseId: '',
+              wrongAnswer: finalAnswers[q.id] ?? { kind: 'empty' },
+              correctAnswer: { kind: 'empty' },
+            });
           }
         }
       }
@@ -326,13 +331,37 @@ export default function LessonQuiz({ lessonId, userId }: { lessonId: string; use
 
   // Mode-based rendering
   if (mode === 'review' && reviewAttempt) {
-    return <QuizReview attempt={reviewAttempt} questions={questions} onClose={() => { setMode('quiz'); setReviewAttempt(null); }} />;
+    return (
+      <QuizReview
+        attempt={reviewAttempt}
+        questions={questions}
+        onClose={() => {
+          setMode('quiz');
+          setReviewAttempt(null);
+        }}
+      />
+    );
   }
   if (mode === 'practice') {
-    return <PracticeMode questions={questions.filter((q) => q.type === 'single' || q.type === 'multi' || q.type === 'text')} onExit={() => setMode('quiz')} />;
+    return (
+      <PracticeMode
+        questions={questions.filter(
+          (q) => q.type === 'single' || q.type === 'multi' || q.type === 'text',
+        )}
+        onExit={() => setMode('quiz')}
+      />
+    );
   }
   if (mode === 'drill') {
-    return <TimedDrill questions={questions} onComplete={(correct, total) => { awardXp({ userId, source: 'drill_complete' }); }} onExit={() => setMode('quiz')} />;
+    return (
+      <TimedDrill
+        questions={questions}
+        onComplete={(correct, total) => {
+          awardXp({ userId, source: 'drill_complete' });
+        }}
+        onExit={() => setMode('quiz')}
+      />
+    );
   }
 
   const attemptsUsed = previousAttempts.length;
@@ -406,7 +435,14 @@ export default function LessonQuiz({ lessonId, userId }: { lessonId: string; use
                   <span className="font-tech text-[10px] tabular-nums text-secondary/45">
                     {formatTimeLeft(a.time_spent_seconds)}
                   </span>
-                  <button type="button" onClick={() => { setReviewAttempt(a); setMode('review'); }} className="font-tech text-[10px] uppercase tracking-[0.14em] text-cyan-300 hover:text-cyan-200">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setReviewAttempt(a);
+                      setMode('review');
+                    }}
+                    className="font-tech text-[10px] uppercase tracking-[0.14em] text-cyan-300 hover:text-cyan-200"
+                  >
                     Xem lại
                   </button>
                 </li>
@@ -415,21 +451,26 @@ export default function LessonQuiz({ lessonId, userId }: { lessonId: string; use
           </div>
         )}
 
-        {justSubmitted && (
-          <ResultBanner attempt={justSubmitted} questions={questions} />
-        )}
+        {justSubmitted && <ResultBanner attempt={justSubmitted} questions={questions} />}
 
         <div className="flex items-center justify-between pt-2 flex-wrap gap-3">
           <p className="font-tech text-[10px] uppercase tracking-[0.16em] text-secondary/55">
-            Còn lại{' '}
-            <span className="text-cyan-200 tabular-nums">{attemptsRemaining}</span>/
+            Còn lại <span className="text-cyan-200 tabular-nums">{attemptsRemaining}</span>/
             <span className="tabular-nums">{quiz.max_attempts}</span> lượt làm
           </p>
           <div className="flex items-center gap-2 flex-wrap">
-            <button type="button" onClick={() => setMode('practice')} className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-3 py-2 text-xs font-tech uppercase tracking-[0.14em] text-emerald-200 hover:bg-emerald-500/20">
+            <button
+              type="button"
+              onClick={() => setMode('practice')}
+              className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-3 py-2 text-xs font-tech uppercase tracking-[0.14em] text-emerald-200 hover:bg-emerald-500/20"
+            >
               <RotateCcw size={11} /> Luyện tập
             </button>
-            <button type="button" onClick={() => setMode('drill')} className="inline-flex items-center gap-1.5 rounded-full border border-amber-400/30 bg-amber-500/10 px-3 py-2 text-xs font-tech uppercase tracking-[0.14em] text-amber-200 hover:bg-amber-500/20">
+            <button
+              type="button"
+              onClick={() => setMode('drill')}
+              className="inline-flex items-center gap-1.5 rounded-full border border-amber-400/30 bg-amber-500/10 px-3 py-2 text-xs font-tech uppercase tracking-[0.14em] text-amber-200 hover:bg-amber-500/20"
+            >
               <Zap size={11} /> Drill
             </button>
             {attemptsRemaining > 0 ? (
@@ -512,7 +553,8 @@ export default function LessonQuiz({ lessonId, userId }: { lessonId: string; use
 
       <div className="flex items-center justify-between gap-3 pt-2 flex-wrap">
         <p className="font-tech text-[10px] uppercase tracking-[0.16em] text-secondary/55">
-          {Object.values(answers).filter((a) => a && a.kind !== 'empty').length}/{questions.length} đã trả lời
+          {Object.values(answers).filter((a) => a && a.kind !== 'empty').length}/{questions.length}{' '}
+          đã trả lời
         </p>
         <button
           type="button"
@@ -527,7 +569,8 @@ export default function LessonQuiz({ lessonId, userId }: { lessonId: string; use
 
       <p className="flex items-start gap-2 rounded-xl border border-amber-400/20 bg-amber-500/[0.05] px-3 py-2 text-[11px] text-amber-200/90">
         <AlertCircle size={12} className="mt-0.5 shrink-0" />
-        Hệ thống đang theo dõi nếu bạn rời tab hoặc mở cửa sổ khác. Số lần này sẽ được gửi tới giáo viên cùng bài làm.
+        Hệ thống đang theo dõi nếu bạn rời tab hoặc mở cửa sổ khác. Số lần này sẽ được gửi tới giáo
+        viên cùng bài làm.
       </p>
     </section>
   );
@@ -570,7 +613,9 @@ function QuestionCard({
   return (
     <div className="space-y-3">
       <p className="font-headline text-base font-bold text-on-surface">
-        <span className="text-primary mr-2 tabular-nums">{String(index + 1).padStart(2, '0')}.</span>
+        <span className="text-primary mr-2 tabular-nums">
+          {String(index + 1).padStart(2, '0')}.
+        </span>
         {question.prompt_md}
         <span className="ml-2 font-tech text-[9px] uppercase tracking-[0.14em] text-secondary/55">
           ({question.points} điểm
@@ -716,13 +761,7 @@ function FileDropZone({
   );
 }
 
-function ResultBanner({
-  attempt,
-  questions,
-}: {
-  attempt: QuizAttempt;
-  questions: QuizQuestion[];
-}) {
+function ResultBanner({ attempt, questions }: { attempt: QuizAttempt; questions: QuizQuestion[] }) {
   const graded = gradeAttempt(questions, attempt.answers_jsonb ?? {});
   const score = attempt.final_score ?? attempt.auto_score;
   const pendingTeacher = attempt.final_score === null && graded.autoGradedMax < graded.totalMax;

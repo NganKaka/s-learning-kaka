@@ -14,7 +14,13 @@ type TabKey = (typeof TABS)[number]['key'];
  * Mobile tab bar for the Learn page. Renders below the video on small screens.
  * Parent renders content based on activeTab.
  */
-export default function MobileLearnTabs({ activeTab, onTabChange }: { activeTab: TabKey; onTabChange: (tab: TabKey) => void }) {
+export default function MobileLearnTabs({
+  activeTab,
+  onTabChange,
+}: {
+  activeTab: TabKey;
+  onTabChange: (tab: TabKey) => void;
+}) {
   return (
     <div className="md:hidden sticky top-[88px] z-30 bg-background/80 backdrop-blur-md border-b border-white/5">
       <div className="flex">

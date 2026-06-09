@@ -13,7 +13,11 @@ export interface ActivityEntry {
   created_at: string;
 }
 
-export async function logActivity(userId: string, action: string, metadata?: Record<string, unknown>): Promise<void> {
+export async function logActivity(
+  userId: string,
+  action: string,
+  metadata?: Record<string, unknown>,
+): Promise<void> {
   await supabase.from('activity_log').insert({
     user_id: userId,
     action,
@@ -65,7 +69,15 @@ export async function getStudentTotalScore(userId: string, courseId: string): Pr
  * Get student's study goals (for parent visibility).
  */
 export async function getStudentGoals(userId: string): Promise<{
-  current: { lessons_target: number; flashcards_target: number; quizzes_target: number; lessons_done: number; flashcards_done: number; quizzes_done: number; met: boolean } | null;
+  current: {
+    lessons_target: number;
+    flashcards_target: number;
+    quizzes_target: number;
+    lessons_done: number;
+    flashcards_done: number;
+    quizzes_done: number;
+    met: boolean;
+  } | null;
   history: Array<{ week_start: string; met: boolean }>;
 }> {
   const { data: goals } = await supabase
@@ -97,6 +109,10 @@ export async function getStudentGoals(userId: string): Promise<{
  * This logs the milestone to activity_log which parents can see.
  * Email notification is handled by the weekly report cron.
  */
-export async function notifyMilestone(userId: string, milestone: string, details?: Record<string, unknown>): Promise<void> {
+export async function notifyMilestone(
+  userId: string,
+  milestone: string,
+  details?: Record<string, unknown>,
+): Promise<void> {
   await logActivity(userId, `milestone:${milestone}`, details);
 }

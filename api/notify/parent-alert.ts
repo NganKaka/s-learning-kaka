@@ -12,7 +12,9 @@ const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 
 if (!SUPABASE_URL || !SERVICE_ROLE_KEY) throw new Error('Missing env vars');
-const admin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, { auth: { autoRefreshToken: false, persistSession: false } });
+const admin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
+  auth: { autoRefreshToken: false, persistSession: false },
+});
 const resend = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null;
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -23,10 +25,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   if (type === 'quiz_submit') {
     const { studentId, score, quizTitle } = req.body;
-    const { data: links } = await admin.from('parent_links').select('parent_email').eq('notify_email', true).not('parent_email', 'is', null);
+    const { data: links } = await admin
+      .from('parent_links')
+      .select('parent_email')
+      .eq('notify_email', true)
+      .not('parent_email', 'is', null);
     // Find links for this student
-    const { data: parentLinks } = await admin.from('parent_links').select('parent_email, enrollment_id').eq('notify_email', true).not('parent_email', 'is', null);
-    const { data: enrollments } = await admin.from('enrollments').select('id, user_id').eq('user_id', studentId);
+    const { data: parentLinks } = await admin
+      .from('parent_links')
+      .select('parent_email, enrollment_id')
+      .eq('notify_email', true)
+      .not('parent_email', 'is', null);
+    const { data: enrollments } = await admin
+      .from('enrollments')
+      .select('id, user_id')
+      .eq('user_id', studentId);
     const enrollmentIds = new Set((enrollments ?? []).map((e) => e.id));
     const relevantLinks = (parentLinks ?? []).filter((l) => enrollmentIds.has(l.enrollment_id));
 
@@ -49,17 +62,34 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (secret !== process.env.CRON_SECRET) return res.status(401).json({ error: 'Unauthorized' });
 
     const threeDaysAgo = new Date(Date.now() - 3 * 86400000).toISOString();
-    const { data: links } = await admin.from('parent_links').select('parent_email, enrollment_id').eq('notify_email', true).not('parent_email', 'is', null);
+    const { data: links } = await admin
+      .from('parent_links')
+      .select('parent_email, enrollment_id')
+      .eq('notify_email', true)
+      .not('parent_email', 'is', null);
     let sent = 0;
 
     for (const link of links ?? []) {
-      const { data: enr } = await admin.from('enrollments').select('user_id, course_id').eq('id', link.enrollment_id).single();
+      const { data: enr } = await admin
+        .from('enrollments')
+        .select('user_id, course_id')
+        .eq('id', link.enrollment_id)
+        .single();
       if (!enr) continue;
-      const { data: recent } = await admin.from('lesson_progress').select('updated_at').eq('user_id', enr.user_id).order('updated_at', { ascending: false }).limit(1);
+      const { data: recent } = await admin
+        .from('lesson_progress')
+        .select('updated_at')
+        .eq('user_id', enr.user_id)
+        .order('updated_at', { ascending: false })
+        .limit(1);
       const lastActive = recent?.[0]?.updated_at;
       if (lastActive && lastActive > threeDaysAgo) continue;
 
-      const { data: profile } = await admin.from('profiles').select('display_name').eq('id', enr.user_id).single();
+      const { data: profile } = await admin
+        .from('profiles')
+        .select('display_name')
+        .eq('id', enr.user_id)
+        .single();
       if (link.parent_email) {
         await resend.emails.send({
           from: 'sLearning <noreply@s-learning-kaka.vercel.app>',

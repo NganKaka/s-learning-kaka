@@ -93,7 +93,12 @@ export default function Learn() {
             .sort((a, b) => a.order_index - b.order_index),
         }));
 
-      setCourse({ id: courseId, slug: courseRow.slug as string, title: courseRow.title as string, modules: modulesArr });
+      setCourse({
+        id: courseId,
+        slug: courseRow.slug as string,
+        title: courseRow.title as string,
+        modules: modulesArr,
+      });
       setLesson(targetLesson);
       setEnrolled(isEnrolled);
 
@@ -123,7 +128,8 @@ export default function Learn() {
   }, [flatLessons, lesson]);
 
   const prevLesson = currentIdx > 0 ? flatLessons[currentIdx - 1] : null;
-  const nextLesson = currentIdx >= 0 && currentIdx < flatLessons.length - 1 ? flatLessons[currentIdx + 1] : null;
+  const nextLesson =
+    currentIdx >= 0 && currentIdx < flatLessons.length - 1 ? flatLessons[currentIdx + 1] : null;
 
   // Lesson progress: best-effort upsert on mount
   useEffect(() => {
@@ -257,7 +263,11 @@ export default function Learn() {
             ) : (
               <div className="w-full h-full flex flex-col items-center justify-center gap-3 p-8 text-center text-secondary/55 text-sm">
                 <Play size={32} className="opacity-40" />
-                <p>{lesson.bunny_video_id ? 'Đang tải video…' : 'Video cho bài này chưa được upload. Quay lại sau.'}</p>
+                <p>
+                  {lesson.bunny_video_id
+                    ? 'Đang tải video…'
+                    : 'Video cho bài này chưa được upload. Quay lại sau.'}
+                </p>
               </div>
             )}
           </div>
@@ -265,14 +275,24 @@ export default function Learn() {
           {lesson.description && (
             <div className="glass-card rounded-2xl p-6 space-y-2">
               <p className="font-tech text-[10px] uppercase tracking-[0.2em] text-primary">Mô tả</p>
-              <p className="text-secondary/85 leading-loose whitespace-pre-line">{lesson.description}</p>
+              <p className="text-secondary/85 leading-loose whitespace-pre-line">
+                {lesson.description}
+              </p>
             </div>
           )}
 
           {canPlay && <LessonCards lessonId={lesson.id} />}
-          {canPlay && user && <div className="glass-card rounded-2xl p-6"><LessonNotes userId={user.id} lessonId={lesson.id} /></div>}
+          {canPlay && user && (
+            <div className="glass-card rounded-2xl p-6">
+              <LessonNotes userId={user.id} lessonId={lesson.id} />
+            </div>
+          )}
           {canPlay && user && <LessonQuiz lessonId={lesson.id} userId={user.id} />}
-          {canPlay && user && <div className="glass-card rounded-2xl p-6"><LessonDiscussion lessonId={lesson.id} userId={user.id} /></div>}
+          {canPlay && user && (
+            <div className="glass-card rounded-2xl p-6">
+              <LessonDiscussion lessonId={lesson.id} userId={user.id} />
+            </div>
+          )}
 
           {canPlay && lesson.is_preview && !enrolled && (
             <div className="glass-card rounded-2xl p-6 md:p-8 ambient-shadow border-primary/30 bg-gradient-to-br from-primary/[0.06] to-cyan-400/[0.04] space-y-4">
@@ -284,8 +304,8 @@ export default function Learn() {
                 flashcard SRS và bộ quiz cuối bài.
               </p>
               <p className="text-sm text-secondary/85 leading-relaxed">
-                Lộ trình ôn luyện Toán 12 đầy đủ — từ Hàm số đến Toạ độ trong không gian.
-                Dạy bởi Vo Hoang Ngan (HKIMO Vàng · AIMO Bạc · cử nhân CS HCMUT).
+                Lộ trình ôn luyện Toán 12 đầy đủ — từ Hàm số đến Toạ độ trong không gian. Dạy bởi Vo
+                Hoang Ngan (HKIMO Vàng · AIMO Bạc · cử nhân CS HCMUT).
               </p>
               <div className="flex flex-wrap gap-3 pt-1">
                 {!user && (

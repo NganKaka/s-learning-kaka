@@ -28,7 +28,9 @@ export function Field({ label, value, onSave, multiline, type }: FieldProps) {
 
   return (
     <div className="space-y-1">
-      <label className="font-tech text-[10px] uppercase tracking-[0.18em] text-secondary/55">{label}</label>
+      <label className="font-tech text-[10px] uppercase tracking-[0.18em] text-secondary/55">
+        {label}
+      </label>
       {multiline ? (
         <textarea
           value={draft}

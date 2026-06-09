@@ -11,7 +11,12 @@ interface XpData {
   todayXp: number;
 }
 
-function getLevel(totalXp: number): { level: number; current: number; required: number; pct: number } {
+function getLevel(totalXp: number): {
+  level: number;
+  current: number;
+  required: number;
+  pct: number;
+} {
   // Every level needs level * 100 XP
   let level = 1;
   let required = 100;
@@ -122,7 +127,9 @@ export default function XpWidget({ userId }: { userId: string }) {
         </div>
         {toNextMilestone !== null && (
           <span className="font-tech text-[9px] text-secondary/45 text-right leading-tight">
-            Còn {toNextMilestone.toLocaleString()} XP<br />đến cấp {nextMilestone}
+            Còn {toNextMilestone.toLocaleString()} XP
+            <br />
+            đến cấp {nextMilestone}
           </span>
         )}
       </div>

@@ -10,14 +10,37 @@ export interface Badge {
   earned_at: string;
 }
 
-export const BADGE_DEFINITIONS: Record<string, { label: string; description: string; icon: string }> = {
-  first_perfect_quiz: { label: 'Điểm tuyệt đối', description: 'Đạt 100% lần đầu trong một quiz', icon: '🏆' },
-  streak_7: { label: 'Kiên trì 7 ngày', description: 'Duy trì streak 7 ngày liên tiếp', icon: '🔥' },
-  streak_30: { label: 'Chiến binh 30 ngày', description: 'Duy trì streak 30 ngày liên tiếp', icon: '⚡' },
-  module_complete: { label: 'Hoàn thành chương', description: 'Hoàn thành tất cả bài trong một chương', icon: '📚' },
+export const BADGE_DEFINITIONS: Record<
+  string,
+  { label: string; description: string; icon: string }
+> = {
+  first_perfect_quiz: {
+    label: 'Điểm tuyệt đối',
+    description: 'Đạt 100% lần đầu trong một quiz',
+    icon: '🏆',
+  },
+  streak_7: {
+    label: 'Kiên trì 7 ngày',
+    description: 'Duy trì streak 7 ngày liên tiếp',
+    icon: '🔥',
+  },
+  streak_30: {
+    label: 'Chiến binh 30 ngày',
+    description: 'Duy trì streak 30 ngày liên tiếp',
+    icon: '⚡',
+  },
+  module_complete: {
+    label: 'Hoàn thành chương',
+    description: 'Hoàn thành tất cả bài trong một chương',
+    icon: '📚',
+  },
   flashcards_100: { label: '100 thẻ', description: 'Ôn tập 100 flashcards', icon: '🧠' },
   flashcards_500: { label: '500 thẻ', description: 'Ôn tập 500 flashcards', icon: '💎' },
-  first_quiz: { label: 'Bài kiểm tra đầu tiên', description: 'Hoàn thành quiz đầu tiên', icon: '✨' },
+  first_quiz: {
+    label: 'Bài kiểm tra đầu tiên',
+    description: 'Hoàn thành quiz đầu tiên',
+    icon: '✨',
+  },
   speed_demon: { label: 'Nhanh như chớp', description: 'Hoàn thành drill dưới 2 phút', icon: '⚡' },
   no_mistakes: { label: 'Sổ sạch', description: 'Giải quyết hết tất cả lỗi sai', icon: '✅' },
   goal_met: { label: 'Đạt mục tiêu', description: 'Hoàn thành mục tiêu tuần', icon: '🎯' },
@@ -35,24 +58,30 @@ export async function getUserBadges(userId: string): Promise<Badge[]> {
 export async function awardBadge(userId: string, badgeKey: string): Promise<boolean> {
   const def = BADGE_DEFINITIONS[badgeKey];
   if (!def) return false;
-  const { error } = await supabase.from('badges').upsert({
-    user_id: userId,
-    badge_key: badgeKey,
-    label: def.label,
-    description: def.description,
-    icon: def.icon,
-  }, { onConflict: 'user_id,badge_key' });
+  const { error } = await supabase.from('badges').upsert(
+    {
+      user_id: userId,
+      badge_key: badgeKey,
+      label: def.label,
+      description: def.description,
+      icon: def.icon,
+    },
+    { onConflict: 'user_id,badge_key' },
+  );
   return !error;
 }
 
-export async function checkAndAwardBadges(userId: string, context: {
-  quizScore?: number;
-  streak?: number;
-  flashcardsReviewed?: number;
-  drillTimeSeconds?: number;
-  goalMet?: boolean;
-  allMistakesResolved?: boolean;
-}): Promise<string[]> {
+export async function checkAndAwardBadges(
+  userId: string,
+  context: {
+    quizScore?: number;
+    streak?: number;
+    flashcardsReviewed?: number;
+    drillTimeSeconds?: number;
+    goalMet?: boolean;
+    allMistakesResolved?: boolean;
+  },
+): Promise<string[]> {
   const awarded: string[] = [];
   if (context.quizScore === 100) {
     if (await awardBadge(userId, 'first_perfect_quiz')) awarded.push('first_perfect_quiz');

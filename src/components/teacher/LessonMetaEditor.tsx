@@ -53,7 +53,12 @@ export function LessonMetaEditor({ lesson, onChange }: LessonMetaEditorProps) {
       <div className="grid sm:grid-cols-2 gap-3">
         <FieldRaw label="Tiêu đề" value={title} onChange={setTitle} />
         <FieldRaw label="Slug" value={slug} onChange={setSlug} />
-        <FieldRaw label="Bunny video ID" value={bunny} onChange={setBunny} placeholder="abc123-..." />
+        <FieldRaw
+          label="Bunny video ID"
+          value={bunny}
+          onChange={setBunny}
+          placeholder="abc123-..."
+        />
         <FieldRaw label="Thời lượng (giây)" value={duration} onChange={setDuration} type="number" />
       </div>
       <FieldRaw label="Mô tả" value={description} onChange={setDescription} multiline />

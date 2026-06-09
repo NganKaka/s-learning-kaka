@@ -19,20 +19,36 @@ export default function NotificationCenter({ userId }: { userId: string }) {
   const unread = items.filter((n) => !n.is_read).length;
 
   useEffect(() => {
-    supabase.from('notifications').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(20)
+    supabase
+      .from('notifications')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(20)
       .then(({ data }) => setItems((data ?? []) as Notification[]));
   }, [userId]);
 
   const markAllRead = async () => {
-    await supabase.from('notifications').update({ is_read: true }).eq('user_id', userId).eq('is_read', false);
+    await supabase
+      .from('notifications')
+      .update({ is_read: true })
+      .eq('user_id', userId)
+      .eq('is_read', false);
     setItems((prev) => prev.map((n) => ({ ...n, is_read: true })));
   };
 
   return (
     <div className="relative">
-      <button onClick={() => setOpen(!open)} className="relative rounded-full border border-white/10 bg-white/[0.03] p-2 hover:border-cyan-300/40 transition-colors">
+      <button
+        onClick={() => setOpen(!open)}
+        className="relative rounded-full border border-white/10 bg-white/[0.03] p-2 hover:border-cyan-300/40 transition-colors"
+      >
         <Bell size={16} className="text-secondary/70" />
-        {unread > 0 && <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-primary text-[9px] font-bold text-background flex items-center justify-center">{unread}</span>}
+        {unread > 0 && (
+          <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-primary text-[9px] font-bold text-background flex items-center justify-center">
+            {unread}
+          </span>
+        )}
       </button>
 
       <AnimatePresence>
@@ -45,23 +61,37 @@ export default function NotificationCenter({ userId }: { userId: string }) {
             className="absolute right-0 top-full mt-2 w-80 rounded-xl border border-white/10 bg-[#0f1729]/95 backdrop-blur-md shadow-xl overflow-hidden z-50"
           >
             <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
-              <p className="font-tech text-[10px] uppercase tracking-[0.18em] text-secondary/55">Thông báo</p>
+              <p className="font-tech text-[10px] uppercase tracking-[0.18em] text-secondary/55">
+                Thông báo
+              </p>
               {unread > 0 && (
-                <button onClick={markAllRead} className="inline-flex items-center gap-1 font-tech text-[9px] uppercase text-cyan-300 hover:text-cyan-200">
+                <button
+                  onClick={markAllRead}
+                  className="inline-flex items-center gap-1 font-tech text-[9px] uppercase text-cyan-300 hover:text-cyan-200"
+                >
                   <Check size={10} /> Đọc hết
                 </button>
               )}
             </div>
             <div className="max-h-72 overflow-y-auto">
               {items.length === 0 ? (
-                <p className="px-4 py-6 text-center text-sm text-secondary/50">Không có thông báo.</p>
-              ) : items.map((n) => (
-                <div key={n.id} className={`px-4 py-3 border-b border-white/5 ${n.is_read ? '' : 'bg-cyan-400/[0.03]'}`}>
-                  <p className="text-sm text-on-surface">{n.title}</p>
-                  {n.body && <p className="text-xs text-secondary/55 mt-0.5">{n.body}</p>}
-                  <p className="font-tech text-[9px] text-secondary/40 mt-1">{new Date(n.created_at).toLocaleDateString('vi-VN')}</p>
-                </div>
-              ))}
+                <p className="px-4 py-6 text-center text-sm text-secondary/50">
+                  Không có thông báo.
+                </p>
+              ) : (
+                items.map((n) => (
+                  <div
+                    key={n.id}
+                    className={`px-4 py-3 border-b border-white/5 ${n.is_read ? '' : 'bg-cyan-400/[0.03]'}`}
+                  >
+                    <p className="text-sm text-on-surface">{n.title}</p>
+                    {n.body && <p className="text-xs text-secondary/55 mt-0.5">{n.body}</p>}
+                    <p className="font-tech text-[9px] text-secondary/40 mt-1">
+                      {new Date(n.created_at).toLocaleDateString('vi-VN')}
+                    </p>
+                  </div>
+                ))
+              )}
             </div>
           </motion.div>
         )}
@@ -70,6 +100,14 @@ export default function NotificationCenter({ userId }: { userId: string }) {
   );
 }
 
-export async function pushNotification(userId: string, type: string, title: string, body?: string, link?: string) {
-  await supabase.from('notifications').insert({ user_id: userId, type, title, body: body ?? null, link: link ?? null });
+export async function pushNotification(
+  userId: string,
+  type: string,
+  title: string,
+  body?: string,
+  link?: string,
+) {
+  await supabase
+    .from('notifications')
+    .insert({ user_id: userId, type, title, body: body ?? null, link: link ?? null });
 }

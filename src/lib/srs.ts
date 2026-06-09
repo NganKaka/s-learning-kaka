@@ -39,7 +39,7 @@ export function applyRating(prev: ReviewState, rating: Rating): ReviewState {
 
   // Update ease based on quality
   if (rating === 1) ease = Math.max(1.3, ease - 0.15);
-  else if (rating === 2) ease = ease; // unchanged
+  // rating === 2: ease unchanged
   else if (rating === 3) ease = ease + 0.15;
 
   return { ease, interval_days, reps };
@@ -66,7 +66,9 @@ interface ReviewInput {
  * Submit a review. Idempotent insert via card_reviews (user_id, card_id)
  * unique constraint. Returns the new state.
  */
-export async function submitReview(input: ReviewInput): Promise<{ error: string | null; state: ReviewState | null }> {
+export async function submitReview(
+  input: ReviewInput,
+): Promise<{ error: string | null; state: ReviewState | null }> {
   const { userId, cardId, rating } = input;
 
   // Fetch existing review state, if any.
@@ -78,26 +80,28 @@ export async function submitReview(input: ReviewInput): Promise<{ error: string 
     .maybeSingle();
 
   const prev: ReviewState = existing
-    ? { ease: existing.ease as number, interval_days: existing.interval_days as number, reps: existing.reps as number }
+    ? {
+        ease: existing.ease as number,
+        interval_days: existing.interval_days as number,
+        reps: existing.reps as number,
+      }
     : { ease: 2.5, interval_days: 0, reps: 0 };
 
   const next = applyRating(prev, rating);
   const due = nextDueAt(next.interval_days);
 
-  const { error } = await supabase
-    .from('card_reviews')
-    .upsert(
-      {
-        user_id: userId,
-        card_id: cardId,
-        ease: next.ease,
-        interval_days: next.interval_days,
-        reps: next.reps,
-        due_at: due,
-        last_reviewed_at: new Date().toISOString(),
-      },
-      { onConflict: 'user_id,card_id' },
-    );
+  const { error } = await supabase.from('card_reviews').upsert(
+    {
+      user_id: userId,
+      card_id: cardId,
+      ease: next.ease,
+      interval_days: next.interval_days,
+      reps: next.reps,
+      due_at: due,
+      last_reviewed_at: new Date().toISOString(),
+    },
+    { onConflict: 'user_id,card_id' },
+  );
 
   if (error) return { error: error.message, state: null };
   return { error: null, state: next };
@@ -182,11 +186,18 @@ export async function fetchDueCards(userId: string): Promise<DueCard[]> {
     .slice(0, 50);
 }
 
-export async function fetchLessonCards(lessonId: string): Promise<Array<{ id: string; front_md: string; back_md: string; order_index: number }>> {
+export async function fetchLessonCards(
+  lessonId: string,
+): Promise<Array<{ id: string; front_md: string; back_md: string; order_index: number }>> {
   const { data } = await supabase
     .from('flashcards')
     .select('id, front_md, back_md, order_index')
     .eq('lesson_id', lessonId)
     .order('order_index', { ascending: true });
-  return (data ?? []) as Array<{ id: string; front_md: string; back_md: string; order_index: number }>;
+  return (data ?? []) as Array<{
+    id: string;
+    front_md: string;
+    back_md: string;
+    order_index: number;
+  }>;
 }

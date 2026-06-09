@@ -11,7 +11,13 @@ import { formatVnd } from '../lib/courses';
 interface StudentRow {
   user_id: string;
   display_name: string | null;
-  enrolled_courses: Array<{ course_id: string; title: string; granted_at: string; enrollment_id: string; tracking_code: string | null }>;
+  enrolled_courses: Array<{
+    course_id: string;
+    title: string;
+    granted_at: string;
+    enrollment_id: string;
+    tracking_code: string | null;
+  }>;
   completed_lessons: number;
   total_lessons: number;
   last_active: string | null;
@@ -68,7 +74,8 @@ export default function TeacherStudents() {
         .in('id', studentIds);
       if (cancelled) return;
       const nameById = new Map<string, string | null>();
-      for (const p of profiles ?? []) nameById.set(p.id as string, (p.display_name as string | null) ?? null);
+      for (const p of profiles ?? [])
+        nameById.set(p.id as string, (p.display_name as string | null) ?? null);
 
       // Total lesson counts per course
       const { data: lessonCount } = await supabase
@@ -151,8 +158,6 @@ export default function TeacherStudents() {
     };
   }, [user?.id, profile?.is_instructor]);
 
-  if (!profile?.is_instructor) return <Navigate to="/teacher" replace />;
-
   const filtered = useMemo(() => {
     if (!rows) return [];
     let result = rows;
@@ -170,6 +175,8 @@ export default function TeacherStudents() {
     });
   }, [rows, query, courseFilter]);
 
+  if (!profile?.is_instructor) return <Navigate to="/teacher" replace />;
+
   return (
     <PageShell>
       <SectionHeading
@@ -180,7 +187,10 @@ export default function TeacherStudents() {
 
       <div className="mt-6 flex gap-3 flex-wrap">
         <div className="relative flex-1 min-w-[200px]">
-          <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary/50" />
+          <Search
+            size={16}
+            className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary/50"
+          />
           <input
             type="text"
             value={query}
@@ -204,7 +214,10 @@ export default function TeacherStudents() {
             <CustomSelect
               value={courseFilter}
               onChange={(v) => setCourseFilter(v)}
-              options={[{ value: 'all', label: 'Tất cả khoá học' }, ...courses.map((c) => ({ value: c.id, label: c.title }))]}
+              options={[
+                { value: 'all', label: 'Tất cả khoá học' },
+                ...courses.map((c) => ({ value: c.id, label: c.title })),
+              ]}
               className="w-52"
             />
           </div>
@@ -229,19 +242,26 @@ export default function TeacherStudents() {
       {filtered.length > 0 && (
         <div className="mt-6 space-y-3">
           {filtered.map((s) => {
-            const progressPct = s.total_lessons > 0 ? Math.round((s.completed_lessons / s.total_lessons) * 100) : 0;
+            const progressPct =
+              s.total_lessons > 0 ? Math.round((s.completed_lessons / s.total_lessons) * 100) : 0;
             return (
               <div key={s.user_id} className="glass-card rounded-2xl p-5 space-y-3">
                 <div className="flex items-start justify-between gap-3 flex-wrap">
                   <div>
-                    <p className="font-headline font-bold text-on-surface">{s.display_name ?? 'Học viên'}</p>
+                    <p className="font-headline font-bold text-on-surface">
+                      {s.display_name ?? 'Học viên'}
+                    </p>
                     <p className="font-tech text-[10px] uppercase tracking-[0.14em] text-secondary/55 mt-0.5 truncate">
                       {s.user_id}
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="font-headline font-bold text-primary tabular-nums">{formatVnd(s.total_paid)}</p>
-                    <p className="font-tech text-[10px] uppercase tracking-[0.14em] text-secondary/55">đã thanh toán</p>
+                    <p className="font-headline font-bold text-primary tabular-nums">
+                      {formatVnd(s.total_paid)}
+                    </p>
+                    <p className="font-tech text-[10px] uppercase tracking-[0.14em] text-secondary/55">
+                      đã thanh toán
+                    </p>
                   </div>
                 </div>
 
@@ -252,7 +272,11 @@ export default function TeacherStudents() {
                   </span>
                   <span>·</span>
                   <span>
-                    Tiến độ: <span className="text-cyan-200 tabular-nums">{s.completed_lessons}/{s.total_lessons}</span> ({progressPct}%)
+                    Tiến độ:{' '}
+                    <span className="text-cyan-200 tabular-nums">
+                      {s.completed_lessons}/{s.total_lessons}
+                    </span>{' '}
+                    ({progressPct}%)
                   </span>
                   {s.last_active && (
                     <>
@@ -289,9 +313,27 @@ export default function TeacherStudents() {
                           onBlur={(e) => {
                             const val = e.target.value.trim() || null;
                             if (val !== c.tracking_code) {
-                              supabase.from('enrollments').update({ tracking_code: val }).eq('id', c.enrollment_id).then(() => {
-                                setRows((prev) => prev?.map((r) => r.user_id === s.user_id ? { ...r, enrolled_courses: r.enrolled_courses.map((ec) => ec.enrollment_id === c.enrollment_id ? { ...ec, tracking_code: val } : ec) } : r) ?? null);
-                              });
+                              supabase
+                                .from('enrollments')
+                                .update({ tracking_code: val })
+                                .eq('id', c.enrollment_id)
+                                .then(() => {
+                                  setRows(
+                                    (prev) =>
+                                      prev?.map((r) =>
+                                        r.user_id === s.user_id
+                                          ? {
+                                              ...r,
+                                              enrolled_courses: r.enrolled_courses.map((ec) =>
+                                                ec.enrollment_id === c.enrollment_id
+                                                  ? { ...ec, tracking_code: val }
+                                                  : ec,
+                                              ),
+                                            }
+                                          : r,
+                                      ) ?? null,
+                                  );
+                                });
                             }
                           }}
                           className="w-20 bg-transparent border-b border-dashed border-secondary/30 text-[9px] font-tech text-cyan-200 placeholder:text-secondary/40 focus:border-cyan-300/50 focus:outline-none"

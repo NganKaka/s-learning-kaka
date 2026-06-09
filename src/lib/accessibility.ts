@@ -22,7 +22,10 @@ export function useKeyboardFocusRings() {
 /**
  * Hook for keyboard navigation in lists (arrow keys + enter).
  */
-export function useArrowNav(containerRef: React.RefObject<HTMLElement | null>, selector = 'button, [role="option"]') {
+export function useArrowNav(
+  containerRef: React.RefObject<HTMLElement | null>,
+  selector = 'button, [role="option"]',
+) {
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;

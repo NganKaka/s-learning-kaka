@@ -29,9 +29,7 @@ export function RevealText({
               key={charIndex}
               initial={{ opacity: 0, y: 20, rotateX: -90 }}
               animate={
-                isInView
-                  ? { opacity: 1, y: 0, rotateX: 0 }
-                  : { opacity: 0, y: 20, rotateX: -90 }
+                isInView ? { opacity: 1, y: 0, rotateX: 0 } : { opacity: 0, y: 20, rotateX: -90 }
               }
               transition={{
                 duration: 0.5,
@@ -57,21 +55,13 @@ interface ScrambleNumberProps {
   className?: string;
 }
 
-export function ScrambleNumber({
-  value,
-  duration = 1500,
-  className = '',
-}: ScrambleNumberProps) {
+export function ScrambleNumber({ value, duration = 1500, className = '' }: ScrambleNumberProps) {
   const ref = useRef<HTMLSpanElement>(null);
   const isInView = useInView(ref, { once: true, margin: '-100px' });
 
   return (
     <span ref={ref} className={className}>
-      {isInView ? (
-        <ScrambleAnimation value={value} duration={duration} />
-      ) : (
-        '0'
-      )}
+      {isInView ? <ScrambleAnimation value={value} duration={duration} /> : '0'}
     </span>
   );
 }

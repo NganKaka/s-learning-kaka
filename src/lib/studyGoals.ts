@@ -32,19 +32,25 @@ export async function getCurrentGoal(userId: string): Promise<StudyGoal | null> 
   return data as StudyGoal | null;
 }
 
-export async function upsertGoal(userId: string, targets: {
-  lessons_target: number;
-  flashcards_target: number;
-  quizzes_target: number;
-}): Promise<StudyGoal | null> {
+export async function upsertGoal(
+  userId: string,
+  targets: {
+    lessons_target: number;
+    flashcards_target: number;
+    quizzes_target: number;
+  },
+): Promise<StudyGoal | null> {
   const monday = getMonday();
   const { data } = await supabase
     .from('study_goals')
-    .upsert({
-      user_id: userId,
-      week_start: monday,
-      ...targets,
-    }, { onConflict: 'user_id,week_start' })
+    .upsert(
+      {
+        user_id: userId,
+        week_start: monday,
+        ...targets,
+      },
+      { onConflict: 'user_id,week_start' },
+    )
     .select('*')
     .single();
   return data as StudyGoal | null;
@@ -62,7 +68,11 @@ export async function incrementGoalProgress(
   const lessons = field === 'lessons_done' ? newVal : goal.lessons_done;
   const flashcards = field === 'flashcards_done' ? newVal : goal.flashcards_done;
   const quizzes = field === 'quizzes_done' ? newVal : goal.quizzes_done;
-  if (lessons >= goal.lessons_target && flashcards >= goal.flashcards_target && quizzes >= goal.quizzes_target) {
+  if (
+    lessons >= goal.lessons_target &&
+    flashcards >= goal.flashcards_target &&
+    quizzes >= goal.quizzes_target
+  ) {
     patch.met = true;
   }
   await supabase.from('study_goals').update(patch).eq('id', goal.id);

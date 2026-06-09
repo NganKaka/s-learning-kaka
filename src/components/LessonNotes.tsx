@@ -24,7 +24,10 @@ export default function LessonNotes({ userId, lessonId }: { userId: string; less
       .eq('user_id', userId)
       .eq('lesson_id', lessonId)
       .order('created_at', { ascending: true })
-      .then(({ data }) => { setNotes((data ?? []) as LessonNote[]); setLoading(false); });
+      .then(({ data }) => {
+        setNotes((data ?? []) as LessonNote[]);
+        setLoading(false);
+      });
   }, [userId, lessonId]);
 
   const addNote = async () => {
@@ -32,7 +35,12 @@ export default function LessonNotes({ userId, lessonId }: { userId: string; less
     const ts = timestamp ? parseTimestamp(timestamp) : null;
     const { data } = await supabase
       .from('lesson_notes')
-      .insert({ user_id: userId, lesson_id: lessonId, content: draft.trim(), timestamp_seconds: ts })
+      .insert({
+        user_id: userId,
+        lesson_id: lessonId,
+        content: draft.trim(),
+        timestamp_seconds: ts,
+      })
       .select('*')
       .single();
     if (data) setNotes((prev) => [...prev, data as LessonNote]);
@@ -45,7 +53,12 @@ export default function LessonNotes({ userId, lessonId }: { userId: string; less
     setNotes((prev) => prev.filter((n) => n.id !== id));
   };
 
-  if (loading) return <div className="flex justify-center py-4"><Loader2 size={16} className="animate-spin text-primary" /></div>;
+  if (loading)
+    return (
+      <div className="flex justify-center py-4">
+        <Loader2 size={16} className="animate-spin text-primary" />
+      </div>
+    );
 
   return (
     <div className="space-y-3">
@@ -56,14 +69,20 @@ export default function LessonNotes({ userId, lessonId }: { userId: string; less
       {notes.length > 0 && (
         <div className="space-y-2 max-h-60 overflow-y-auto">
           {notes.map((n) => (
-            <div key={n.id} className="flex items-start gap-2 rounded-lg border border-white/8 bg-white/[0.02] px-3 py-2">
+            <div
+              key={n.id}
+              className="flex items-start gap-2 rounded-lg border border-white/8 bg-white/[0.02] px-3 py-2"
+            >
               {n.timestamp_seconds !== null && (
                 <span className="shrink-0 font-tech text-[10px] tabular-nums text-primary mt-0.5">
                   {formatTs(n.timestamp_seconds)}
                 </span>
               )}
               <p className="flex-1 text-sm text-on-surface whitespace-pre-wrap">{n.content}</p>
-              <button onClick={() => deleteNote(n.id)} className="shrink-0 text-red-400/60 hover:text-red-300">
+              <button
+                onClick={() => deleteNote(n.id)}
+                className="shrink-0 text-red-400/60 hover:text-red-300"
+              >
                 <Trash2 size={12} />
               </button>
             </div>
@@ -87,7 +106,11 @@ export default function LessonNotes({ userId, lessonId }: { userId: string; less
           placeholder="Thêm ghi chú…"
           className="flex-1 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-1.5 text-sm text-on-surface focus:border-cyan-300/40 focus:outline-none"
         />
-        <button onClick={addNote} disabled={!draft.trim()} className="shrink-0 rounded-lg border border-cyan-300/30 bg-cyan-400/10 px-2.5 py-1.5 text-cyan-200 hover:bg-cyan-400/20 disabled:opacity-40">
+        <button
+          onClick={addNote}
+          disabled={!draft.trim()}
+          className="shrink-0 rounded-lg border border-cyan-300/30 bg-cyan-400/10 px-2.5 py-1.5 text-cyan-200 hover:bg-cyan-400/20 disabled:opacity-40"
+        >
           <Plus size={14} />
         </button>
       </div>

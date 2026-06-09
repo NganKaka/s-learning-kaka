@@ -24,7 +24,10 @@ export default function SiteFooter() {
         </h3>
 
         <div className="flex flex-wrap justify-center gap-4 text-secondary/80">
-          <Link to="/courses" className="text-sm hover:text-cyan-300 transition-colors inline-flex items-center gap-1.5">
+          <Link
+            to="/courses"
+            className="text-sm hover:text-cyan-300 transition-colors inline-flex items-center gap-1.5"
+          >
             <BookOpen size={14} /> Khoá học
           </Link>
           <Link to="/courses/toan-12" className="text-sm hover:text-cyan-300 transition-colors">
@@ -36,10 +39,18 @@ export default function SiteFooter() {
           <Link to="/signup" className="text-sm hover:text-cyan-300 transition-colors">
             Đăng ký
           </Link>
-          <a href="https://github.com/NganKaka" target="_blank" rel="noopener noreferrer" className="text-sm hover:text-cyan-300 transition-colors inline-flex items-center gap-1.5">
+          <a
+            href="https://github.com/NganKaka"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm hover:text-cyan-300 transition-colors inline-flex items-center gap-1.5"
+          >
             <Github size={14} /> GitHub
           </a>
-          <a href="mailto:vohoangngan85@gmail.com" className="text-sm hover:text-cyan-300 transition-colors inline-flex items-center gap-1.5">
+          <a
+            href="mailto:vohoangngan85@gmail.com"
+            className="text-sm hover:text-cyan-300 transition-colors inline-flex items-center gap-1.5"
+          >
             <Mail size={14} /> Email
           </a>
         </div>

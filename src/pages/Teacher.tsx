@@ -1,6 +1,14 @@
 import { lazy, Suspense } from 'react';
 import { Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
-import { DollarSign, BookOpen, TrendingUp, Users, Megaphone, ClipboardCheck, BarChart3 } from 'lucide-react';
+import {
+  DollarSign,
+  BookOpen,
+  TrendingUp,
+  Users,
+  Megaphone,
+  ClipboardCheck,
+  BarChart3,
+} from 'lucide-react';
 import PageShell from '../components/PageShell';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -14,13 +22,48 @@ const TeacherGrading = lazy(() => import('./TeacherGrading'));
 const TeacherQuizAnalytics = lazy(() => import('./TeacherQuizAnalytics'));
 
 const TABS = [
-  { to: '/teacher', label: 'Đơn chờ', icon: DollarSign, match: (p: string) => p === '/teacher' || p === '/teacher/' },
-  { to: '/teacher/revenue', label: 'Doanh thu', icon: TrendingUp, match: (p: string) => p.startsWith('/teacher/revenue') },
-  { to: '/teacher/courses', label: 'Khoá học', icon: BookOpen, match: (p: string) => p.startsWith('/teacher/courses') },
-  { to: '/teacher/students', label: 'Học viên', icon: Users, match: (p: string) => p.startsWith('/teacher/students') },
-  { to: '/teacher/grading', label: 'Chấm bài', icon: ClipboardCheck, match: (p: string) => p.startsWith('/teacher/grading') },
-  { to: '/teacher/analytics', label: 'Phân tích', icon: BarChart3, match: (p: string) => p.startsWith('/teacher/analytics') },
-  { to: '/teacher/announcements', label: 'Thông báo', icon: Megaphone, match: (p: string) => p.startsWith('/teacher/announcements') },
+  {
+    to: '/teacher',
+    label: 'Đơn chờ',
+    icon: DollarSign,
+    match: (p: string) => p === '/teacher' || p === '/teacher/',
+  },
+  {
+    to: '/teacher/revenue',
+    label: 'Doanh thu',
+    icon: TrendingUp,
+    match: (p: string) => p.startsWith('/teacher/revenue'),
+  },
+  {
+    to: '/teacher/courses',
+    label: 'Khoá học',
+    icon: BookOpen,
+    match: (p: string) => p.startsWith('/teacher/courses'),
+  },
+  {
+    to: '/teacher/students',
+    label: 'Học viên',
+    icon: Users,
+    match: (p: string) => p.startsWith('/teacher/students'),
+  },
+  {
+    to: '/teacher/grading',
+    label: 'Chấm bài',
+    icon: ClipboardCheck,
+    match: (p: string) => p.startsWith('/teacher/grading'),
+  },
+  {
+    to: '/teacher/analytics',
+    label: 'Phân tích',
+    icon: BarChart3,
+    match: (p: string) => p.startsWith('/teacher/analytics'),
+  },
+  {
+    to: '/teacher/announcements',
+    label: 'Thông báo',
+    icon: Megaphone,
+    match: (p: string) => p.startsWith('/teacher/announcements'),
+  },
 ];
 
 export default function Teacher() {
@@ -73,16 +116,16 @@ export default function Teacher() {
       <div className="pt-12">
         <Suspense fallback={null}>
           <Routes>
-          <Route index element={<TeacherSales />} />
-          <Route path="revenue" element={<TeacherRevenue />} />
-          <Route path="courses" element={<TeacherCourses />} />
-          <Route path="courses/:slug" element={<TeacherCourseEditor />} />
-          <Route path="students" element={<TeacherStudents />} />
-          <Route path="grading" element={<TeacherGrading />} />
-          <Route path="analytics" element={<TeacherQuizAnalytics />} />
-          <Route path="announcements" element={<TeacherAnnouncements />} />
-        </Routes>
-      </Suspense>
+            <Route index element={<TeacherSales />} />
+            <Route path="revenue" element={<TeacherRevenue />} />
+            <Route path="courses" element={<TeacherCourses />} />
+            <Route path="courses/:slug" element={<TeacherCourseEditor />} />
+            <Route path="students" element={<TeacherStudents />} />
+            <Route path="grading" element={<TeacherGrading />} />
+            <Route path="analytics" element={<TeacherQuizAnalytics />} />
+            <Route path="announcements" element={<TeacherAnnouncements />} />
+          </Routes>
+        </Suspense>
       </div>
     </>
   );

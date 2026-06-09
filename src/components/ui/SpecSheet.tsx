@@ -77,7 +77,9 @@ function SpecRow({
         aria-hidden
         className="flex-1 h-px self-center border-b border-dashed border-white/15"
       />
-      <span className={`shrink-0 normal-case tracking-normal ${accent === 'gold' ? 'text-primary/90' : 'text-cyan-200/90'}`}>
+      <span
+        className={`shrink-0 normal-case tracking-normal ${accent === 'gold' ? 'text-primary/90' : 'text-cyan-200/90'}`}
+      >
         {typed}
         {typed.length < value.length && (
           <span className="inline-block w-[6px] h-[1em] bg-current align-text-bottom animate-pulse" />

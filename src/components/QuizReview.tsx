@@ -70,14 +70,18 @@ function ReviewQuestion({
   return (
     <div className="rounded-xl border border-white/10 bg-white/[0.02] p-4 space-y-3">
       <div className="flex items-start gap-2">
-        {isAutoGradable && isCorrect !== null && (
-          isCorrect
-            ? <CheckCircle2 size={16} className="text-emerald-400 mt-0.5 shrink-0" />
-            : <XCircle size={16} className="text-red-400 mt-0.5 shrink-0" />
-        )}
+        {isAutoGradable &&
+          isCorrect !== null &&
+          (isCorrect ? (
+            <CheckCircle2 size={16} className="text-emerald-400 mt-0.5 shrink-0" />
+          ) : (
+            <XCircle size={16} className="text-red-400 mt-0.5 shrink-0" />
+          ))}
         {!isAutoGradable && <HelpCircle size={16} className="text-amber-300 mt-0.5 shrink-0" />}
         <p className="font-headline text-sm font-bold text-on-surface">
-          <span className="text-primary mr-2 tabular-nums">{String(index + 1).padStart(2, '0')}.</span>
+          <span className="text-primary mr-2 tabular-nums">
+            {String(index + 1).padStart(2, '0')}.
+          </span>
           {question.prompt_md}
           <span className="ml-2 font-tech text-[9px] uppercase tracking-[0.14em] text-secondary/55">
             ({question.points} đ)
@@ -95,8 +99,13 @@ function ReviewQuestion({
             else if (wasPicked && !isRight) cls = 'border-red-400/40 bg-red-500/10';
 
             return (
-              <div key={ci} className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-sm ${cls}`}>
-                <span className="font-tech text-[10px] text-secondary/55">{String.fromCharCode(65 + ci)}</span>
+              <div
+                key={ci}
+                className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-sm ${cls}`}
+              >
+                <span className="font-tech text-[10px] text-secondary/55">
+                  {String.fromCharCode(65 + ci)}
+                </span>
                 <span className="flex-1">{choice}</span>
                 {isRight && <CheckCircle2 size={12} className="text-emerald-400" />}
                 {wasPicked && !isRight && <XCircle size={12} className="text-red-400" />}
@@ -109,12 +118,13 @@ function ReviewQuestion({
       {question.type === 'text' && (
         <div className="ml-6 space-y-1">
           <p className="text-sm text-secondary/70">
-            Đáp án của bạn: <span className="text-on-surface">{answer?.kind === 'text' ? answer.text || '(trống)' : '(trống)'}</span>
+            Đáp án của bạn:{' '}
+            <span className="text-on-surface">
+              {answer?.kind === 'text' ? answer.text || '(trống)' : '(trống)'}
+            </span>
           </p>
           {question.expected_text && (
-            <p className="text-sm text-emerald-300/80">
-              Đáp án đúng: {question.expected_text}
-            </p>
+            <p className="text-sm text-emerald-300/80">Đáp án đúng: {question.expected_text}</p>
           )}
         </div>
       )}
@@ -128,7 +138,9 @@ function ReviewQuestion({
 
       {question.explanation_md && (
         <div className="ml-6 rounded-lg border border-cyan-300/20 bg-cyan-400/[0.04] px-3 py-2">
-          <p className="font-tech text-[9px] uppercase tracking-[0.14em] text-cyan-300 mb-1">Giải thích</p>
+          <p className="font-tech text-[9px] uppercase tracking-[0.14em] text-cyan-300 mb-1">
+            Giải thích
+          </p>
           <p className="text-sm text-secondary/80">{question.explanation_md}</p>
         </div>
       )}

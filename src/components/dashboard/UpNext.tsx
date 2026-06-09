@@ -28,7 +28,10 @@ export default function UpNext({ userId, courseId }: { userId: string; courseId:
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!userId || !courseId) { setLoading(false); return; }
+    if (!userId || !courseId) {
+      setLoading(false);
+      return;
+    }
     let cancelled = false;
 
     (async () => {
@@ -51,11 +54,20 @@ export default function UpNext({ userId, courseId }: { userId: string; courseId:
       const incomplete = (lessons ?? []).filter((l) => !completedSet.has(l.id as string));
 
       // Get course slug
-      const { data: course } = await supabase.from('courses').select('slug').eq('id', courseId).single();
+      const { data: course } = await supabase
+        .from('courses')
+        .select('slug')
+        .eq('id', courseId)
+        .single();
 
       let nextLesson: NextLesson | null = null;
       if (incomplete[0]) {
-        const first = incomplete[0] as { id: string; slug: string; title: string; modules?: { title: string }[] };
+        const first = incomplete[0] as {
+          id: string;
+          slug: string;
+          title: string;
+          modules?: { title: string }[];
+        };
         nextLesson = {
           id: first.id,
           slug: first.slug,
@@ -71,7 +83,10 @@ export default function UpNext({ userId, courseId }: { userId: string; courseId:
         .select('id')
         .eq('course_id', courseId);
 
-      if (cancelled) { setLoading(false); return; }
+      if (cancelled) {
+        setLoading(false);
+        return;
+      }
 
       const cardIds = (allCards ?? []).map((c) => c.id as string);
       let dueCards = 0;
@@ -101,7 +116,9 @@ export default function UpNext({ userId, courseId }: { userId: string; courseId:
       const monday = getMonday();
       const { data: goal } = await supabase
         .from('study_goals')
-        .select('lessons_done, lessons_target, flashcards_done, flashcards_target, quizzes_done, quizzes_target, met')
+        .select(
+          'lessons_done, lessons_target, flashcards_done, flashcards_target, quizzes_done, quizzes_target, met',
+        )
         .eq('user_id', userId)
         .eq('week_start', monday)
         .maybeSingle();
@@ -117,7 +134,9 @@ export default function UpNext({ userId, courseId }: { userId: string; courseId:
       }
     })();
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [userId, courseId]);
 
   if (loading) {
@@ -130,7 +149,13 @@ export default function UpNext({ userId, courseId }: { userId: string; courseId:
 
   if (!data) return null;
 
-  const actions: { label: string; sublabel: string; icon: React.ReactNode; href: string; urgent?: boolean }[] = [];
+  const actions: {
+    label: string;
+    sublabel: string;
+    icon: React.ReactNode;
+    href: string;
+    urgent?: boolean;
+  }[] = [];
 
   if (data.lesson) {
     actions.push({
@@ -166,9 +191,13 @@ export default function UpNext({ userId, courseId }: { userId: string; courseId:
       <div className="glass-card rounded-2xl p-5 space-y-2">
         <div className="flex items-center gap-2">
           <CheckCircle2 size={14} className="text-emerald-400" />
-          <span className="font-tech text-[10px] uppercase tracking-[0.18em] text-emerald-400">Tất cả đã xong!</span>
+          <span className="font-tech text-[10px] uppercase tracking-[0.18em] text-emerald-400">
+            Tất cả đã xong!
+          </span>
         </div>
-        <p className="text-sm text-secondary/60">Bạn đã hoàn thành mọi thứ hôm nay. Hãy nghỉ ngơi hoặc khám phá thêm khoá học khác.</p>
+        <p className="text-sm text-secondary/60">
+          Bạn đã hoàn thành mọi thứ hôm nay. Hãy nghỉ ngơi hoặc khám phá thêm khoá học khác.
+        </p>
       </div>
     );
   }
@@ -177,7 +206,9 @@ export default function UpNext({ userId, courseId }: { userId: string; courseId:
     <div className="glass-card rounded-2xl p-5 space-y-3">
       <div className="flex items-center gap-2">
         <CheckCircle2 size={14} className="text-primary" />
-        <span className="font-tech text-[10px] uppercase tracking-[0.18em] text-primary">Việc cần làm</span>
+        <span className="font-tech text-[10px] uppercase tracking-[0.18em] text-primary">
+          Việc cần làm
+        </span>
       </div>
 
       <div className="space-y-2">
@@ -186,15 +217,21 @@ export default function UpNext({ userId, courseId }: { userId: string; courseId:
             key={i}
             to={action.href}
             className={`flex items-center gap-3 rounded-xl border px-4 py-3 transition-all hover:border-cyan-300/40 ${
-              action.urgent ? 'border-amber-400/30 bg-amber-500/[0.04]' : 'border-white/8 bg-white/[0.02]'
+              action.urgent
+                ? 'border-amber-400/30 bg-amber-500/[0.04]'
+                : 'border-white/8 bg-white/[0.02]'
             }`}
           >
             <div className="shrink-0">{action.icon}</div>
             <div className="flex-1 min-w-0">
-              <p className={`font-headline text-sm font-bold ${action.urgent ? 'text-amber-200' : 'text-on-surface'}`}>
+              <p
+                className={`font-headline text-sm font-bold ${action.urgent ? 'text-amber-200' : 'text-on-surface'}`}
+              >
                 {action.label}
               </p>
-              <p className="font-tech text-[9px] uppercase tracking-[0.12em] text-secondary/55 truncate">{action.sublabel}</p>
+              <p className="font-tech text-[9px] uppercase tracking-[0.12em] text-secondary/55 truncate">
+                {action.sublabel}
+              </p>
             </div>
             <ArrowRight size={12} className="text-secondary/40 shrink-0" />
           </Link>

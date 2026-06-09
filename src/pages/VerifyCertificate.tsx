@@ -11,14 +11,26 @@ export default function VerifyCertificate() {
   const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
-    if (!code) { setLoading(false); setNotFound(true); return; }
+    if (!code) {
+      setLoading(false);
+      setNotFound(true);
+      return;
+    }
     verifyCertificate(code).then((c) => {
-      if (c) setCert(c); else setNotFound(true);
+      if (c) setCert(c);
+      else setNotFound(true);
       setLoading(false);
     });
   }, [code]);
 
-  if (loading) return <PageShell><div className="flex justify-center py-20"><Loader2 size={24} className="animate-spin text-primary" /></div></PageShell>;
+  if (loading)
+    return (
+      <PageShell>
+        <div className="flex justify-center py-20">
+          <Loader2 size={24} className="animate-spin text-primary" />
+        </div>
+      </PageShell>
+    );
 
   if (notFound) {
     return (
@@ -39,12 +51,27 @@ export default function VerifyCertificate() {
         <CheckCircle2 size={40} className="mx-auto text-emerald-400" />
         <p className="font-headline text-xl font-bold text-on-surface">Chứng chỉ hợp lệ ✓</p>
         <div className="space-y-1 text-sm text-secondary/80">
-          <p>Học viên: <span className="text-on-surface font-bold">{meta?.student_name ?? '—'}</span></p>
-          <p>Khoá học: <span className="text-on-surface font-bold">{meta?.course_title ?? '—'}</span></p>
-          <p>Ngày cấp: <span className="text-on-surface">{cert ? new Date(cert.issued_at).toLocaleDateString('vi-VN') : '—'}</span></p>
-          {meta?.score !== undefined && <p>Điểm: <span className="text-primary font-bold">{meta.score.toFixed(0)}%</span></p>}
+          <p>
+            Học viên: <span className="text-on-surface font-bold">{meta?.student_name ?? '—'}</span>
+          </p>
+          <p>
+            Khoá học: <span className="text-on-surface font-bold">{meta?.course_title ?? '—'}</span>
+          </p>
+          <p>
+            Ngày cấp:{' '}
+            <span className="text-on-surface">
+              {cert ? new Date(cert.issued_at).toLocaleDateString('vi-VN') : '—'}
+            </span>
+          </p>
+          {meta?.score !== undefined && (
+            <p>
+              Điểm: <span className="text-primary font-bold">{meta.score.toFixed(0)}%</span>
+            </p>
+          )}
         </div>
-        <p className="font-tech text-[9px] uppercase tracking-[0.14em] text-secondary/40">Mã: {cert?.verify_code}</p>
+        <p className="font-tech text-[9px] uppercase tracking-[0.14em] text-secondary/40">
+          Mã: {cert?.verify_code}
+        </p>
       </div>
     </PageShell>
   );

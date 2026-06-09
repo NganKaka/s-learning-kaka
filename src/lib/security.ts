@@ -3,8 +3,15 @@ import { supabase } from './supabase';
 // ---- 2FA (TOTP) Helpers ----
 // Supabase Auth supports MFA natively. These are convenience wrappers.
 
-export async function enroll2FA(): Promise<{ qrCode: string; secret: string; factorId: string } | null> {
-  const { data, error } = await supabase.auth.mfa.enroll({ factorType: 'totp', friendlyName: 'sLearning Authenticator' });
+export async function enroll2FA(): Promise<{
+  qrCode: string;
+  secret: string;
+  factorId: string;
+} | null> {
+  const { data, error } = await supabase.auth.mfa.enroll({
+    factorType: 'totp',
+    friendlyName: 'sLearning Authenticator',
+  });
   if (error || !data) return null;
   return { qrCode: data.totp.qr_code, secret: data.totp.secret, factorId: data.id };
 }
@@ -21,18 +28,32 @@ export async function unenroll2FA(factorId: string): Promise<boolean> {
   return !error;
 }
 
-export async function get2FAFactors(): Promise<Array<{ id: string; friendly_name: string; status: string }>> {
+export async function get2FAFactors(): Promise<
+  Array<{ id: string; friendly_name: string; status: string }>
+> {
   const { data } = await supabase.auth.mfa.listFactors();
-  return (data?.totp ?? []).map((f) => ({ id: f.id, friendly_name: f.friendly_name ?? '', status: f.status }));
+  return (data?.totp ?? []).map((f) => ({
+    id: f.id,
+    friendly_name: f.friendly_name ?? '',
+    status: f.status,
+  }));
 }
 
 // ---- Session Management ----
-export async function getActiveSessions(): Promise<Array<{ id: string; created_at: string; user_agent: string }>> {
+export async function getActiveSessions(): Promise<
+  Array<{ id: string; created_at: string; user_agent: string }>
+> {
   // Supabase doesn't expose session list directly via client SDK.
   // This is a placeholder — in production, track sessions in a custom table or use admin API.
   const { data } = await supabase.auth.getSession();
   if (!data.session) return [];
-  return [{ id: data.session.access_token.slice(-8), created_at: new Date().toISOString(), user_agent: navigator.userAgent }];
+  return [
+    {
+      id: data.session.access_token.slice(-8),
+      created_at: new Date().toISOString(),
+      user_agent: navigator.userAgent,
+    },
+  ];
 }
 
 export async function signOutAllDevices(): Promise<void> {
@@ -71,5 +92,9 @@ export function sanitizeHtml(input: string): string {
 }
 
 export function escapeHtml(str: string): string {
-  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
 }

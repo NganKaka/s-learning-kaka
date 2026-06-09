@@ -23,16 +23,18 @@ function ensureLenis(): Promise<LenisInstance | null> {
   if (window.__lenis) return Promise.resolve(window.__lenis);
   if (initPromise) return initPromise;
 
-  initPromise = import('lenis').then(({ default: Lenis }) => {
-    const lenis = new Lenis({ smoothWheel: false, lerp: 0.35 }) as unknown as LenisInstance;
-    window.__lenis = lenis;
-    const raf = (time: number) => {
-      lenis.raf(time);
+  initPromise = import('lenis')
+    .then(({ default: Lenis }) => {
+      const lenis = new Lenis({ smoothWheel: false, lerp: 0.35 }) as unknown as LenisInstance;
+      window.__lenis = lenis;
+      const raf = (time: number) => {
+        lenis.raf(time);
+        requestAnimationFrame(raf);
+      };
       requestAnimationFrame(raf);
-    };
-    requestAnimationFrame(raf);
-    return lenis;
-  }).catch(() => null);
+      return lenis;
+    })
+    .catch(() => null);
 
   return initPromise;
 }

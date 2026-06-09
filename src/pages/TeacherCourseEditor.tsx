@@ -44,7 +44,9 @@ export default function TeacherCourseEditor() {
       if (cancelled) return;
       const sorted = (mods ?? []).map((m) => ({
         ...(m as Module),
-        lessons: ((m as { lessons: Lesson[] }).lessons ?? []).sort((a, b) => a.order_index - b.order_index),
+        lessons: ((m as { lessons: Lesson[] }).lessons ?? []).sort(
+          (a, b) => a.order_index - b.order_index,
+        ),
       }));
       setModules(sorted);
     })();
@@ -57,8 +59,13 @@ export default function TeacherCourseEditor() {
     return (
       <PageShell>
         <div className="glass-card rounded-2xl p-12 text-center">
-          <p className="text-secondary/70">Không tìm thấy khoá học hoặc bạn không có quyền chỉnh sửa.</p>
-          <Link to="/teacher/courses" className="inline-block mt-3 text-cyan-300 hover:text-cyan-200 underline">
+          <p className="text-secondary/70">
+            Không tìm thấy khoá học hoặc bạn không có quyền chỉnh sửa.
+          </p>
+          <Link
+            to="/teacher/courses"
+            className="inline-block mt-3 text-cyan-300 hover:text-cyan-200 underline"
+          >
             ← Quay lại
           </Link>
         </div>
@@ -103,13 +110,16 @@ export default function TeacherCourseEditor() {
   const addLesson = async (moduleId: string) => {
     const title = window.prompt('Tên bài học?');
     if (!title) return;
-    const slugInput = window.prompt('Slug?', title
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[̀-ͯ]/g, '')
-      .replace(/đ/g, 'd')
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-|-$/g, ''));
+    const slugInput = window.prompt(
+      'Slug?',
+      title
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[̀-ͯ]/g, '')
+        .replace(/đ/g, 'd')
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, ''),
+    );
     if (!slugInput) return;
 
     const targetModule = modules.find((m) => m.id === moduleId);
@@ -136,7 +146,10 @@ export default function TeacherCourseEditor() {
 
   return (
     <PageShell>
-      <Link to="/teacher/courses" className="inline-flex items-center gap-1.5 font-tech text-[10px] uppercase tracking-[0.18em] text-secondary/60 hover:text-cyan-300 mb-4">
+      <Link
+        to="/teacher/courses"
+        className="inline-flex items-center gap-1.5 font-tech text-[10px] uppercase tracking-[0.18em] text-secondary/60 hover:text-cyan-300 mb-4"
+      >
         ← Tất cả khoá học
       </Link>
 
@@ -144,7 +157,9 @@ export default function TeacherCourseEditor() {
         {/* Course meta editor */}
         <div className="glass-card rounded-2xl p-6 space-y-4">
           <div className="flex items-center justify-between flex-wrap gap-3">
-            <h1 className="font-headline text-2xl font-extrabold text-on-surface">{course.title}</h1>
+            <h1 className="font-headline text-2xl font-extrabold text-on-surface">
+              {course.title}
+            </h1>
             <div className="flex items-center gap-2">
               <button
                 type="button"
@@ -163,20 +178,38 @@ export default function TeacherCourseEditor() {
           </div>
 
           <div className="grid sm:grid-cols-2 gap-3">
-            <Field label="Tiêu đề" value={course.title} onSave={(v) => void saveCourseField({ title: v })} />
-            <Field label="Phụ đề" value={course.subtitle ?? ''} onSave={(v) => void saveCourseField({ subtitle: v })} />
-            <Field label="Slug" value={course.slug} onSave={(v) => void saveCourseField({ slug: v })} />
+            <Field
+              label="Tiêu đề"
+              value={course.title}
+              onSave={(v) => void saveCourseField({ title: v })}
+            />
+            <Field
+              label="Phụ đề"
+              value={course.subtitle ?? ''}
+              onSave={(v) => void saveCourseField({ subtitle: v })}
+            />
+            <Field
+              label="Slug"
+              value={course.slug}
+              onSave={(v) => void saveCourseField({ slug: v })}
+            />
             <Field
               label="Học phí (VND)"
               value={String(course.price_vnd)}
               onSave={(v) => void saveCourseField({ price_vnd: parseInt(v, 10) || 0 })}
               type="number"
             />
-            <Field label="Cover image URL" value={course.cover_image ?? ''} onSave={(v) => void saveCourseField({ cover_image: v })} />
+            <Field
+              label="Cover image URL"
+              value={course.cover_image ?? ''}
+              onSave={(v) => void saveCourseField({ cover_image: v })}
+            />
             <SelectField
               label="Trình độ"
               value={course.level}
-              onSave={(v) => void saveCourseField({ level: v as 'beginner' | 'intermediate' | 'advanced' })}
+              onSave={(v) =>
+                void saveCourseField({ level: v as 'beginner' | 'intermediate' | 'advanced' })
+              }
               options={[
                 { v: 'beginner', label: 'Cơ bản' },
                 { v: 'intermediate', label: 'Trung bình' },
@@ -196,7 +229,9 @@ export default function TeacherCourseEditor() {
         {/* Curriculum editor */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <p className="font-tech text-[10px] uppercase tracking-[0.2em] text-primary">Giáo trình</p>
+            <p className="font-tech text-[10px] uppercase tracking-[0.2em] text-primary">
+              Giáo trình
+            </p>
             <button
               type="button"
               onClick={addModule}

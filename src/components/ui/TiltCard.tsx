@@ -88,9 +88,7 @@ export default function TiltCard({
       }}
       className={`relative ${className}`}
     >
-      <div style={{ transform: 'translateZ(50px)', transformStyle: 'preserve-3d' }}>
-        {children}
-      </div>
+      <div style={{ transform: 'translateZ(50px)', transformStyle: 'preserve-3d' }}>{children}</div>
 
       {holographic && (
         <motion.div

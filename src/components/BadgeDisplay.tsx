@@ -7,10 +7,18 @@ export default function BadgeDisplay({ userId }: { userId: string }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getUserBadges(userId).then((b) => { setBadges(b); setLoading(false); });
+    getUserBadges(userId).then((b) => {
+      setBadges(b);
+      setLoading(false);
+    });
   }, [userId]);
 
-  if (loading) return <div className="flex justify-center py-4"><Loader2 size={16} className="animate-spin text-primary" /></div>;
+  if (loading)
+    return (
+      <div className="flex justify-center py-4">
+        <Loader2 size={16} className="animate-spin text-primary" />
+      </div>
+    );
 
   const allKeys = Object.keys(BADGE_DEFINITIONS);
   const earnedKeys = new Set(badges.map((b) => b.badge_key));
@@ -28,7 +36,9 @@ export default function BadgeDisplay({ userId }: { userId: string }) {
             <div
               key={key}
               className={`rounded-xl border p-3 text-center transition-all ${
-                earned ? 'border-amber-400/40 bg-amber-500/10' : 'border-white/8 bg-white/[0.02] opacity-40'
+                earned
+                  ? 'border-amber-400/40 bg-amber-500/10'
+                  : 'border-white/8 bg-white/[0.02] opacity-40'
               }`}
               title={def.description}
             >

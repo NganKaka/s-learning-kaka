@@ -88,7 +88,9 @@ export default function TeacherAnnouncements() {
 
       <form onSubmit={handlePost} className="mt-8 glass-card rounded-2xl p-6 space-y-4">
         <div className="space-y-1.5">
-          <label className="font-tech text-[10px] uppercase tracking-[0.18em] text-secondary/55">Tiêu đề (tuỳ chọn)</label>
+          <label className="font-tech text-[10px] uppercase tracking-[0.18em] text-secondary/55">
+            Tiêu đề (tuỳ chọn)
+          </label>
           <input
             type="text"
             value={title}
@@ -98,7 +100,9 @@ export default function TeacherAnnouncements() {
           />
         </div>
         <div className="space-y-1.5">
-          <label className="font-tech text-[10px] uppercase tracking-[0.18em] text-secondary/55">Nội dung *</label>
+          <label className="font-tech text-[10px] uppercase tracking-[0.18em] text-secondary/55">
+            Nội dung *
+          </label>
           <textarea
             value={body}
             onChange={(e) => setBody(e.target.value)}
@@ -109,7 +113,12 @@ export default function TeacherAnnouncements() {
           />
         </div>
         <label className="inline-flex items-center gap-2 font-tech text-[10px] uppercase tracking-[0.16em] text-secondary/65 cursor-pointer">
-          <input type="checkbox" checked={pinned} onChange={(e) => setPinned(e.target.checked)} className="accent-primary" />
+          <input
+            type="checkbox"
+            checked={pinned}
+            onChange={(e) => setPinned(e.target.checked)}
+            className="accent-primary"
+          />
           <Pin size={11} /> Ghim lên đầu
         </label>
 
@@ -160,8 +169,12 @@ export default function TeacherAnnouncements() {
                       {formatDate(a.created_at)}
                     </span>
                   </div>
-                  {a.title && <p className="font-headline font-bold text-on-surface mb-1">{a.title}</p>}
-                  <p className="text-sm text-secondary/85 whitespace-pre-line leading-relaxed">{a.body_md}</p>
+                  {a.title && (
+                    <p className="font-headline font-bold text-on-surface mb-1">{a.title}</p>
+                  )}
+                  <p className="text-sm text-secondary/85 whitespace-pre-line leading-relaxed">
+                    {a.body_md}
+                  </p>
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
                   <button
@@ -193,5 +206,11 @@ export default function TeacherAnnouncements() {
 }
 
 function formatDate(iso: string): string {
-  return new Date(iso).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  return new Date(iso).toLocaleString('vi-VN', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
 }

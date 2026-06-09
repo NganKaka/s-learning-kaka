@@ -7,12 +7,34 @@ export interface VideoPosition {
 }
 
 export async function getVideoPosition(userId: string, lessonId: string): Promise<VideoPosition> {
-  const { data } = await supabase.from('video_positions').select('position_seconds, speed').eq('user_id', userId).eq('lesson_id', lessonId).maybeSingle();
-  return { position_seconds: (data?.position_seconds as number) ?? 0, speed: (data?.speed as number) ?? 1.0 };
+  const { data } = await supabase
+    .from('video_positions')
+    .select('position_seconds, speed')
+    .eq('user_id', userId)
+    .eq('lesson_id', lessonId)
+    .maybeSingle();
+  return {
+    position_seconds: (data?.position_seconds as number) ?? 0,
+    speed: (data?.speed as number) ?? 1.0,
+  };
 }
 
-export async function saveVideoPosition(userId: string, lessonId: string, position: number, speed: number): Promise<void> {
-  await supabase.from('video_positions').upsert({ user_id: userId, lesson_id: lessonId, position_seconds: Math.floor(position), speed, updated_at: new Date().toISOString() }, { onConflict: 'user_id,lesson_id' });
+export async function saveVideoPosition(
+  userId: string,
+  lessonId: string,
+  position: number,
+  speed: number,
+): Promise<void> {
+  await supabase.from('video_positions').upsert(
+    {
+      user_id: userId,
+      lesson_id: lessonId,
+      position_seconds: Math.floor(position),
+      speed,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: 'user_id,lesson_id' },
+  );
 }
 
 // ---- Lesson Attachments ----
@@ -26,15 +48,36 @@ export interface LessonAttachment {
 }
 
 export async function getAttachments(lessonId: string): Promise<LessonAttachment[]> {
-  const { data } = await supabase.from('lesson_attachments').select('*').eq('lesson_id', lessonId).order('created_at');
+  const { data } = await supabase
+    .from('lesson_attachments')
+    .select('*')
+    .eq('lesson_id', lessonId)
+    .order('created_at');
   return (data ?? []) as LessonAttachment[];
 }
 
-export async function uploadAttachment(lessonId: string, userId: string, file: File): Promise<LessonAttachment | null> {
+export async function uploadAttachment(
+  lessonId: string,
+  userId: string,
+  file: File,
+): Promise<LessonAttachment | null> {
   const path = `attachments/${lessonId}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
-  const { error } = await supabase.storage.from('quiz-submissions').upload(path, file, { contentType: file.type });
+  const { error } = await supabase.storage
+    .from('quiz-submissions')
+    .upload(path, file, { contentType: file.type });
   if (error) return null;
-  const { data } = await supabase.from('lesson_attachments').insert({ lesson_id: lessonId, file_name: file.name, file_path: path, file_size: file.size, content_type: file.type, uploaded_by: userId }).select('*').single();
+  const { data } = await supabase
+    .from('lesson_attachments')
+    .insert({
+      lesson_id: lessonId,
+      file_name: file.name,
+      file_path: path,
+      file_size: file.size,
+      content_type: file.type,
+      uploaded_by: userId,
+    })
+    .select('*')
+    .single();
   return data as LessonAttachment | null;
 }
 

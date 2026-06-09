@@ -14,7 +14,13 @@ interface TopicStat {
  * Shows student's weak topics based on tags on quiz questions.
  * Analyzes all submitted attempts for a given course.
  */
-export default function WeakTopicAnalysis({ userId, courseId }: { userId: string; courseId: string }) {
+export default function WeakTopicAnalysis({
+  userId,
+  courseId,
+}: {
+  userId: string;
+  courseId: string;
+}) {
   const [stats, setStats] = useState<TopicStat[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -27,21 +33,30 @@ export default function WeakTopicAnalysis({ userId, courseId }: { userId: string
         .from('lessons')
         .select('id')
         .eq('course_id', courseId);
-      if (!lessons || cancelled) { setLoading(false); return; }
+      if (!lessons || cancelled) {
+        setLoading(false);
+        return;
+      }
 
       const lessonIds = lessons.map((l) => l.id);
       const { data: quizzes } = await supabase
         .from('quizzes')
         .select('id, lesson_id')
         .in('lesson_id', lessonIds);
-      if (!quizzes || cancelled) { setLoading(false); return; }
+      if (!quizzes || cancelled) {
+        setLoading(false);
+        return;
+      }
 
       const quizIds = quizzes.map((q) => q.id);
       const { data: questions } = await supabase
         .from('quiz_questions')
         .select('*')
         .in('quiz_id', quizIds);
-      if (!questions || cancelled) { setLoading(false); return; }
+      if (!questions || cancelled) {
+        setLoading(false);
+        return;
+      }
 
       const { data: attempts } = await supabase
         .from('quiz_attempts')
@@ -49,13 +64,16 @@ export default function WeakTopicAnalysis({ userId, courseId }: { userId: string
         .eq('user_id', userId)
         .in('quiz_id', quizIds)
         .in('status', ['submitted', 'graded']);
-      if (cancelled) { setLoading(false); return; }
+      if (cancelled) {
+        setLoading(false);
+        return;
+      }
 
       // Aggregate by tag
       const tagStats: Record<string, { total: number; correct: number }> = {};
       const qs = questions as QuizQuestion[];
 
-      for (const attempt of (attempts ?? [])) {
+      for (const attempt of attempts ?? []) {
         const answers = (attempt.answers_jsonb ?? {}) as Record<string, AnswerValue>;
         for (const q of qs.filter((qq) => qq.quiz_id === attempt.quiz_id)) {
           if (q.tags.length === 0) continue;
@@ -77,11 +95,23 @@ export default function WeakTopicAnalysis({ userId, courseId }: { userId: string
         setLoading(false);
       }
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [userId, courseId]);
 
-  if (loading) return <div className="flex justify-center py-4"><Loader2 size={16} className="animate-spin text-primary" /></div>;
-  if (stats.length === 0) return <p className="text-sm text-secondary/60 text-center py-4">Chưa có dữ liệu phân tích chủ đề.</p>;
+  if (loading)
+    return (
+      <div className="flex justify-center py-4">
+        <Loader2 size={16} className="animate-spin text-primary" />
+      </div>
+    );
+  if (stats.length === 0)
+    return (
+      <p className="text-sm text-secondary/60 text-center py-4">
+        Chưa có dữ liệu phân tích chủ đề.
+      </p>
+    );
 
   const weak = stats.filter((s) => s.pct < 60);
 
@@ -98,7 +128,10 @@ export default function WeakTopicAnalysis({ userId, courseId }: { userId: string
           </p>
           <div className="flex flex-wrap gap-2">
             {weak.map((s) => (
-              <span key={s.tag} className="rounded-full border border-amber-400/30 bg-amber-500/10 px-2.5 py-1 font-tech text-[10px] text-amber-200">
+              <span
+                key={s.tag}
+                className="rounded-full border border-amber-400/30 bg-amber-500/10 px-2.5 py-1 font-tech text-[10px] text-amber-200"
+              >
                 {s.tag} ({s.pct.toFixed(0)}%)
               </span>
             ))}

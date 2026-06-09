@@ -26,10 +26,6 @@ interface LinkRecord {
   course_title: string;
 }
 
-interface ParentLinkerProps {
-  // Props if needed in the future
-}
-
 export function ParentLinker() {
   const [parents, setParents] = useState<ProfileOption[]>([]);
   const [students, setStudents] = useState<ProfileOption[]>([]);
@@ -71,7 +67,7 @@ export function ParentLinker() {
         return {
           id: l.id as string,
           parent_name: profileMap.get(l.parent_id as string) ?? null,
-          student_name: enr ? profileMap.get(enr.user_id) ?? null : null,
+          student_name: enr ? (profileMap.get(enr.user_id) ?? null) : null,
           course_title: enr?.course_title ?? '—',
         };
       });
@@ -101,7 +97,12 @@ export function ParentLinker() {
       const studentName = students.find((s) => s.id === enr?.user_id)?.display_name ?? null;
       setLinks((prev) => [
         ...prev,
-        { id: code, parent_name: parentName, student_name: studentName, course_title: enr?.course_title ?? '—' },
+        {
+          id: code,
+          parent_name: parentName,
+          student_name: studentName,
+          course_title: enr?.course_title ?? '—',
+        },
       ]);
       setSelectedParent('');
       setSelectedEnrollment('');
@@ -109,15 +110,16 @@ export function ParentLinker() {
     setSaving(false);
   };
 
-  const courseOptions = [...new Map(enrollments.map((e) => [e.course_id, e.course_title])).entries()].map(
-    ([id, title]) => ({ value: id, label: title })
-  );
+  const courseOptions = [
+    ...new Map(enrollments.map((e) => [e.course_id, e.course_title])).entries(),
+  ].map(([id, title]) => ({ value: id, label: title }));
 
   const studentOptions = selectedCourse
     ? enrollments
         .filter((e) => e.course_id === selectedCourse)
         .map((e) => {
-          const name = students.find((s) => s.id === e.user_id)?.display_name ?? e.user_id.slice(0, 8);
+          const name =
+            students.find((s) => s.id === e.user_id)?.display_name ?? e.user_id.slice(0, 8);
           return { id: e.id, label: name };
         })
     : [];
@@ -192,7 +194,9 @@ export function ParentLinker() {
           Gán
         </button>
         {message && (
-          <p className={`text-xs ${message.includes('thành công') ? 'text-emerald-300' : 'text-red-300'}`}>
+          <p
+            className={`text-xs ${message.includes('thành công') ? 'text-emerald-300' : 'text-red-300'}`}
+          >
             {message}
           </p>
         )}
@@ -235,7 +239,9 @@ function TrackingCodeTable({
 }) {
   return (
     <div className="space-y-2">
-      <p className="font-tech text-[10px] uppercase tracking-[0.18em] text-secondary/55">Mã theo dõi</p>
+      <p className="font-tech text-[10px] uppercase tracking-[0.18em] text-secondary/55">
+        Mã theo dõi
+      </p>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
@@ -256,8 +262,11 @@ function TrackingCodeTable({
           </thead>
           <tbody>
             {enrollments.map((e) => {
-              const studentName = students.find((s) => s.id === e.user_id)?.display_name ?? e.user_id.slice(0, 8);
-              const linked = links.some((l) => l.course_title === e.course_title && l.student_name === studentName);
+              const studentName =
+                students.find((s) => s.id === e.user_id)?.display_name ?? e.user_id.slice(0, 8);
+              const linked = links.some(
+                (l) => l.course_title === e.course_title && l.student_name === studentName,
+              );
               return (
                 <TrackingCodeRow
                   key={e.id}

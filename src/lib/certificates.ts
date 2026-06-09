@@ -18,17 +18,33 @@ export async function issueCertificate(params: {
   hours?: number;
 }): Promise<Certificate | null> {
   const verifyCode = `CERT-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
-  const { data } = await supabase.from('certificates').upsert({
-    user_id: params.userId,
-    course_id: params.courseId,
-    verify_code: verifyCode,
-    metadata: { student_name: params.studentName, course_title: params.courseTitle, score: params.score, hours: params.hours },
-  }, { onConflict: 'user_id,course_id' }).select('*').single();
+  const { data } = await supabase
+    .from('certificates')
+    .upsert(
+      {
+        user_id: params.userId,
+        course_id: params.courseId,
+        verify_code: verifyCode,
+        metadata: {
+          student_name: params.studentName,
+          course_title: params.courseTitle,
+          score: params.score,
+          hours: params.hours,
+        },
+      },
+      { onConflict: 'user_id,course_id' },
+    )
+    .select('*')
+    .single();
   return data as Certificate | null;
 }
 
 export async function verifyCertificate(code: string): Promise<Certificate | null> {
-  const { data } = await supabase.from('certificates').select('*').eq('verify_code', code).maybeSingle();
+  const { data } = await supabase
+    .from('certificates')
+    .select('*')
+    .eq('verify_code', code)
+    .maybeSingle();
   return data as Certificate | null;
 }
 

@@ -81,7 +81,13 @@ export default function Dashboard() {
       const baseRows = (enr ?? [])
         .map((row) => {
           const c = (Array.isArray(row.courses) ? row.courses[0] : row.courses) as
-            | { id: string; slug: string; title: string; cover_image: string | null; duration_minutes: number }
+            | {
+                id: string;
+                slug: string;
+                title: string;
+                cover_image: string | null;
+                duration_minutes: number;
+              }
             | undefined;
           if (!c) return null;
           return {
@@ -93,11 +99,13 @@ export default function Dashboard() {
             granted_at: row.granted_at as string,
           };
         })
-        .filter((r): r is Omit<EnrolledCourse, 'total_lessons' | 'completed_lessons'> => r !== null);
+        .filter(
+          (r): r is Omit<EnrolledCourse, 'total_lessons' | 'completed_lessons'> => r !== null,
+        );
 
       const courseIds = baseRows.map((r) => r.id);
-      let totalsByCourse = new Map<string, number>();
-      let completedByCourse = new Map<string, number>();
+      const totalsByCourse = new Map<string, number>();
+      const completedByCourse = new Map<string, number>();
       if (courseIds.length > 0) {
         const [{ data: allLessons }, { data: progress }] = await Promise.all([
           supabase.from('lessons').select('id, course_id').in('course_id', courseIds),
@@ -232,25 +240,34 @@ export default function Dashboard() {
         <div className="mt-8 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <XpWidget userId={user.id} />
           {enrolled && enrolled.length > 0 && <UpNext userId={user.id} courseId={enrolled[0].id} />}
-          {enrolled && enrolled.length > 0 && <FocusAreas userId={user.id} courseId={enrolled[0].id} />}
+          {enrolled && enrolled.length > 0 && (
+            <FocusAreas userId={user.id} courseId={enrolled[0].id} />
+          )}
         </div>
       )}
 
       {stats && enrolled && enrolled.length === 0 && (
         <div className="mt-8 grid sm:grid-cols-3 gap-4">
-          <Link to="/cards" className="glass-card rounded-2xl p-5 space-y-2 hover:border-cyan-300/35 transition-colors">
+          <Link
+            to="/cards"
+            className="glass-card rounded-2xl p-5 space-y-2 hover:border-cyan-300/35 transition-colors"
+          >
             <div className="flex items-center gap-2 font-tech text-[10px] uppercase tracking-[0.18em] text-secondary/55">
               <Brain size={12} className="text-cyan-300" />
               <span>Flashcard cần ôn</span>
             </div>
-            <p className="font-headline text-2xl font-extrabold tabular-nums text-cyan-200">{stats.cardsDueToday}</p>
+            <p className="font-headline text-2xl font-extrabold tabular-nums text-cyan-200">
+              {stats.cardsDueToday}
+            </p>
           </Link>
           <div className="glass-card rounded-2xl p-5 space-y-2">
             <div className="flex items-center gap-2 font-tech text-[10px] uppercase tracking-[0.18em] text-secondary/55">
               <Flame size={12} className="text-primary" />
               <span>Chuỗi ngày học</span>
             </div>
-            <p className="font-headline text-2xl font-extrabold tabular-nums text-primary">{stats.streak} ngày</p>
+            <p className="font-headline text-2xl font-extrabold tabular-nums text-primary">
+              {stats.streak} ngày
+            </p>
           </div>
           <div className="glass-card rounded-2xl p-5 space-y-2">
             <div className="flex items-center gap-2 font-tech text-[10px] uppercase tracking-[0.18em] text-secondary/55">
@@ -264,9 +281,14 @@ export default function Dashboard() {
 
       {pending && pending.length > 0 && (
         <section className="mt-8 space-y-3">
-          <p className="font-tech text-[10px] uppercase tracking-[0.2em] text-primary">Đang chờ duyệt</p>
+          <p className="font-tech text-[10px] uppercase tracking-[0.2em] text-primary">
+            Đang chờ duyệt
+          </p>
           {pending.map((order) => (
-            <div key={order.id} className="glass-card rounded-2xl p-5 flex items-center justify-between gap-4 flex-wrap">
+            <div
+              key={order.id}
+              className="glass-card rounded-2xl p-5 flex items-center justify-between gap-4 flex-wrap"
+            >
               <div>
                 <p className="font-headline font-bold text-on-surface">{order.course_title}</p>
                 <p className="font-tech text-[10px] uppercase tracking-[0.14em] text-secondary/60 mt-1">
@@ -285,17 +307,20 @@ export default function Dashboard() {
       )}
 
       <section className="mt-10">
-        <p className="font-tech text-[10px] uppercase tracking-[0.2em] text-primary">Khoá học của bạn</p>
+        <p className="font-tech text-[10px] uppercase tracking-[0.2em] text-primary">
+          Khoá học của bạn
+        </p>
 
-        {!enrolled && (
-          <div className="mt-3 glass-card rounded-2xl p-12 animate-pulse h-32" />
-        )}
+        {!enrolled && <div className="mt-3 glass-card rounded-2xl p-12 animate-pulse h-32" />}
 
         {enrolled && enrolled.length === 0 && (
           <div className="mt-3 glass-card rounded-2xl p-10 text-center space-y-3">
             <BookOpen size={28} className="text-cyan-300 mx-auto" />
             <p className="text-secondary/80">Bạn chưa đăng ký khoá học nào.</p>
-            <Link to="/courses" className="inline-flex items-center gap-2 text-cyan-300 hover:text-cyan-200 underline">
+            <Link
+              to="/courses"
+              className="inline-flex items-center gap-2 text-cyan-300 hover:text-cyan-200 underline"
+            >
               Xem khoá học có sẵn <ArrowRight size={12} />
             </Link>
           </div>
@@ -304,12 +329,15 @@ export default function Dashboard() {
         {enrolled && enrolled.length > 0 && (
           <div className="mt-3 grid md:grid-cols-2 gap-5">
             {enrolled.map((course) => (
-              <CourseCard key={course.id} course={course} studentName={profile?.display_name ?? 'Học viên'} />
+              <CourseCard
+                key={course.id}
+                course={course}
+                studentName={profile?.display_name ?? 'Học viên'}
+              />
             ))}
           </div>
         )}
       </section>
-
     </PageShell>
   );
 }

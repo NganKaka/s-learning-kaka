@@ -10,10 +10,17 @@ interface SelectFieldProps<T extends string> {
   options: Array<{ v: T; label: string }>;
 }
 
-export function SelectField<T extends string>({ label, value, onSave, options }: SelectFieldProps<T>) {
+export function SelectField<T extends string>({
+  label,
+  value,
+  onSave,
+  options,
+}: SelectFieldProps<T>) {
   return (
     <div className="space-y-1">
-      <label className="font-tech text-[10px] uppercase tracking-[0.18em] text-secondary/55">{label}</label>
+      <label className="font-tech text-[10px] uppercase tracking-[0.18em] text-secondary/55">
+        {label}
+      </label>
       <CustomSelect
         value={value}
         onChange={(v) => void onSave(v as T)}

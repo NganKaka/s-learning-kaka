@@ -125,7 +125,9 @@ export default function QuizConfigEditor({ lessonId }: { lessonId: string }) {
   };
 
   if (loading) {
-    return <div className="rounded-xl border border-white/8 bg-white/[0.02] p-4 animate-pulse h-24" />;
+    return (
+      <div className="rounded-xl border border-white/8 bg-white/[0.02] p-4 animate-pulse h-24" />
+    );
   }
 
   if (!quiz) {
@@ -150,7 +152,8 @@ export default function QuizConfigEditor({ lessonId }: { lessonId: string }) {
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <p className="inline-flex items-center gap-2 font-tech text-[10px] uppercase tracking-[0.18em] text-primary">
-          <Sparkles size={11} /> Quiz <span className="text-secondary/45">({questions.length} câu)</span>
+          <Sparkles size={11} /> Quiz{' '}
+          <span className="text-secondary/45">({questions.length} câu)</span>
         </p>
         <button onClick={deleteQuiz} className="text-red-400/70 hover:text-red-300">
           <Trash2 size={12} />
@@ -269,7 +272,13 @@ export default function QuizConfigEditor({ lessonId }: { lessonId: string }) {
       <div className="flex items-center gap-3 pt-2">
         <button
           type="button"
-          onClick={() => { setSavingConfig(true); setTimeout(() => { setSavingConfig(false); setTick((n) => n + 1); }, 300); }}
+          onClick={() => {
+            setSavingConfig(true);
+            setTimeout(() => {
+              setSavingConfig(false);
+              setTick((n) => n + 1);
+            }, 300);
+          }}
           className="inline-flex items-center gap-2 rounded-full border border-emerald-400/40 bg-emerald-500/15 px-4 py-2 text-xs font-tech uppercase tracking-[0.16em] text-emerald-200 hover:bg-emerald-500/25"
         >
           <CheckCircle2 size={12} /> Lưu quiz
@@ -342,15 +351,15 @@ function QuestionEditor({
   };
 
   const addChoice = () => {
-    onChange({ choices_jsonb: [...choices, `Lựa chọn ${String.fromCharCode(65 + choices.length)}`] });
+    onChange({
+      choices_jsonb: [...choices, `Lựa chọn ${String.fromCharCode(65 + choices.length)}`],
+    });
   };
 
   const removeChoice = (idx: number) => {
     if (choices.length <= 2) return;
     const next = choices.filter((_, i) => i !== idx);
-    const remappedCorrect = correct
-      .filter((c) => c !== idx)
-      .map((c) => (c > idx ? c - 1 : c));
+    const remappedCorrect = correct.filter((c) => c !== idx).map((c) => (c > idx ? c - 1 : c));
     onChange({ choices_jsonb: next, correct_jsonb: remappedCorrect });
   };
 
@@ -358,7 +367,9 @@ function QuestionEditor({
     if (question.type === 'single') {
       onChange({ correct_jsonb: [idx] });
     } else {
-      const next = correct.includes(idx) ? correct.filter((c) => c !== idx) : [...correct, idx].sort();
+      const next = correct.includes(idx)
+        ? correct.filter((c) => c !== idx)
+        : [...correct, idx].sort();
       onChange({ correct_jsonb: next });
     }
   };
@@ -499,7 +510,6 @@ function QuestionEditor({
         </p>
       )}
 
-
       {question.type === 'image' && (
         <ImageUploader
           imageUrl={question.image_url ?? null}
@@ -533,7 +543,9 @@ function ImageUploader({
     if (!file.type.startsWith('image/')) return;
     setUploading(true);
     const path = `quiz-images/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
-    const { error } = await supabase.storage.from('quiz-submissions').upload(path, file, { contentType: file.type, upsert: false });
+    const { error } = await supabase.storage
+      .from('quiz-submissions')
+      .upload(path, file, { contentType: file.type, upsert: false });
     if (!error) {
       const { data } = supabase.storage.from('quiz-submissions').getPublicUrl(path);
       onUploaded(data.publicUrl);
@@ -557,7 +569,11 @@ function ImageUploader({
     <div className="space-y-2">
       {imageUrl && (
         <div className="relative rounded-lg overflow-hidden border border-white/10">
-          <img src={imageUrl} alt="Ảnh câu hỏi" className="w-full max-h-48 object-contain bg-black/20" />
+          <img
+            src={imageUrl}
+            alt="Ảnh câu hỏi"
+            className="w-full max-h-48 object-contain bg-black/20"
+          />
           <button
             type="button"
             onClick={() => onUploaded(null)}
@@ -568,11 +584,16 @@ function ImageUploader({
         </div>
       )}
       <div
-        onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+        onDragOver={(e) => {
+          e.preventDefault();
+          setDragOver(true);
+        }}
         onDragLeave={() => setDragOver(false)}
         onDrop={handleDrop}
         className={`relative cursor-pointer rounded-xl border-2 border-dashed px-4 py-5 text-center transition-colors ${
-          dragOver ? 'border-cyan-300/60 bg-cyan-400/[0.06]' : 'border-white/15 bg-white/[0.02] hover:border-cyan-300/30'
+          dragOver
+            ? 'border-cyan-300/60 bg-cyan-400/[0.06]'
+            : 'border-white/15 bg-white/[0.02] hover:border-cyan-300/30'
         }`}
       >
         <input

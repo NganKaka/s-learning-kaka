@@ -73,7 +73,8 @@ export function FlashcardsEditor({ lessonId, courseId }: FlashcardsEditorProps) 
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <p className="inline-flex items-center gap-2 font-tech text-[10px] uppercase tracking-[0.18em] text-cyan-200">
-          <Brain size={11} /> Flashcards <span className="text-secondary/45">({cards?.length ?? 0})</span>
+          <Brain size={11} /> Flashcards{' '}
+          <span className="text-secondary/45">({cards?.length ?? 0})</span>
         </p>
         <button
           type="button"

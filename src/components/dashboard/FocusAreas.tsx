@@ -27,7 +27,10 @@ export default function FocusAreas({ userId, courseId }: FocusAreasProps) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!userId || !courseId) { setLoading(false); return; }
+    if (!userId || !courseId) {
+      setLoading(false);
+      return;
+    }
     let cancelled = false;
 
     (async () => {
@@ -36,7 +39,10 @@ export default function FocusAreas({ userId, courseId }: FocusAreasProps) {
         .select('id, slug')
         .eq('course_id', courseId);
 
-      if (!lessons || cancelled) { setLoading(false); return; }
+      if (!lessons || cancelled) {
+        setLoading(false);
+        return;
+      }
       const lessonIds = lessons.map((l) => l.id);
       const lessonSlugMap = new Map(lessons.map((l) => [l.id, l.slug]));
 
@@ -45,7 +51,10 @@ export default function FocusAreas({ userId, courseId }: FocusAreasProps) {
         .select('id, lesson_id')
         .in('lesson_id', lessonIds);
 
-      if (!quizzes || cancelled) { setLoading(false); return; }
+      if (!quizzes || cancelled) {
+        setLoading(false);
+        return;
+      }
       const quizIds = quizzes.map((q) => q.id);
 
       const { data: questions } = await supabase
@@ -53,7 +62,10 @@ export default function FocusAreas({ userId, courseId }: FocusAreasProps) {
         .select('id, quiz_id, tags')
         .in('quiz_id', quizIds);
 
-      if (!questions || cancelled) { setLoading(false); return; }
+      if (!questions || cancelled) {
+        setLoading(false);
+        return;
+      }
 
       const { data: attempts } = await supabase
         .from('quiz_attempts')
@@ -62,13 +74,16 @@ export default function FocusAreas({ userId, courseId }: FocusAreasProps) {
         .in('quiz_id', quizIds)
         .in('status', ['submitted', 'graded']);
 
-      if (cancelled) { setLoading(false); return; }
+      if (cancelled) {
+        setLoading(false);
+        return;
+      }
 
       // Build tag → { correct, total, lessonId }
       const tagStats: Record<string, { total: number; correct: number; lessonId?: string }> = {};
       const qs = questions as QuizQuestion[];
 
-      for (const attempt of (attempts ?? [])) {
+      for (const attempt of attempts ?? []) {
         const answers = (attempt.answers_jsonb ?? {}) as Record<string, AnswerValue>;
         const qids = new Set(qs.filter((q) => q.quiz_id === attempt.quiz_id).map((q) => q.id));
 
@@ -101,10 +116,15 @@ export default function FocusAreas({ userId, courseId }: FocusAreasProps) {
         }))
         .sort((a, b) => a.pct - b.pct);
 
-      if (!cancelled) { setStats(result); setLoading(false); }
+      if (!cancelled) {
+        setStats(result);
+        setLoading(false);
+      }
     })();
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [userId, courseId]);
 
   if (loading) {
@@ -123,9 +143,13 @@ export default function FocusAreas({ userId, courseId }: FocusAreasProps) {
       <div className="glass-card rounded-2xl p-5 space-y-2">
         <div className="flex items-center gap-2">
           <Target size={14} className="text-amber-300" />
-          <span className="font-tech text-[10px] uppercase tracking-[0.18em] text-amber-300">Điểm yếu cần cải thiện</span>
+          <span className="font-tech text-[10px] uppercase tracking-[0.18em] text-amber-300">
+            Điểm yếu cần cải thiện
+          </span>
         </div>
-        <p className="text-sm text-secondary/60">Hoàn thành vài bài quiz để xem phân tích điểm mạnh/yếu.</p>
+        <p className="text-sm text-secondary/60">
+          Hoàn thành vài bài quiz để xem phân tích điểm mạnh/yếu.
+        </p>
       </div>
     );
   }
@@ -135,7 +159,9 @@ export default function FocusAreas({ userId, courseId }: FocusAreasProps) {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Target size={14} className="text-amber-300" />
-          <span className="font-tech text-[10px] uppercase tracking-[0.18em] text-amber-300">Điểm yếu cần cải thiện</span>
+          <span className="font-tech text-[10px] uppercase tracking-[0.18em] text-amber-300">
+            Điểm yếu cần cải thiện
+          </span>
         </div>
         <span className="font-tech text-[9px] text-secondary/45">{stats.length} chủ đề</span>
       </div>
@@ -172,7 +198,9 @@ export default function FocusAreas({ userId, courseId }: FocusAreasProps) {
           ))}
         </div>
       ) : (
-        <p className="text-sm text-emerald-300/80">Tuyệt vời! Bạn không có điểm yếu nào dưới 60%.</p>
+        <p className="text-sm text-emerald-300/80">
+          Tuyệt vời! Bạn không có điểm yếu nào dưới 60%.
+        </p>
       )}
 
       {weak.length > 4 && (

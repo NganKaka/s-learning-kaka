@@ -8,7 +8,7 @@ import type { AsyncState } from '../types/common';
 export function useAsyncData<T>(
   asyncFn: () => Promise<T | null>,
   deps: unknown[] = [],
-  options: { initialLoading?: boolean } = {}
+  options: { initialLoading?: boolean } = {},
 ): AsyncState<T> {
   const [state, setState] = useState<AsyncState<T>>({
     data: null,
@@ -27,7 +27,11 @@ export function useAsyncData<T>(
         }
       } catch (err) {
         if (!cancelled) {
-          setState({ data: null, loading: false, error: err instanceof Error ? err.message : 'Unknown error' });
+          setState({
+            data: null,
+            loading: false,
+            error: err instanceof Error ? err.message : 'Unknown error',
+          });
         }
       }
     })();

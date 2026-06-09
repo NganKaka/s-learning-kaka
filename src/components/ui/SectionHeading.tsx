@@ -12,7 +12,10 @@ export default function SectionHeading({ eyebrow, title, subtitle }: SectionHead
   const isInView = useInView(ref, { once: true, margin: '-50px' });
 
   return (
-    <div ref={ref} className={`section-heading-anchor space-y-2 relative ${isInView ? 'section-entered' : ''}`}>
+    <div
+      ref={ref}
+      className={`section-heading-anchor space-y-2 relative ${isInView ? 'section-entered' : ''}`}
+    >
       <span aria-hidden className="section-sweep" />
       <motion.p
         initial={{ opacity: 0, y: 10 }}

@@ -31,7 +31,9 @@ export function selectAdaptiveQuestions(
  */
 export function computeTagAccuracy(
   questions: QuizQuestion[],
-  attempts: Array<{ answers_jsonb: Record<string, { kind: string; choices?: number[]; text?: string }> | null }>,
+  attempts: Array<{
+    answers_jsonb: Record<string, { kind: string; choices?: number[]; text?: string }> | null;
+  }>,
 ): Record<string, number> {
   const tagStats: Record<string, { correct: number; total: number }> = {};
 

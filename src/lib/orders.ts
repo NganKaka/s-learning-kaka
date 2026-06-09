@@ -15,7 +15,10 @@ function randomMemoSuffix(length = 6): string {
 }
 
 export function buildMemoCode(prefix: string): string {
-  const cleaned = prefix.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8);
+  const cleaned = prefix
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, '')
+    .slice(0, 8);
   return `${cleaned}-${randomMemoSuffix(6)}`;
 }
 
@@ -35,7 +38,9 @@ export interface CreateTopupOrderInput {
 
 export type CreateOrderInput = CreatePurchaseOrderInput | CreateTopupOrderInput;
 
-export async function createOrder(input: CreateOrderInput): Promise<{ order: Order | null; error: string | null }> {
+export async function createOrder(
+  input: CreateOrderInput,
+): Promise<{ order: Order | null; error: string | null }> {
   const { data: userData } = await supabase.auth.getUser();
   if (!userData.user) return { order: null, error: 'Bạn chưa đăng nhập.' };
 
@@ -122,7 +127,11 @@ export function buildVietQrImageUrl(input: VietQrUrlInput): string | null {
   return `https://img.vietqr.io/image/vcb-${account}-compact2.jpg?${params.toString()}`;
 }
 
-export function getBankInfo(bank: 'vcb' | 'momo'): { account: string; name: string; bankName: string } {
+export function getBankInfo(bank: 'vcb' | 'momo'): {
+  account: string;
+  name: string;
+  bankName: string;
+} {
   if (bank === 'momo') {
     return {
       account: MOMO_ACCOUNT ?? '',

@@ -9,20 +9,23 @@ export default function Typewriter({ words }: { words: string[] }) {
     const current = words[index] ?? '';
     const typingSpeed = deleting ? 70 : 130;
 
-    const timeout = window.setTimeout(() => {
-      if (!deleting) {
-        setText(current.substring(0, text.length + 1));
-        if (text === current) {
-          window.setTimeout(() => setDeleting(true), 1800);
+    const timeout = window.setTimeout(
+      () => {
+        if (!deleting) {
+          setText(current.substring(0, text.length + 1));
+          if (text === current) {
+            window.setTimeout(() => setDeleting(true), 1800);
+          }
+        } else {
+          setText(current.substring(0, text.length - 1));
+          if (!text) {
+            setDeleting(false);
+            setIndex((prev) => (prev + 1) % words.length);
+          }
         }
-      } else {
-        setText(current.substring(0, text.length - 1));
-        if (!text) {
-          setDeleting(false);
-          setIndex((prev) => (prev + 1) % words.length);
-        }
-      }
-    }, text === current ? 1800 : typingSpeed);
+      },
+      text === current ? 1800 : typingSpeed,
+    );
 
     return () => window.clearTimeout(timeout);
   }, [deleting, index, text, words]);
@@ -31,7 +34,9 @@ export default function Typewriter({ words }: { words: string[] }) {
 
   return (
     <span className="text-primary inline-grid relative">
-      <span className="invisible pointer-events-none select-none col-start-1 row-start-1">{longest}</span>
+      <span className="invisible pointer-events-none select-none col-start-1 row-start-1">
+        {longest}
+      </span>
       <span className="col-start-1 row-start-1 whitespace-nowrap">
         {text}
         <span className="animate-pulse inline-block ml-0.5">_</span>

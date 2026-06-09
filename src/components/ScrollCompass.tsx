@@ -26,7 +26,9 @@ export default function ScrollCompass() {
         <div className="w-1.5 h-1.5 bg-background rounded-full border border-primary absolute z-10" />
       </div>
       <div className="flex flex-col">
-        <span className="text-[10px] font-tech text-secondary/60 tracking-[0.2em] leading-tight">SCANNING</span>
+        <span className="text-[10px] font-tech text-secondary/60 tracking-[0.2em] leading-tight">
+          SCANNING
+        </span>
         <span className="text-primary font-tech font-bold text-lg leading-tight drop-shadow-[0_0_8px_rgba(233,195,73,0.6)]">
           {String(scrollPercent).padStart(2, '0')}%
         </span>

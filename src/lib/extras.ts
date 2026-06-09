@@ -1,18 +1,60 @@
 import { supabase } from './supabase';
 
 // ---- Audit Log ----
-export async function logAudit(actorId: string, action: string, targetType?: string, targetId?: string, metadata?: Record<string, unknown>) {
-  await supabase.from('audit_log').insert({ actor_id: actorId, action, target_type: targetType ?? null, target_id: targetId ?? null, metadata: metadata ?? null });
+export async function logAudit(
+  actorId: string,
+  action: string,
+  targetType?: string,
+  targetId?: string,
+  metadata?: Record<string, unknown>,
+) {
+  await supabase.from('audit_log').insert({
+    actor_id: actorId,
+    action,
+    target_type: targetType ?? null,
+    target_id: targetId ?? null,
+    metadata: metadata ?? null,
+  });
 }
 
 // ---- Content Moderation ----
-export async function flagContent(reporterId: string, contentType: string, contentId: string, reason?: string) {
-  await supabase.from('content_flags').insert({ reporter_id: reporterId, content_type: contentType, content_id: contentId, reason: reason ?? null });
+export async function flagContent(
+  reporterId: string,
+  contentType: string,
+  contentId: string,
+  reason?: string,
+) {
+  await supabase.from('content_flags').insert({
+    reporter_id: reporterId,
+    content_type: contentType,
+    content_id: contentId,
+    reason: reason ?? null,
+  });
 }
 
-export async function getFlags(): Promise<Array<{ id: string; content_type: string; content_id: string; reason: string | null; status: string; created_at: string }>> {
-  const { data } = await supabase.from('content_flags').select('*').eq('status', 'pending').order('created_at', { ascending: false });
-  return (data ?? []) as Array<{ id: string; content_type: string; content_id: string; reason: string | null; status: string; created_at: string }>;
+export async function getFlags(): Promise<
+  Array<{
+    id: string;
+    content_type: string;
+    content_id: string;
+    reason: string | null;
+    status: string;
+    created_at: string;
+  }>
+> {
+  const { data } = await supabase
+    .from('content_flags')
+    .select('*')
+    .eq('status', 'pending')
+    .order('created_at', { ascending: false });
+  return (data ?? []) as Array<{
+    id: string;
+    content_type: string;
+    content_id: string;
+    reason: string | null;
+    status: string;
+    created_at: string;
+  }>;
 }
 
 export async function resolveFlag(id: string, status: 'resolved' | 'dismissed') {
@@ -22,23 +64,43 @@ export async function resolveFlag(id: string, status: 'resolved' | 'dismissed') 
 // ---- Leaderboard Seasons ----
 export async function archiveLeaderboardSeason(courseId: string) {
   const month = new Date().toISOString().slice(0, 7) + '-01'; // first of month
-  const { data } = await supabase.from('course_leaderboard').select('*').eq('course_id', courseId).order('total_score', { ascending: false }).limit(10);
-  await supabase.from('leaderboard_seasons').upsert({ course_id: courseId, month, rankings: data ?? [] }, { onConflict: 'course_id,month' });
+  const { data } = await supabase
+    .from('course_leaderboard')
+    .select('*')
+    .eq('course_id', courseId)
+    .order('total_score', { ascending: false })
+    .limit(10);
+  await supabase
+    .from('leaderboard_seasons')
+    .upsert(
+      { course_id: courseId, month, rankings: data ?? [] },
+      { onConflict: 'course_id,month' },
+    );
 }
 
 // ---- Social Sharing ----
-export function getShareUrl(type: 'quiz_score' | 'certificate', params: { score?: number; code?: string; courseTitle?: string }) {
+export function getShareUrl(
+  type: 'quiz_score' | 'certificate',
+  params: { score?: number; code?: string; courseTitle?: string },
+) {
   const base = window.location.origin;
   if (type === 'certificate' && params.code) return `${base}/verify/${params.code}`;
   return base;
 }
 
 export function shareToFacebook(url: string) {
-  window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank', 'width=600,height=400');
+  window.open(
+    `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
+    '_blank',
+    'width=600,height=400',
+  );
 }
 
 export function shareToZalo(url: string, title: string) {
-  window.open(`https://zalo.me/share?url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}`, '_blank');
+  window.open(
+    `https://zalo.me/share?url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}`,
+    '_blank',
+  );
 }
 
 // ---- Rate Limiting (simple in-memory for client) ----
@@ -58,7 +120,8 @@ export function checkRateLimit(key: string, maxPerMinute: number): boolean {
 export function triggerConfetti() {
   // Simple CSS-based confetti burst
   const container = document.createElement('div');
-  container.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:9999;overflow:hidden';
+  container.style.cssText =
+    'position:fixed;inset:0;pointer-events:none;z-index:9999;overflow:hidden';
   document.body.appendChild(container);
   for (let i = 0; i < 50; i++) {
     const piece = document.createElement('div');

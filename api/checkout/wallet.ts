@@ -54,7 +54,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   // Create the order row first so we have an id to attach to the wallet tx
-  const memo = `WALLET-${course.slug.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8)}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+  const memo = `WALLET-${course.slug
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, '')
+    .slice(0, 8)}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
   const { data: orderRow, error: orderErr } = await admin
     .from('orders')
     .insert({
@@ -68,7 +71,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     })
     .select('id')
     .single();
-  if (orderErr || !orderRow) return res.status(500).json({ error: orderErr?.message ?? 'Order create failed' });
+  if (orderErr || !orderRow)
+    return res.status(500).json({ error: orderErr?.message ?? 'Order create failed' });
 
   // Debit wallet (raises if balance insufficient)
   const { error: debitErr } = await admin.rpc('wallet_debit', {
@@ -85,18 +89,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   // Insert enrollment
-  const { error: enrollErr } = await admin
-    .from('enrollments')
-    .upsert(
-      {
-        user_id: userId,
-        course_id: courseId,
-        order_id: orderRow.id,
-        status: 'active',
-        granted_at: new Date().toISOString(),
-      },
-      { onConflict: 'user_id,course_id' },
-    );
+  const { error: enrollErr } = await admin.from('enrollments').upsert(
+    {
+      user_id: userId,
+      course_id: courseId,
+      order_id: orderRow.id,
+      status: 'active',
+      granted_at: new Date().toISOString(),
+    },
+    { onConflict: 'user_id,course_id' },
+  );
   if (enrollErr) return res.status(500).json({ error: enrollErr.message });
 
   // Mark order confirmed

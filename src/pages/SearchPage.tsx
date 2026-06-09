@@ -24,9 +24,21 @@ export default function SearchPage() {
     setSearching(true);
     const tsQuery = query.trim().split(/\s+/).join(' & ');
     const [{ data: lessons }, { data: cards }, { data: questions }] = await Promise.all([
-      supabase.from('lessons').select('id, title, slug, course_id').textSearch('fts', tsQuery).limit(10),
-      supabase.from('flashcards').select('id, front_md, back_md, lesson_id').textSearch('fts', tsQuery).limit(10),
-      supabase.from('quiz_questions').select('id, prompt_md, quiz_id').textSearch('fts', tsQuery).limit(10),
+      supabase
+        .from('lessons')
+        .select('id, title, slug, course_id')
+        .textSearch('fts', tsQuery)
+        .limit(10),
+      supabase
+        .from('flashcards')
+        .select('id, front_md, back_md, lesson_id')
+        .textSearch('fts', tsQuery)
+        .limit(10),
+      supabase
+        .from('quiz_questions')
+        .select('id, prompt_md, quiz_id')
+        .textSearch('fts', tsQuery)
+        .limit(10),
     ]);
 
     const r: SearchResult[] = [];
@@ -34,10 +46,20 @@ export default function SearchPage() {
       r.push({ type: 'lesson', id: l.id, title: l.title as string, subtitle: 'Bài học' });
     }
     for (const c of cards ?? []) {
-      r.push({ type: 'flashcard', id: c.id, title: c.front_md as string, subtitle: c.back_md as string });
+      r.push({
+        type: 'flashcard',
+        id: c.id,
+        title: c.front_md as string,
+        subtitle: c.back_md as string,
+      });
     }
     for (const q of questions ?? []) {
-      r.push({ type: 'question', id: q.id, title: q.prompt_md as string, subtitle: 'Câu hỏi quiz' });
+      r.push({
+        type: 'question',
+        id: q.id,
+        title: q.prompt_md as string,
+        subtitle: 'Câu hỏi quiz',
+      });
     }
     setResults(r);
     setSearching(false);
@@ -55,7 +77,10 @@ export default function SearchPage() {
 
         <div className="flex gap-3">
           <div className="relative flex-1">
-            <SearchIcon size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary/50" />
+            <SearchIcon
+              size={16}
+              className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary/50"
+            />
             <input
               type="text"
               value={query}
@@ -65,7 +90,11 @@ export default function SearchPage() {
               className="w-full rounded-xl border border-white/10 bg-white/[0.03] py-3 pl-11 pr-4 text-sm text-on-surface placeholder:text-secondary/50 focus:border-cyan-300/50 focus:outline-none"
             />
           </div>
-          <button onClick={handleSearch} disabled={searching || !query.trim()} className="rounded-xl border border-primary/40 bg-primary/15 px-5 py-3 text-xs font-tech uppercase tracking-[0.16em] text-primary hover:bg-primary/25 disabled:opacity-50">
+          <button
+            onClick={handleSearch}
+            disabled={searching || !query.trim()}
+            className="rounded-xl border border-primary/40 bg-primary/15 px-5 py-3 text-xs font-tech uppercase tracking-[0.16em] text-primary hover:bg-primary/25 disabled:opacity-50"
+          >
             {searching ? <Loader2 size={14} className="animate-spin" /> : 'Tìm'}
           </button>
         </div>
@@ -75,11 +104,16 @@ export default function SearchPage() {
             {results.map((r) => {
               const Icon = icons[r.type];
               return (
-                <div key={`${r.type}-${r.id}`} className="flex items-start gap-3 rounded-xl border border-white/8 bg-white/[0.02] px-4 py-3">
+                <div
+                  key={`${r.type}-${r.id}`}
+                  className="flex items-start gap-3 rounded-xl border border-white/8 bg-white/[0.02] px-4 py-3"
+                >
                   <Icon size={16} className="text-cyan-300 mt-0.5 shrink-0" />
                   <div className="min-w-0">
                     <p className="text-sm text-on-surface truncate">{r.title}</p>
-                    {r.subtitle && <p className="text-xs text-secondary/55 truncate">{r.subtitle}</p>}
+                    {r.subtitle && (
+                      <p className="text-xs text-secondary/55 truncate">{r.subtitle}</p>
+                    )}
                   </div>
                 </div>
               );

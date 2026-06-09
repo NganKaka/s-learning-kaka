@@ -60,13 +60,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   // Stamp metadata so we don't resend
   await admin.auth.admin.updateUserById(userId, {
-    user_metadata: { ...(userData.user.user_metadata ?? {}), welcome_sent_at: new Date().toISOString() },
+    user_metadata: {
+      ...(userData.user.user_metadata ?? {}),
+      welcome_sent_at: new Date().toISOString(),
+    },
   });
 
   return res.status(200).json({ ok: true });
 }
 
-function welcomeHtml({ displayName, coursesUrl }: { displayName: string; coursesUrl: string }): string {
+function welcomeHtml({
+  displayName,
+  coursesUrl,
+}: {
+  displayName: string;
+  coursesUrl: string;
+}): string {
   return `
 <div style="font-family: -apple-system, system-ui, 'Segoe UI', sans-serif; max-width: 560px; margin: 0 auto; padding: 32px 24px; background: #0d1b2a; color: #e1e2e7; border-radius: 14px;">
   <div style="border-top: 1px solid rgba(233,195,73,0.4); border-bottom: 1px solid rgba(34,211,238,0.3); padding: 4px 0; margin-bottom: 20px; text-align: center;">
@@ -93,5 +102,8 @@ function welcomeHtml({ displayName, coursesUrl }: { displayName: string; courses
 }
 
 function escapeHtml(s: string): string {
-  return s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
+  return s.replace(
+    /[&<>"']/g,
+    (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!,
+  );
 }

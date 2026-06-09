@@ -62,10 +62,10 @@ export const CACHE_KEYS = {
 
 // TTLs in seconds
 export const TTL = {
-  courseCatalog: 300,    // 5 min
-  courseDetail: 300,     // 5 min
-  quizQuestions: 900,    // 15 min
-  leaderboard: 600,     // 10 min
-  siteConfig: 1800,     // 30 min
-  profile: 120,         // 2 min
+  courseCatalog: 300, // 5 min
+  courseDetail: 300, // 5 min
+  quizQuestions: 900, // 15 min
+  leaderboard: 600, // 10 min
+  siteConfig: 1800, // 30 min
+  profile: 120, // 2 min
 } as const;

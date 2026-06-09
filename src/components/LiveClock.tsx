@@ -22,7 +22,10 @@ export default function LiveClock() {
   const sign = offsetMin >= 0 ? '+' : '-';
   const offsetH = Math.floor(Math.abs(offsetMin) / 60);
   const offsetMm = Math.abs(offsetMin) % 60;
-  const offsetLabel = offsetMm === 0 ? `UTC${sign}${offsetH}` : `UTC${sign}${offsetH}:${String(offsetMm).padStart(2, '0')}`;
+  const offsetLabel =
+    offsetMm === 0
+      ? `UTC${sign}${offsetH}`
+      : `UTC${sign}${offsetH}:${String(offsetMm).padStart(2, '0')}`;
 
   return (
     <span
@@ -30,7 +33,9 @@ export default function LiveClock() {
       aria-label={`Local time ${hh}:${mm}`}
     >
       <span className="inline-block w-1.5 h-1.5 rounded-full bg-cyan-300 animate-pulse" />
-      <span className="tabular-nums">{hh}:{mm}:{ss}</span>
+      <span className="tabular-nums">
+        {hh}:{mm}:{ss}
+      </span>
       <span className="text-secondary/35">{offsetLabel}</span>
     </span>
   );

@@ -14,9 +14,8 @@ export default function ScrollVignette() {
       queued = false;
       const max = document.documentElement.scrollHeight - window.innerHeight;
       const progress = max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0;
-      const opacity = progress < 0.6
-        ? (progress / 0.6) * 0.32
-        : 0.32 + ((progress - 0.6) / 0.4) * 0.13;
+      const opacity =
+        progress < 0.6 ? (progress / 0.6) * 0.32 : 0.32 + ((progress - 0.6) / 0.4) * 0.13;
       document.documentElement.style.setProperty('--scroll-vignette', opacity.toFixed(3));
     };
 

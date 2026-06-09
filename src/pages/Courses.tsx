@@ -97,7 +97,10 @@ export default function Courses() {
 
       <div className="mt-8 space-y-4">
         <div className="relative">
-          <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary/50 pointer-events-none" />
+          <Search
+            size={16}
+            className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary/50 pointer-events-none"
+          />
           <input
             type="text"
             value={query}
@@ -118,7 +121,9 @@ export default function Courses() {
 
         {user && (
           <div className="flex items-center gap-2 flex-wrap">
-            <p className="font-tech text-[9px] uppercase tracking-[0.18em] text-secondary/45 mr-1">Trạng thái</p>
+            <p className="font-tech text-[9px] uppercase tracking-[0.18em] text-secondary/45 mr-1">
+              Trạng thái
+            </p>
             {OWNERSHIP_FILTERS.map((o) => {
               const isActive = ownership === o.id;
               const count = ownershipCounts[o.id as 'all' | 'owned' | 'available'];
@@ -134,7 +139,9 @@ export default function Courses() {
                 >
                   {o.id === 'owned' && <CheckCircle2 size={11} />}
                   {o.label}
-                  <span className={`tabular-nums ${isActive ? 'text-cyan-300' : 'text-secondary/45'}`}>
+                  <span
+                    className={`tabular-nums ${isActive ? 'text-cyan-300' : 'text-secondary/45'}`}
+                  >
                     {count}
                   </span>
                 </button>
@@ -144,7 +151,9 @@ export default function Courses() {
         )}
 
         <div className="flex items-center gap-2 flex-wrap">
-          <p className="font-tech text-[9px] uppercase tracking-[0.18em] text-secondary/45 mr-1">Trình độ</p>
+          <p className="font-tech text-[9px] uppercase tracking-[0.18em] text-secondary/45 mr-1">
+            Trình độ
+          </p>
           {LEVELS.map((l) => {
             const isActive = level === l.id;
             return (
@@ -205,66 +214,68 @@ export default function Courses() {
           {filtered.map((course) => {
             const owned = enrolledIds.has(course.id);
             return (
-            <Link
-              key={course.id}
-              to={`/courses/${course.slug}`}
-              className="group glass-card block rounded-2xl overflow-hidden transition-all hover:border-cyan-300/35 relative"
-            >
-              {owned && (
-                <div className="absolute top-3 right-3 z-10 inline-flex items-center gap-1.5 rounded-full border border-cyan-300/40 bg-cyan-400/15 px-2.5 py-1 font-tech text-[9px] uppercase tracking-[0.16em] text-cyan-100 backdrop-blur-sm">
-                  <CheckCircle2 size={10} />
-                  Đã đăng ký
-                </div>
-              )}
-              {course.cover_image && (
-                <div className="aspect-video overflow-hidden bg-white/[0.02]">
-                  <img
-                    src={course.cover_image}
-                    alt={course.title}
-                    className="h-full w-full object-cover opacity-70 transition-all duration-700 group-hover:scale-105 group-hover:opacity-100"
-                    loading="lazy"
-                    decoding="async"
-                  />
-                </div>
-              )}
-
-              <div className="p-5 space-y-3">
-                <div className="flex items-center gap-2 font-tech text-[10px] uppercase tracking-[0.18em] text-secondary/55">
-                  <BarChart3 size={12} className="text-cyan-300" />
-                  <span>{LEVEL_LABEL[course.level] ?? course.level}</span>
-                  {course.duration_minutes > 0 && (
-                    <>
-                      <span className="text-secondary/30">·</span>
-                      <Clock size={12} className="text-cyan-300" />
-                      <span>{formatDuration(course.duration_minutes)}</span>
-                    </>
-                  )}
-                </div>
-
-                <h2 className="font-headline text-xl font-bold text-on-surface group-hover:text-cyan-200 transition-colors">
-                  {course.title}
-                </h2>
-
-                {course.subtitle && (
-                  <p className="text-sm text-secondary/80 leading-relaxed line-clamp-2">{course.subtitle}</p>
+              <Link
+                key={course.id}
+                to={`/courses/${course.slug}`}
+                className="group glass-card block rounded-2xl overflow-hidden transition-all hover:border-cyan-300/35 relative"
+              >
+                {owned && (
+                  <div className="absolute top-3 right-3 z-10 inline-flex items-center gap-1.5 rounded-full border border-cyan-300/40 bg-cyan-400/15 px-2.5 py-1 font-tech text-[9px] uppercase tracking-[0.16em] text-cyan-100 backdrop-blur-sm">
+                    <CheckCircle2 size={10} />
+                    Đã đăng ký
+                  </div>
+                )}
+                {course.cover_image && (
+                  <div className="aspect-video overflow-hidden bg-white/[0.02]">
+                    <img
+                      src={course.cover_image}
+                      alt={course.title}
+                      className="h-full w-full object-cover opacity-70 transition-all duration-700 group-hover:scale-105 group-hover:opacity-100"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </div>
                 )}
 
-                <div className="flex items-center justify-between pt-2">
-                  {owned ? (
-                    <span className="inline-flex items-center gap-1.5 font-tech text-xs uppercase tracking-[0.14em] text-cyan-200">
-                      <Play size={12} /> Tiếp tục học
-                    </span>
-                  ) : (
-                    <span className="font-headline text-lg font-bold text-primary tabular-nums">
-                      {course.price_vnd === 0 ? 'Miễn phí' : formatVnd(course.price_vnd)}
-                    </span>
+                <div className="p-5 space-y-3">
+                  <div className="flex items-center gap-2 font-tech text-[10px] uppercase tracking-[0.18em] text-secondary/55">
+                    <BarChart3 size={12} className="text-cyan-300" />
+                    <span>{LEVEL_LABEL[course.level] ?? course.level}</span>
+                    {course.duration_minutes > 0 && (
+                      <>
+                        <span className="text-secondary/30">·</span>
+                        <Clock size={12} className="text-cyan-300" />
+                        <span>{formatDuration(course.duration_minutes)}</span>
+                      </>
+                    )}
+                  </div>
+
+                  <h2 className="font-headline text-xl font-bold text-on-surface group-hover:text-cyan-200 transition-colors">
+                    {course.title}
+                  </h2>
+
+                  {course.subtitle && (
+                    <p className="text-sm text-secondary/80 leading-relaxed line-clamp-2">
+                      {course.subtitle}
+                    </p>
                   )}
-                  <span className="inline-flex items-center gap-1 text-xs font-tech uppercase tracking-[0.14em] text-cyan-300 group-hover:gap-2 transition-all">
-                    <BookOpen size={12} /> Xem chi tiết
-                  </span>
+
+                  <div className="flex items-center justify-between pt-2">
+                    {owned ? (
+                      <span className="inline-flex items-center gap-1.5 font-tech text-xs uppercase tracking-[0.14em] text-cyan-200">
+                        <Play size={12} /> Tiếp tục học
+                      </span>
+                    ) : (
+                      <span className="font-headline text-lg font-bold text-primary tabular-nums">
+                        {course.price_vnd === 0 ? 'Miễn phí' : formatVnd(course.price_vnd)}
+                      </span>
+                    )}
+                    <span className="inline-flex items-center gap-1 text-xs font-tech uppercase tracking-[0.14em] text-cyan-300 group-hover:gap-2 transition-all">
+                      <BookOpen size={12} /> Xem chi tiết
+                    </span>
+                  </div>
                 </div>
-              </div>
-            </Link>
+              </Link>
             );
           })}
         </div>

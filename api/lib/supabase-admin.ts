@@ -42,17 +42,25 @@ export async function verifyToken(token: string) {
  * Common HTTP response helpers.
  */
 export const http = {
-  unauthorized: (res: { status: (code: number) => { json: (body: unknown) => unknown } }, message = 'Unauthorized') =>
-    res.status(401).json({ error: message }),
+  unauthorized: (
+    res: { status: (code: number) => { json: (body: unknown) => unknown } },
+    message = 'Unauthorized',
+  ) => res.status(401).json({ error: message }),
 
-  forbidden: (res: { status: (code: number) => { json: (body: unknown) => unknown } }, message = 'Forbidden') =>
-    res.status(403).json({ error: message }),
+  forbidden: (
+    res: { status: (code: number) => { json: (body: unknown) => unknown } },
+    message = 'Forbidden',
+  ) => res.status(403).json({ error: message }),
 
-  notFound: (res: { status: (code: number) => { json: (body: unknown) => unknown } }, message = 'Not found') =>
-    res.status(404).json({ error: message }),
+  notFound: (
+    res: { status: (code: number) => { json: (body: unknown) => unknown } },
+    message = 'Not found',
+  ) => res.status(404).json({ error: message }),
 
-  badRequest: (res: { status: (code: number) => { json: (body: unknown) => unknown } }, message: string) =>
-    res.status(400).json({ error: message }),
+  badRequest: (
+    res: { status: (code: number) => { json: (body: unknown) => unknown } },
+    message: string,
+  ) => res.status(400).json({ error: message }),
 
   methodNotAllowed: (res: { status: (code: number) => { json: (body: unknown) => unknown } }) =>
     res.status(405).json({ error: 'Method not allowed' }),

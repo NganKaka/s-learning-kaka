@@ -20,7 +20,11 @@ export interface Conversation {
 }
 
 export async function getConversations(userId: string): Promise<Conversation[]> {
-  const { data } = await supabase.from('messages').select('*').or(`sender_id.eq.${userId},recipient_id.eq.${userId}`).order('created_at', { ascending: false });
+  const { data } = await supabase
+    .from('messages')
+    .select('*')
+    .or(`sender_id.eq.${userId},recipient_id.eq.${userId}`)
+    .order('created_at', { ascending: false });
   if (!data) return [];
 
   // Group by other user
@@ -32,30 +36,59 @@ export async function getConversations(userId: string): Promise<Conversation[]> 
   }
 
   const otherIds = [...convMap.keys()];
-  const { data: profiles } = await supabase.from('profiles').select('id, display_name, avatar_url').in('id', otherIds);
+  const { data: profiles } = await supabase
+    .from('profiles')
+    .select('id, display_name, avatar_url')
+    .in('id', otherIds);
   const profileMap = new Map((profiles ?? []).map((p) => [p.id, p]));
 
-  return otherIds.map((id) => {
-    const msgs = convMap.get(id)!.messages;
-    const last = msgs[0];
-    const unread = msgs.filter((m) => m.recipient_id === userId && !m.is_read).length;
-    const p = profileMap.get(id);
-    return { userId: id, displayName: p?.display_name ?? null, avatarUrl: p?.avatar_url ?? null, lastMessage: last.content as string, lastAt: last.created_at as string, unread };
-  }).sort((a, b) => b.lastAt.localeCompare(a.lastAt));
+  return otherIds
+    .map((id) => {
+      const msgs = convMap.get(id)!.messages;
+      const last = msgs[0];
+      const unread = msgs.filter((m) => m.recipient_id === userId && !m.is_read).length;
+      const p = profileMap.get(id);
+      return {
+        userId: id,
+        displayName: p?.display_name ?? null,
+        avatarUrl: p?.avatar_url ?? null,
+        lastMessage: last.content as string,
+        lastAt: last.created_at as string,
+        unread,
+      };
+    })
+    .sort((a, b) => b.lastAt.localeCompare(a.lastAt));
 }
 
 export async function getMessages(userId: string, otherId: string): Promise<Message[]> {
-  const { data } = await supabase.from('messages').select('*')
-    .or(`and(sender_id.eq.${userId},recipient_id.eq.${otherId}),and(sender_id.eq.${otherId},recipient_id.eq.${userId})`)
+  const { data } = await supabase
+    .from('messages')
+    .select('*')
+    .or(
+      `and(sender_id.eq.${userId},recipient_id.eq.${otherId}),and(sender_id.eq.${otherId},recipient_id.eq.${userId})`,
+    )
     .order('created_at', { ascending: true });
   return (data ?? []) as Message[];
 }
 
-export async function sendMessage(senderId: string, recipientId: string, content: string): Promise<Message | null> {
-  const { data } = await supabase.from('messages').insert({ sender_id: senderId, recipient_id: recipientId, content }).select('*').single();
+export async function sendMessage(
+  senderId: string,
+  recipientId: string,
+  content: string,
+): Promise<Message | null> {
+  const { data } = await supabase
+    .from('messages')
+    .insert({ sender_id: senderId, recipient_id: recipientId, content })
+    .select('*')
+    .single();
   return data as Message | null;
 }
 
 export async function markRead(userId: string, senderId: string): Promise<void> {
-  await supabase.from('messages').update({ is_read: true }).eq('recipient_id', userId).eq('sender_id', senderId).eq('is_read', false);
+  await supabase
+    .from('messages')
+    .update({ is_read: true })
+    .eq('recipient_id', userId)
+    .eq('sender_id', senderId)
+    .eq('is_read', false);
 }

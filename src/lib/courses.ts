@@ -11,14 +11,21 @@ interface AsyncState<T> {
 
 /** Public catalog: every published course. */
 export function usePublishedCourses(): AsyncState<Course[]> {
-  const [state, setState] = useState<AsyncState<Course[]>>({ data: null, loading: true, error: null });
+  const [state, setState] = useState<AsyncState<Course[]>>({
+    data: null,
+    loading: true,
+    error: null,
+  });
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       // Try cache first
       const cached = await cacheGet<Course[]>(CACHE_KEYS.courseCatalog());
-      if (cached && !cancelled) { setState({ data: cached, loading: false, error: null }); return; }
+      if (cached && !cancelled) {
+        setState({ data: cached, loading: false, error: null });
+        return;
+      }
 
       const { data, error } = await supabase
         .from('courses')
@@ -33,7 +40,9 @@ export function usePublishedCourses(): AsyncState<Course[]> {
         cacheSet(CACHE_KEYS.courseCatalog(), courses, TTL.courseCatalog);
       }
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   return state;
@@ -41,7 +50,11 @@ export function usePublishedCourses(): AsyncState<Course[]> {
 
 /** Single course with modules + lessons + instructor (for detail page). */
 export function useCourse(slug: string | undefined): AsyncState<CourseWithCurriculum> {
-  const [state, setState] = useState<AsyncState<CourseWithCurriculum>>({ data: null, loading: true, error: null });
+  const [state, setState] = useState<AsyncState<CourseWithCurriculum>>({
+    data: null,
+    loading: true,
+    error: null,
+  });
 
   useEffect(() => {
     if (!slug) {
@@ -52,18 +65,23 @@ export function useCourse(slug: string | undefined): AsyncState<CourseWithCurric
     (async () => {
       // Try cache first
       const cached = await cacheGet<CourseWithCurriculum>(CACHE_KEYS.courseDetail(slug));
-      if (cached && !cancelled) { setState({ data: cached, loading: false, error: null }); return; }
+      if (cached && !cancelled) {
+        setState({ data: cached, loading: false, error: null });
+        return;
+      }
 
       const { data, error } = await supabase
         .from('courses')
-        .select(`
+        .select(
+          `
           *,
           modules (
             *,
             lessons (*)
           ),
           instructor:profiles!instructor_id (id, display_name, avatar_url)
-        `)
+        `,
+        )
         .eq('slug', slug)
         .eq('status', 'published')
         .maybeSingle();
@@ -82,7 +100,10 @@ export function useCourse(slug: string | undefined): AsyncState<CourseWithCurric
       const course = data as unknown as CourseWithCurriculum;
       course.modules = [...course.modules]
         .sort((a, b) => a.order_index - b.order_index)
-        .map((m) => ({ ...m, lessons: [...m.lessons].sort((a, b) => a.order_index - b.order_index) }));
+        .map((m) => ({
+          ...m,
+          lessons: [...m.lessons].sort((a, b) => a.order_index - b.order_index),
+        }));
 
       setState({ data: course, loading: false, error: null });
       cacheSet(CACHE_KEYS.courseDetail(slug), course, TTL.courseDetail);
@@ -97,7 +118,11 @@ export function useCourse(slug: string | undefined): AsyncState<CourseWithCurric
 
 /** Single featured course for the homepage hero. */
 export function useFeaturedCourse(): AsyncState<Course> {
-  const [state, setState] = useState<AsyncState<Course>>({ data: null, loading: true, error: null });
+  const [state, setState] = useState<AsyncState<Course>>({
+    data: null,
+    loading: true,
+    error: null,
+  });
 
   useEffect(() => {
     let cancelled = false;

@@ -1,7 +1,16 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Loader2, Copy, Check, Landmark, HeartHandshake, Clock, AlertCircle, ArrowRight } from 'lucide-react';
+import {
+  Loader2,
+  Copy,
+  Check,
+  Landmark,
+  HeartHandshake,
+  Clock,
+  AlertCircle,
+  ArrowRight,
+} from 'lucide-react';
 import PageShell from '../components/PageShell';
 import SectionHeading from '../components/ui/SectionHeading';
 import { useAuth } from '../contexts/AuthContext';
@@ -63,7 +72,9 @@ export default function Cart() {
   }, [order?.status, course, navigate]);
 
   if (!authLoading && !user) {
-    return <Navigate to={`/login?next=/cart${courseSlug ? `?course=${courseSlug}` : ''}`} replace />;
+    return (
+      <Navigate to={`/login?next=/cart${courseSlug ? `?course=${courseSlug}` : ''}`} replace />
+    );
   }
 
   if (courseLoading) {
@@ -79,8 +90,13 @@ export default function Cart() {
       <PageShell>
         <SectionHeading eyebrow="Checkout" title="Không tìm thấy khoá học" />
         <div className="mt-6 glass-card rounded-2xl p-8 text-center">
-          <p className="text-secondary/80">Vui lòng quay lại danh sách khoá học và chọn khoá bạn muốn đăng ký.</p>
-          <Link to="/courses" className="inline-block mt-4 text-cyan-300 hover:text-cyan-200 underline">
+          <p className="text-secondary/80">
+            Vui lòng quay lại danh sách khoá học và chọn khoá bạn muốn đăng ký.
+          </p>
+          <Link
+            to="/courses"
+            className="inline-block mt-4 text-cyan-300 hover:text-cyan-200 underline"
+          >
             Xem khoá học
           </Link>
         </div>
@@ -118,22 +134,38 @@ export default function Cart() {
       <div className="mt-8 grid lg:grid-cols-[1fr_360px] gap-8">
         <div className="space-y-6">
           {step === 'pick' && (
-            <PickPayment bank={bank} onPickBank={setBank} amount={course.price_vnd} onContinue={handleContinue} submitting={submitting} errorMsg={errorMsg} />
+            <PickPayment
+              bank={bank}
+              onPickBank={setBank}
+              amount={course.price_vnd}
+              onContinue={handleContinue}
+              submitting={submitting}
+              errorMsg={errorMsg}
+            />
           )}
           {step === 'pay' && order && (
-            <PayPanel bank={bank} order={order} courseTitle={course.title} onSubmitted={() => setStep('submitted')} />
+            <PayPanel
+              bank={bank}
+              order={order}
+              courseTitle={course.title}
+              onSubmitted={() => setStep('submitted')}
+            />
           )}
-          {step === 'submitted' && order && (
-            <SubmittedPanel order={order} />
-          )}
+          {step === 'submitted' && order && <SubmittedPanel order={order} />}
         </div>
 
         <aside className="lg:sticky lg:top-28 lg:self-start">
           <div className="glass-card rounded-2xl p-6 ambient-shadow space-y-4">
-            <p className="font-tech text-[10px] uppercase tracking-[0.2em] text-secondary/55">Đơn hàng</p>
+            <p className="font-tech text-[10px] uppercase tracking-[0.2em] text-secondary/55">
+              Đơn hàng
+            </p>
             <div className="flex items-start gap-3">
               {course.cover_image && (
-                <img src={course.cover_image} alt="" className="w-20 h-20 rounded-lg object-cover border border-white/10 shrink-0" />
+                <img
+                  src={course.cover_image}
+                  alt=""
+                  className="w-20 h-20 rounded-lg object-cover border border-white/10 shrink-0"
+                />
               )}
               <div className="min-w-0">
                 <p className="font-headline font-bold text-on-surface truncate">{course.title}</p>
@@ -142,10 +174,13 @@ export default function Cart() {
             </div>
             <div className="border-t border-white/10 pt-3 flex items-center justify-between">
               <span className="text-secondary/70 text-sm">Tổng cộng</span>
-              <span className="font-headline text-2xl font-extrabold text-primary tabular-nums">{formatVnd(course.price_vnd)}</span>
+              <span className="font-headline text-2xl font-extrabold text-primary tabular-nums">
+                {formatVnd(course.price_vnd)}
+              </span>
             </div>
             <p className="text-xs text-secondary/50">
-              Sau khi giảng viên xác nhận thanh toán, bạn sẽ nhận email xác nhận và có thể bắt đầu học ngay.
+              Sau khi giảng viên xác nhận thanh toán, bạn sẽ nhận email xác nhận và có thể bắt đầu
+              học ngay.
             </p>
           </div>
         </aside>
@@ -163,7 +198,14 @@ interface PickPaymentProps {
   errorMsg: string | null;
 }
 
-function PickPayment({ bank, onPickBank, amount, onContinue, submitting, errorMsg }: PickPaymentProps) {
+function PickPayment({
+  bank,
+  onPickBank,
+  amount,
+  onContinue,
+  submitting,
+  errorMsg,
+}: PickPaymentProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -171,7 +213,9 @@ function PickPayment({ bank, onPickBank, amount, onContinue, submitting, errorMs
       transition={{ duration: 0.3 }}
       className="glass-card rounded-2xl p-6 md:p-8 space-y-5"
     >
-      <p className="font-tech text-[10px] uppercase tracking-[0.2em] text-primary">Chọn phương thức</p>
+      <p className="font-tech text-[10px] uppercase tracking-[0.2em] text-primary">
+        Chọn phương thức
+      </p>
 
       <div className="grid sm:grid-cols-2 gap-3">
         <BankOption
@@ -217,7 +261,19 @@ function PickPayment({ bank, onPickBank, amount, onContinue, submitting, errorMs
   );
 }
 
-function BankOption({ icon: Icon, name, subtitle, active, onClick }: { icon: React.ComponentType<{ size?: number }>; name: string; subtitle: string; active: boolean; onClick: () => void }) {
+function BankOption({
+  icon: Icon,
+  name,
+  subtitle,
+  active,
+  onClick,
+}: {
+  icon: React.ComponentType<{ size?: number }>;
+  name: string;
+  subtitle: string;
+  active: boolean;
+  onClick: () => void;
+}) {
   return (
     <button
       type="button"
@@ -229,7 +285,9 @@ function BankOption({ icon: Icon, name, subtitle, active, onClick }: { icon: Rea
       }`}
     >
       <div className="flex items-center gap-3">
-        <div className={`flex h-10 w-10 items-center justify-center rounded-full ${active ? 'bg-primary/15 text-primary border border-primary/30' : 'bg-white/[0.05] text-cyan-300 border border-white/10'}`}>
+        <div
+          className={`flex h-10 w-10 items-center justify-center rounded-full ${active ? 'bg-primary/15 text-primary border border-primary/30' : 'bg-white/[0.05] text-cyan-300 border border-white/10'}`}
+        >
           <Icon size={16} />
         </div>
         <div>
@@ -241,9 +299,22 @@ function BankOption({ icon: Icon, name, subtitle, active, onClick }: { icon: Rea
   );
 }
 
-function PayPanel({ bank, order, courseTitle, onSubmitted }: { bank: 'vcb' | 'momo'; order: { id: string; memo_code: string; amount_vnd: number }; courseTitle: string; onSubmitted: () => void }) {
+function PayPanel({
+  bank,
+  order,
+  courseTitle,
+  onSubmitted,
+}: {
+  bank: 'vcb' | 'momo';
+  order: { id: string; memo_code: string; amount_vnd: number };
+  courseTitle: string;
+  onSubmitted: () => void;
+}) {
   const info = getBankInfo(bank);
-  const qrUrl = useMemo(() => buildVietQrImageUrl({ bank, amountVnd: order.amount_vnd, memo: order.memo_code }), [bank, order.amount_vnd, order.memo_code]);
+  const qrUrl = useMemo(
+    () => buildVietQrImageUrl({ bank, amountVnd: order.amount_vnd, memo: order.memo_code }),
+    [bank, order.amount_vnd, order.memo_code],
+  );
 
   return (
     <motion.div
@@ -254,14 +325,22 @@ function PayPanel({ bank, order, courseTitle, onSubmitted }: { bank: 'vcb' | 'mo
     >
       <div className="glass-card rounded-2xl p-6 md:p-8 space-y-5">
         <div>
-          <p className="font-tech text-[10px] uppercase tracking-[0.2em] text-primary">Bước 1 — Quét QR hoặc nhập tay</p>
-          <p className="mt-1 text-sm text-secondary/80">Mở app ngân hàng / ví, chuyển khoản với nội dung chính xác như bên dưới.</p>
+          <p className="font-tech text-[10px] uppercase tracking-[0.2em] text-primary">
+            Bước 1 — Quét QR hoặc nhập tay
+          </p>
+          <p className="mt-1 text-sm text-secondary/80">
+            Mở app ngân hàng / ví, chuyển khoản với nội dung chính xác như bên dưới.
+          </p>
         </div>
 
         <div className="grid md:grid-cols-[220px_1fr] gap-5 items-start">
           <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-3">
             {qrUrl ? (
-              <img src={qrUrl} alt="VietQR" className="w-full aspect-square rounded-lg object-contain bg-white" />
+              <img
+                src={qrUrl}
+                alt="VietQR"
+                className="w-full aspect-square rounded-lg object-contain bg-white"
+              />
             ) : (
               <div className="aspect-square rounded-lg bg-white/[0.05] flex items-center justify-center text-xs text-secondary/55 text-center px-4">
                 MoMo không hỗ trợ VietQR — vui lòng chuyển khoản thủ công theo thông tin bên phải.
@@ -279,8 +358,12 @@ function PayPanel({ bank, order, courseTitle, onSubmitted }: { bank: 'vcb' | 'mo
         </div>
 
         <div className="rounded-xl border border-cyan-300/20 bg-cyan-400/[0.04] p-4 text-sm text-cyan-100/85">
-          <p className="font-tech text-[10px] uppercase tracking-[0.18em] text-cyan-200 mb-1">Quan trọng</p>
-          Vui lòng chuyển khoản với nội dung <strong className="text-cyan-200 font-tech">{order.memo_code}</strong> để giảng viên có thể đối soát đơn hàng nhanh nhất.
+          <p className="font-tech text-[10px] uppercase tracking-[0.18em] text-cyan-200 mb-1">
+            Quan trọng
+          </p>
+          Vui lòng chuyển khoản với nội dung{' '}
+          <strong className="text-cyan-200 font-tech">{order.memo_code}</strong> để giảng viên có
+          thể đối soát đơn hàng nhanh nhất.
         </div>
       </div>
 
@@ -293,26 +376,47 @@ function PayPanel({ bank, order, courseTitle, onSubmitted }: { bank: 'vcb' | 'mo
       </button>
 
       <p className="text-xs text-secondary/55 text-center">
-        Đơn hàng cho khoá <span className="text-secondary/80">{courseTitle}</span>. Bạn có thể đóng trang này — thay đổi sẽ tự cập nhật khi giảng viên duyệt.
+        Đơn hàng cho khoá <span className="text-secondary/80">{courseTitle}</span>. Bạn có thể đóng
+        trang này — thay đổi sẽ tự cập nhật khi giảng viên duyệt.
       </p>
     </motion.div>
   );
 }
 
-function Row({ label, value, copyable, highlight }: { label: string; value: string; copyable?: boolean; highlight?: boolean }) {
+function Row({
+  label,
+  value,
+  copyable,
+  highlight,
+}: {
+  label: string;
+  value: string;
+  copyable?: boolean;
+  highlight?: boolean;
+}) {
   const [copied, setCopied] = useState(false);
   const onCopy = async () => {
     try {
       await navigator.clipboard.writeText(value);
       setCopied(true);
       setTimeout(() => setCopied(false), 1200);
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   };
   return (
-    <div className={`flex items-center justify-between gap-3 rounded-lg border px-4 py-3 ${highlight ? 'border-primary/30 bg-primary/[0.06]' : 'border-white/10 bg-white/[0.03]'}`}>
+    <div
+      className={`flex items-center justify-between gap-3 rounded-lg border px-4 py-3 ${highlight ? 'border-primary/30 bg-primary/[0.06]' : 'border-white/10 bg-white/[0.03]'}`}
+    >
       <div className="min-w-0">
-        <p className="font-tech text-[9px] uppercase tracking-[0.18em] text-secondary/55">{label}</p>
-        <p className={`mt-0.5 font-tech tabular-nums truncate ${highlight ? 'text-primary' : 'text-on-surface'}`}>{value}</p>
+        <p className="font-tech text-[9px] uppercase tracking-[0.18em] text-secondary/55">
+          {label}
+        </p>
+        <p
+          className={`mt-0.5 font-tech tabular-nums truncate ${highlight ? 'text-primary' : 'text-on-surface'}`}
+        >
+          {value}
+        </p>
       </div>
       {copyable && (
         <button
@@ -343,7 +447,9 @@ function SubmittedPanel({ order }: { order: { status: string } }) {
         {isConfirmed ? (
           <>
             <Check size={42} className="text-primary mx-auto" />
-            <p className="font-headline text-xl font-bold text-on-surface">Đã xác nhận thanh toán!</p>
+            <p className="font-headline text-xl font-bold text-on-surface">
+              Đã xác nhận thanh toán!
+            </p>
             <p className="text-sm text-secondary/80">Đang chuyển bạn đến khoá học…</p>
           </>
         ) : (

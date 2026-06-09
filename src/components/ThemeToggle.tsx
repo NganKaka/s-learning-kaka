@@ -18,19 +18,18 @@ export default function ThemeToggle() {
     );
 
     // Use View Transitions API if available, otherwise fall back to instant
-    const startViewTransition = (document as Document & {
-      startViewTransition?: (cb: () => void) => { ready: Promise<void> };
-    }).startViewTransition;
+    const startViewTransition = (
+      document as Document & {
+        startViewTransition?: (cb: () => void) => { ready: Promise<void> };
+      }
+    ).startViewTransition;
     if (typeof startViewTransition === 'function') {
       const transition = startViewTransition.call(document, () => setTheme(value));
 
       transition.ready.then(() => {
         document.documentElement.animate(
           {
-            clipPath: [
-              `circle(0px at ${x}px ${y}px)`,
-              `circle(${endRadius}px at ${x}px ${y}px)`,
-            ],
+            clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${endRadius}px at ${x}px ${y}px)`],
           },
           {
             duration: 500,
@@ -57,9 +56,7 @@ export default function ThemeToggle() {
           key={value}
           onClick={(e) => handleThemeChange(e, value)}
           className={`relative rounded-full p-2 transition-colors ${
-            theme === value
-              ? 'text-primary'
-              : 'text-secondary/60 hover:text-secondary'
+            theme === value ? 'text-primary' : 'text-secondary/60 hover:text-secondary'
           }`}
           aria-label={`Switch to ${label} theme`}
           title={`${label} theme`}

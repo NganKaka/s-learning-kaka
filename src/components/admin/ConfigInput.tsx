@@ -10,7 +10,7 @@ interface ConfigInputProps {
 
 export function ConfigInput({ value, onChange }: ConfigInputProps) {
   const [strVal, setStrVal] = useState(
-    typeof value === 'string' ? value.replace(/^"|"$/g, '') : String(value)
+    typeof value === 'string' ? value.replace(/^"|"$/g, '') : String(value),
   );
 
   const handleBoolClick = () => {

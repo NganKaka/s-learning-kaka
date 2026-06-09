@@ -64,10 +64,7 @@ export default function ScrambleText({
   }, []);
 
   return (
-    <span
-      className={className}
-      onMouseEnter={trigger === 'hover' ? scramble : undefined}
-    >
+    <span className={className} onMouseEnter={trigger === 'hover' ? scramble : undefined}>
       {displayText}
     </span>
   );

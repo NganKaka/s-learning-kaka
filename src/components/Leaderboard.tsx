@@ -21,7 +21,11 @@ export default function Leaderboard({ courseId }: { courseId: string }) {
     let cancelled = false;
     (async () => {
       const cached = await cacheGet<LeaderboardEntry[]>(CACHE_KEYS.leaderboard(courseId));
-      if (cached && !cancelled) { setEntries(cached); setLoading(false); return; }
+      if (cached && !cancelled) {
+        setEntries(cached);
+        setLoading(false);
+        return;
+      }
 
       const { data } = await supabase
         .from('course_leaderboard')
@@ -36,15 +40,23 @@ export default function Leaderboard({ courseId }: { courseId: string }) {
         cacheSet(CACHE_KEYS.leaderboard(courseId), entries, TTL.leaderboard);
       }
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [courseId]);
 
   if (loading) {
-    return <div className="flex justify-center py-6"><Loader2 size={16} className="animate-spin text-primary" /></div>;
+    return (
+      <div className="flex justify-center py-6">
+        <Loader2 size={16} className="animate-spin text-primary" />
+      </div>
+    );
   }
 
   if (entries.length === 0) {
-    return <p className="text-sm text-secondary/60 text-center py-4">Chưa có dữ liệu bảng xếp hạng.</p>;
+    return (
+      <p className="text-sm text-secondary/60 text-center py-4">Chưa có dữ liệu bảng xếp hạng.</p>
+    );
   }
 
   return (
@@ -66,9 +78,17 @@ export default function Leaderboard({ courseId }: { courseId: string }) {
                     : 'border-white/8 bg-white/[0.02]'
             }`}
           >
-            <span className={`font-tech text-sm font-bold tabular-nums w-8 ${
-              i === 0 ? 'text-amber-300' : i === 1 ? 'text-gray-300' : i === 2 ? 'text-orange-300' : 'text-secondary/55'
-            }`}>
+            <span
+              className={`font-tech text-sm font-bold tabular-nums w-8 ${
+                i === 0
+                  ? 'text-amber-300'
+                  : i === 1
+                    ? 'text-gray-300'
+                    : i === 2
+                      ? 'text-orange-300'
+                      : 'text-secondary/55'
+              }`}
+            >
               #{i + 1}
             </span>
             {e.avatar_url ? (

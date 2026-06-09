@@ -36,7 +36,18 @@ export default function ParentDashboard() {
   const [activities, setActivities] = useState<ActivityEntry[]>([]);
   const [classAvg, setClassAvg] = useState<number | null>(null);
   const [studentScore, setStudentScore] = useState<number>(0);
-  const [goals, setGoals] = useState<{ current: { lessons_target: number; flashcards_target: number; quizzes_target: number; lessons_done: number; flashcards_done: number; quizzes_done: number; met: boolean } | null; history: Array<{ week_start: string; met: boolean }> }>({ current: null, history: [] });
+  const [goals, setGoals] = useState<{
+    current: {
+      lessons_target: number;
+      flashcards_target: number;
+      quizzes_target: number;
+      lessons_done: number;
+      flashcards_done: number;
+      quizzes_done: number;
+      met: boolean;
+    } | null;
+    history: Array<{ week_start: string; met: boolean }>;
+  }>({ current: null, history: [] });
 
   const fetchStudents = useCallback(async () => {
     if (!user) return;
@@ -47,20 +58,38 @@ export default function ParentDashboard() {
     setLoadingStudents(false);
   }, [user]);
 
-  useEffect(() => { fetchStudents(); }, [fetchStudents]);
+  useEffect(() => {
+    fetchStudents();
+  }, [fetchStudents]);
 
   useEffect(() => {
-    if (!selectedStudent) { setScores([]); return; }
+    if (!selectedStudent) {
+      setScores([]);
+      return;
+    }
     let cancelled = false;
     setLoadingScores(true);
     getStudentScores(selectedStudent.student_id, selectedStudent.course_id).then((s) => {
-      if (!cancelled) { setScores(s); setLoadingScores(false); }
+      if (!cancelled) {
+        setScores(s);
+        setLoadingScores(false);
+      }
     });
-    getActivityLog(selectedStudent.student_id).then((a) => { if (!cancelled) setActivities(a); });
-    getClassAverage(selectedStudent.course_id).then((avg) => { if (!cancelled) setClassAvg(avg); });
-    getStudentTotalScore(selectedStudent.student_id, selectedStudent.course_id).then((sc) => { if (!cancelled) setStudentScore(sc); });
-    getStudentGoals(selectedStudent.student_id).then((g) => { if (!cancelled) setGoals(g); });
-    return () => { cancelled = true; };
+    getActivityLog(selectedStudent.student_id).then((a) => {
+      if (!cancelled) setActivities(a);
+    });
+    getClassAverage(selectedStudent.course_id).then((avg) => {
+      if (!cancelled) setClassAvg(avg);
+    });
+    getStudentTotalScore(selectedStudent.student_id, selectedStudent.course_id).then((sc) => {
+      if (!cancelled) setStudentScore(sc);
+    });
+    getStudentGoals(selectedStudent.student_id).then((g) => {
+      if (!cancelled) setGoals(g);
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [selectedStudent]);
 
   if (loading) return null;
@@ -73,7 +102,13 @@ export default function ParentDashboard() {
   }));
 
   if (loadingStudents) {
-    return <PageShell><div className="flex justify-center py-20"><Loader2 size={24} className="animate-spin text-primary" /></div></PageShell>;
+    return (
+      <PageShell>
+        <div className="flex justify-center py-20">
+          <Loader2 size={24} className="animate-spin text-primary" />
+        </div>
+      </PageShell>
+    );
   }
 
   if (students.length === 0) {
@@ -82,7 +117,9 @@ export default function ParentDashboard() {
         <div className="max-w-2xl mx-auto glass-card rounded-2xl p-12 text-center space-y-3">
           <TrendingUp size={32} className="mx-auto text-secondary/40" />
           <p className="text-secondary/70">Chưa có học viên nào được gán cho bạn.</p>
-          <p className="text-xs text-secondary/50">Vui lòng liên hệ quản trị viên để được gán theo dõi học viên.</p>
+          <p className="text-xs text-secondary/50">
+            Vui lòng liên hệ quản trị viên để được gán theo dõi học viên.
+          </p>
         </div>
       </PageShell>
     );
@@ -93,9 +130,7 @@ export default function ParentDashboard() {
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header + student selector */}
         <div className="flex items-center justify-between gap-4 flex-wrap">
-          <h1 className="font-headline text-2xl font-extrabold text-on-surface">
-            Kết quả học tập
-          </h1>
+          <h1 className="font-headline text-2xl font-extrabold text-on-surface">Kết quả học tập</h1>
           {students.length > 1 && (
             <div className="flex gap-2">
               {students.map((s) => (
@@ -119,22 +154,30 @@ export default function ParentDashboard() {
         {selectedStudent && (
           <div className="glass-card rounded-2xl p-5 flex items-center justify-between gap-4 flex-wrap">
             <div>
-              <p className="font-headline text-lg font-bold text-on-surface">{selectedStudent.student_name ?? 'Học viên'}</p>
+              <p className="font-headline text-lg font-bold text-on-surface">
+                {selectedStudent.student_name ?? 'Học viên'}
+              </p>
               <p className="text-sm text-secondary/60">{selectedStudent.course_title}</p>
             </div>
             <div className="flex gap-6">
               <div className="text-center">
-                <p className="font-headline text-xl font-extrabold text-primary tabular-nums">{studentScore.toFixed(0)}</p>
+                <p className="font-headline text-xl font-extrabold text-primary tabular-nums">
+                  {studentScore.toFixed(0)}
+                </p>
                 <p className="font-tech text-[9px] uppercase text-secondary/55">Tổng điểm</p>
               </div>
               {classAvg !== null && (
                 <div className="text-center">
-                  <p className="font-headline text-xl font-extrabold text-secondary/60 tabular-nums">{classAvg.toFixed(0)}</p>
+                  <p className="font-headline text-xl font-extrabold text-secondary/60 tabular-nums">
+                    {classAvg.toFixed(0)}
+                  </p>
                   <p className="font-tech text-[9px] uppercase text-secondary/55">TB lớp</p>
                 </div>
               )}
               <div className="text-center">
-                <p className="font-headline text-xl font-extrabold text-cyan-200 tabular-nums">{scores.length}</p>
+                <p className="font-headline text-xl font-extrabold text-cyan-200 tabular-nums">
+                  {scores.length}
+                </p>
                 <p className="font-tech text-[9px] uppercase text-secondary/55">Lượt thi</p>
               </div>
             </div>
@@ -142,7 +185,9 @@ export default function ParentDashboard() {
         )}
 
         {loadingScores ? (
-          <div className="flex justify-center py-8"><Loader2 size={20} className="animate-spin text-primary" /></div>
+          <div className="flex justify-center py-8">
+            <Loader2 size={20} className="animate-spin text-primary" />
+          </div>
         ) : scores.length === 0 ? (
           <div className="glass-card rounded-2xl p-8 text-center text-secondary/65 text-sm">
             Học viên chưa hoàn thành bài kiểm tra nào.
@@ -158,10 +203,33 @@ export default function ParentDashboard() {
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={lineData}>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
-                    <XAxis dataKey="name" tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.5)' }} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} />
-                    <YAxis domain={[0, 100]} tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.5)' }} axisLine={{ stroke: 'rgba(255,255,255,0.1)' }} unit="%" />
-                    <Tooltip contentStyle={{ background: 'rgba(15,23,42,0.95)', border: '1px solid rgba(103,232,249,0.3)', borderRadius: 8, fontSize: 12 }} />
-                    <Line type="monotone" dataKey="score" stroke="#67e8f9" strokeWidth={2} dot={{ fill: '#67e8f9', r: 4 }} name="Điểm (%)" />
+                    <XAxis
+                      dataKey="name"
+                      tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.5)' }}
+                      axisLine={{ stroke: 'rgba(255,255,255,0.1)' }}
+                    />
+                    <YAxis
+                      domain={[0, 100]}
+                      tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.5)' }}
+                      axisLine={{ stroke: 'rgba(255,255,255,0.1)' }}
+                      unit="%"
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        background: 'rgba(15,23,42,0.95)',
+                        border: '1px solid rgba(103,232,249,0.3)',
+                        borderRadius: 8,
+                        fontSize: 12,
+                      }}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="score"
+                      stroke="#67e8f9"
+                      strokeWidth={2}
+                      dot={{ fill: '#67e8f9', r: 4 }}
+                      name="Điểm (%)"
+                    />
                   </LineChart>
                 </ResponsiveContainer>
               </div>
@@ -169,15 +237,25 @@ export default function ParentDashboard() {
 
             {/* Score table */}
             <div className="glass-card rounded-2xl p-5 space-y-3">
-              <p className="font-tech text-[10px] uppercase tracking-[0.18em] text-secondary/55">Chi tiết các lượt làm</p>
+              <p className="font-tech text-[10px] uppercase tracking-[0.18em] text-secondary/55">
+                Chi tiết các lượt làm
+              </p>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-white/10 text-left">
-                      <th className="pb-2 font-tech text-[10px] uppercase tracking-[0.14em] text-secondary/55">Bài</th>
-                      <th className="pb-2 font-tech text-[10px] uppercase tracking-[0.14em] text-secondary/55">Lượt</th>
-                      <th className="pb-2 font-tech text-[10px] uppercase tracking-[0.14em] text-secondary/55">Điểm</th>
-                      <th className="pb-2 font-tech text-[10px] uppercase tracking-[0.14em] text-secondary/55">Ngày</th>
+                      <th className="pb-2 font-tech text-[10px] uppercase tracking-[0.14em] text-secondary/55">
+                        Bài
+                      </th>
+                      <th className="pb-2 font-tech text-[10px] uppercase tracking-[0.14em] text-secondary/55">
+                        Lượt
+                      </th>
+                      <th className="pb-2 font-tech text-[10px] uppercase tracking-[0.14em] text-secondary/55">
+                        Điểm
+                      </th>
+                      <th className="pb-2 font-tech text-[10px] uppercase tracking-[0.14em] text-secondary/55">
+                        Ngày
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -185,8 +263,14 @@ export default function ParentDashboard() {
                       <tr key={i} className="border-b border-white/5">
                         <td className="py-2 text-on-surface">{s.lesson_title}</td>
                         <td className="py-2 text-secondary/70 tabular-nums">#{s.attempt_number}</td>
-                        <td className="py-2 tabular-nums text-cyan-200">{(s.final_score ?? s.auto_score ?? 0).toFixed(0)}%</td>
-                        <td className="py-2 text-secondary/55 text-xs">{s.submitted_at ? new Date(s.submitted_at).toLocaleDateString('vi-VN') : '—'}</td>
+                        <td className="py-2 tabular-nums text-cyan-200">
+                          {(s.final_score ?? s.auto_score ?? 0).toFixed(0)}%
+                        </td>
+                        <td className="py-2 text-secondary/55 text-xs">
+                          {s.submitted_at
+                            ? new Date(s.submitted_at).toLocaleDateString('vi-VN')
+                            : '—'}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -200,19 +284,26 @@ export default function ParentDashboard() {
         {goals.current && (
           <div className="glass-card rounded-2xl p-5 space-y-3">
             <p className="inline-flex items-center gap-2 font-tech text-[10px] uppercase tracking-[0.18em] text-secondary/55">
-              <Target size={12} /> Mục tiêu tuần {goals.current.met && <span className="text-emerald-400">✓ Đạt</span>}
+              <Target size={12} /> Mục tiêu tuần{' '}
+              {goals.current.met && <span className="text-emerald-400">✓ Đạt</span>}
             </p>
             <div className="grid grid-cols-3 gap-3 text-center">
               <div>
-                <p className="font-headline text-lg font-bold text-on-surface tabular-nums">{goals.current.lessons_done}/{goals.current.lessons_target}</p>
+                <p className="font-headline text-lg font-bold text-on-surface tabular-nums">
+                  {goals.current.lessons_done}/{goals.current.lessons_target}
+                </p>
                 <p className="font-tech text-[9px] uppercase text-secondary/55">Bài học</p>
               </div>
               <div>
-                <p className="font-headline text-lg font-bold text-on-surface tabular-nums">{goals.current.flashcards_done}/{goals.current.flashcards_target}</p>
+                <p className="font-headline text-lg font-bold text-on-surface tabular-nums">
+                  {goals.current.flashcards_done}/{goals.current.flashcards_target}
+                </p>
                 <p className="font-tech text-[9px] uppercase text-secondary/55">Flashcards</p>
               </div>
               <div>
-                <p className="font-headline text-lg font-bold text-on-surface tabular-nums">{goals.current.quizzes_done}/{goals.current.quizzes_target}</p>
+                <p className="font-headline text-lg font-bold text-on-surface tabular-nums">
+                  {goals.current.quizzes_done}/{goals.current.quizzes_target}
+                </p>
                 <p className="font-tech text-[9px] uppercase text-secondary/55">Quiz</p>
               </div>
             </div>
@@ -227,9 +318,14 @@ export default function ParentDashboard() {
             </p>
             <div className="space-y-2 max-h-48 overflow-y-auto">
               {activities.slice(0, 10).map((a) => (
-                <div key={a.id} className="flex items-center justify-between gap-3 rounded-lg border border-white/5 bg-white/[0.02] px-3 py-2">
+                <div
+                  key={a.id}
+                  className="flex items-center justify-between gap-3 rounded-lg border border-white/5 bg-white/[0.02] px-3 py-2"
+                >
                   <span className="text-sm text-on-surface">{formatAction(a.action)}</span>
-                  <span className="font-tech text-[9px] tabular-nums text-secondary/45 shrink-0">{new Date(a.created_at).toLocaleDateString('vi-VN')}</span>
+                  <span className="font-tech text-[9px] tabular-nums text-secondary/45 shrink-0">
+                    {new Date(a.created_at).toLocaleDateString('vi-VN')}
+                  </span>
                 </div>
               ))}
             </div>

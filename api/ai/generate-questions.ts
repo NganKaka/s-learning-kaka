@@ -11,7 +11,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (!OPENAI_API_KEY) return res.status(503).json({ error: 'AI not configured' });
 
   const { content, count = 5, language = 'vi' } = req.body ?? {};
-  if (!content || typeof content !== 'string') return res.status(400).json({ error: 'Missing content' });
+  if (!content || typeof content !== 'string')
+    return res.status(400).json({ error: 'Missing content' });
 
   const prompt = `Dựa trên nội dung bài học sau, tạo ${count} câu hỏi trắc nghiệm (MCQ) bằng tiếng ${language === 'vi' ? 'Việt' : 'Anh'}.
 

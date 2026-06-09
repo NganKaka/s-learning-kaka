@@ -49,7 +49,10 @@ const shells: Shell[] = [
       { prompt: 'PS> $env:USER', output: profile.name },
       { prompt: 'PS> Get-Content role.txt', output: profile.title },
       { prompt: 'PS> Get-Location', output: profile.location },
-      { prompt: 'PS> Get-Module -ListAvailable', output: 'Python, React, TypeScript, PostgreSQL, Docker' },
+      {
+        prompt: 'PS> Get-Module -ListAvailable',
+        output: 'Python, React, TypeScript, PostgreSQL, Docker',
+      },
     ],
   },
   {
@@ -72,7 +75,10 @@ const shells: Shell[] = [
     buildRows: () => [
       { prompt: '~$ whoami && uname -r', output: `${profile.name} · 5.15-WSL2` },
       { prompt: '~$ cat role.txt', output: profile.title },
-      { prompt: '~$ pwd', output: `/mnt/work/${profile.location.toLowerCase().replace(/\s+/g, '-')}` },
+      {
+        prompt: '~$ pwd',
+        output: `/mnt/work/${profile.location.toLowerCase().replace(/\s+/g, '-')}`,
+      },
       { prompt: '~$ docker ps --format "{{.Image}}"', output: 'python · postgres · node · redis' },
     ],
   },
@@ -83,7 +89,9 @@ export default function TerminalBoot() {
   const shell = shells[shellIndex];
   const [rows, setRows] = useState<TerminalRow[]>(() => shell.buildRows());
   const [displayed, setDisplayed] = useState<RenderRow[]>(() =>
-    shell.buildRows().map(() => ({ prompt: '', output: '', isPromptDone: false, isOutputDone: false })),
+    shell
+      .buildRows()
+      .map(() => ({ prompt: '', output: '', isPromptDone: false, isOutputDone: false })),
   );
   const [done, setDone] = useState(false);
 
@@ -96,7 +104,9 @@ export default function TerminalBoot() {
     indexRef.current = 0;
     phaseRef.current = 'prompt';
     setRows(next);
-    setDisplayed(next.map(() => ({ prompt: '', output: '', isPromptDone: false, isOutputDone: false })));
+    setDisplayed(
+      next.map(() => ({ prompt: '', output: '', isPromptDone: false, isOutputDone: false })),
+    );
     setDone(false);
   }, [shellIndex]);
 
@@ -128,7 +138,10 @@ export default function TerminalBoot() {
 
           // Type 2 chars per tick when fast — keeps the keystroke feel without dragging
           const inc = 2;
-          next[i] = { ...cur, prompt: row.prompt.substring(0, Math.min(row.prompt.length, cur.prompt.length + inc)) };
+          next[i] = {
+            ...cur,
+            prompt: row.prompt.substring(0, Math.min(row.prompt.length, cur.prompt.length + inc)),
+          };
           timer = setTimeout(tick, PROMPT_SPEED);
           return next;
         });
@@ -152,7 +165,10 @@ export default function TerminalBoot() {
         }
 
         const inc = 3;
-        next[i] = { ...cur, output: row.output.substring(0, Math.min(row.output.length, cur.output.length + inc)) };
+        next[i] = {
+          ...cur,
+          output: row.output.substring(0, Math.min(row.output.length, cur.output.length + inc)),
+        };
         timer = setTimeout(tick, OUTPUT_SPEED);
         return next;
       });
@@ -212,7 +228,9 @@ export default function TerminalBoot() {
 
         {done && (
           <div className="flex flex-wrap gap-x-2 leading-relaxed">
-            <span className={`${shell.promptColor} shrink-0`}>{shell.id === 'cmd' ? 'C:\\>' : shell.id === 'powershell' ? 'PS>' : '$'}</span>
+            <span className={`${shell.promptColor} shrink-0`}>
+              {shell.id === 'cmd' ? 'C:\\>' : shell.id === 'powershell' ? 'PS>' : '$'}
+            </span>
             <span className={shell.outputColor}>ready.</span>
             <span className={`animate-pulse ${shell.promptColor} ml-1`}>▊</span>
           </div>
