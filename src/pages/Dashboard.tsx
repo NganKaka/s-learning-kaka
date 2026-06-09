@@ -7,6 +7,7 @@ import StudentAnnouncements from '../components/StudentAnnouncements';
 import StudyPlanner from '../components/StudyPlanner';
 import StudyHeatmap from '../components/StudyHeatmap';
 import BadgeDisplay from '../components/BadgeDisplay';
+import { SkeletonCard, SkeletonLine } from '../components/ui/Skeleton';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { CourseCard, XpWidget, FocusAreas, UpNext } from '../components/dashboard';
@@ -205,7 +206,22 @@ export default function Dashboard() {
   if (loading) {
     return (
       <PageShell>
-        <div className="glass-card rounded-2xl p-12 animate-pulse min-h-[300px]" />
+        {/* Skeleton mirrors heading + stat grid + course cards to reduce CLS */}
+        <div className="space-y-6">
+          <div className="space-y-2">
+            <SkeletonLine width="20%" />
+            <SkeletonLine width="45%" />
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="glass-card rounded-2xl p-5 h-24 animate-pulse" />
+            ))}
+          </div>
+          <div className="grid md:grid-cols-2 gap-5">
+            <SkeletonCard />
+            <SkeletonCard />
+          </div>
+        </div>
       </PageShell>
     );
   }
@@ -326,7 +342,12 @@ export default function Dashboard() {
           Khoá học của bạn
         </p>
 
-        {!enrolled && <div className="mt-3 glass-card rounded-2xl p-12 animate-pulse h-32" />}
+        {!enrolled && (
+          <div className="mt-3 grid md:grid-cols-2 gap-5">
+            <SkeletonCard />
+            <SkeletonCard />
+          </div>
+        )}
 
         {enrolled && enrolled.length === 0 && (
           <div className="mt-3 glass-card rounded-2xl p-10 text-center space-y-3">

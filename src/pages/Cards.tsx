@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Brain, Loader2, CheckCircle2, ArrowRight, RotateCcw } from 'lucide-react';
 import PageShell from '../components/PageShell';
 import SectionHeading from '../components/ui/SectionHeading';
+import { SkeletonLine } from '../components/ui/Skeleton';
 import { useAuth } from '../contexts/AuthContext';
 import { fetchDueCards, submitReview, type DueCard, type Rating } from '../lib/srs';
 
@@ -89,7 +90,14 @@ export default function Cards() {
   if (authLoading) {
     return (
       <PageShell>
-        <div className="glass-card rounded-2xl p-12 animate-pulse min-h-[300px]" />
+        {/* Skeleton shaped like the loaded card view to reduce CLS */}
+        <div className="space-y-4 mt-10">
+          <div className="h-3 w-48 rounded bg-white/10 animate-pulse" />
+          <div className="glass-card rounded-3xl p-8 md:p-12 min-h-[300px] flex flex-col items-center justify-center gap-4 animate-pulse">
+            <SkeletonLine width="60%" />
+            <SkeletonLine width="40%" />
+          </div>
+        </div>
       </PageShell>
     );
   }
@@ -119,7 +127,12 @@ export default function Cards() {
       />
 
       {cards === null ? (
-        <div className="mt-10 glass-card rounded-2xl p-12 animate-pulse h-64" />
+        /* Skeleton matches the card face shape so no CLS when cards arrive */
+        <div className="mt-10 glass-card rounded-3xl p-8 md:p-12 min-h-[300px] flex flex-col items-center justify-center gap-4 animate-pulse">
+          <SkeletonLine width="55%" />
+          <SkeletonLine width="35%" />
+          <SkeletonLine width="45%" />
+        </div>
       ) : total === 0 ? (
         <div className="mt-10 glass-card rounded-2xl p-12 text-center space-y-3">
           <Brain size={28} className="text-cyan-300 mx-auto" />
@@ -157,7 +170,7 @@ export default function Cards() {
             aria-valuemin={1}
             aria-valuemax={total}
             aria-label={`Thẻ ${index + 1} trong tổng số ${total}`}
-            className="flex items-center gap-3 font-tech text-[10px] uppercase tracking-[0.18em] text-secondary/55"
+            className="flex items-center gap-3 font-tech text-[11px] uppercase tracking-[0.18em] text-secondary/55"
           >
             <span className="tabular-nums text-primary">{String(index + 1).padStart(2, '0')}</span>
             <span className="text-secondary/30">/</span>
@@ -199,7 +212,8 @@ export default function Cards() {
                     <p className="font-tech text-[10px] uppercase tracking-[0.2em] text-primary">
                       Mặt trước
                     </p>
-                    <p className="font-headline text-2xl md:text-3xl text-on-surface whitespace-pre-line">
+                    {/* Clamp base size at xs to prevent long text overflowing narrow phones */}
+                    <p className="font-headline text-xl sm:text-2xl md:text-3xl text-on-surface break-words">
                       {card.front_md}
                     </p>
                     <p className="font-tech text-[10px] uppercase tracking-[0.16em] text-secondary/45">
@@ -217,7 +231,7 @@ export default function Cards() {
                     <p className="font-tech text-[10px] uppercase tracking-[0.2em] text-cyan-300">
                       Đáp án
                     </p>
-                    <p className="font-headline text-xl md:text-2xl text-on-surface whitespace-pre-line">
+                    <p className="font-headline text-lg sm:text-xl md:text-2xl text-on-surface break-words">
                       {card.back_md}
                     </p>
                     <p className="font-tech text-[10px] uppercase tracking-[0.16em] text-secondary/45">
@@ -255,7 +269,7 @@ export default function Cards() {
                       {btn.glyph}
                     </span>
                     <span className="font-headline font-bold text-base">{btn.label}</span>
-                    <span className="font-tech text-[9px] uppercase tracking-[0.14em] opacity-80">
+                    <span className="font-tech text-[11px] uppercase tracking-[0.14em] opacity-80">
                       {btn.sub}
                     </span>
                   </button>

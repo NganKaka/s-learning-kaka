@@ -9,7 +9,11 @@ interface MeshGradientProps {
  */
 export default function MeshGradient({ className = '' }: MeshGradientProps) {
   return (
-    <div className={`absolute inset-0 overflow-hidden pointer-events-none ${className}`}>
+    /* hidden on phones (<sm) — blobs are large vw units and drain GPU on low-end devices;
+       on desktop (sm+) they render exactly as before. */
+    <div
+      className={`absolute inset-0 overflow-hidden pointer-events-none hidden sm:block ${className}`}
+    >
       <div
         className="mesh-blob absolute top-[10%] left-[10%] w-[60vw] h-[60vw] rounded-full blur-[80px] opacity-40"
         style={{

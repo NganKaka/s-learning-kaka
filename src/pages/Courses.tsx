@@ -5,6 +5,7 @@ import PageShell from '../components/PageShell';
 import DocumentHead from '../components/DocumentHead';
 import SectionHeading from '../components/ui/SectionHeading';
 import { Badge } from '../components/ui/Badge';
+import { SkeletonCard } from '../components/ui/Skeleton';
 import { usePublishedCourses, formatVnd, formatDuration } from '../lib/courses';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -186,7 +187,7 @@ export default function Courses() {
       {loading && (
         <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="glass-card rounded-2xl p-6 min-h-[320px] animate-pulse" />
+            <SkeletonCard key={i} />
           ))}
         </div>
       )}

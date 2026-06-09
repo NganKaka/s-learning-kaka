@@ -39,6 +39,10 @@ Living conventions for the sLearningKaka codebase. Keep this short and current.
 
 `useAsyncData` adoption was started (`StudentAnnouncements`, `LessonCards`). ~20 components/pages still hand-roll the fetch pattern. Single-value fetches migrate cleanly; multi-value pages (`Dashboard`, `Cart`, `Learn`, most `Teacher*`) fetch several values per effect and need light restructuring first. Migrate incrementally, verifying each against e2e (behavior-preserving).
 
+## Design conventions
+
+See **[`docs/design-guidelines.md`](./design-guidelines.md)** for brand tokens, UI primitive usage, spacing/hover taxonomy, responsive rules (mobile guards, ≥11px text, ≥40px targets), skeleton loading convention, and a11y conventions.
+
 ## UI primitives
 
 Shared presentational primitives live in `src/components/ui/`. Prefer these over re-inlining one-off Tailwind strings — they encode the brand vocabulary once (no new colors/fonts; tokens from `src/index.css`).

@@ -7,6 +7,9 @@ import { useEffect } from 'react';
  */
 export default function ScrollVignette() {
   useEffect(() => {
+    // Skip on prefers-reduced-motion — the fading overlay counts as motion.
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
     let raf = 0;
     let queued = false;
 

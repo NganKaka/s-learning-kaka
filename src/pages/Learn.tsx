@@ -6,6 +6,7 @@ import LessonCards from '../components/LessonCards';
 import LessonQuiz from '../components/LessonQuiz';
 import LessonNotes from '../components/LessonNotes';
 import LessonDiscussion from '../components/LessonDiscussion';
+import { SkeletonLine } from '../components/ui/Skeleton';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { incrementGoalProgress } from '../lib/studyGoals';
@@ -165,7 +166,21 @@ export default function Learn() {
   if (authLoading) {
     return (
       <PageShell noFooter>
-        <div className="glass-card rounded-2xl p-12 animate-pulse min-h-[60vh]" />
+        {/* Skeleton mirrors the two-column learn layout */}
+        <div className="grid lg:grid-cols-[280px_1fr] gap-6">
+          <div className="glass-card rounded-2xl p-4 h-fit space-y-3 animate-pulse">
+            <SkeletonLine width="70%" />
+            <SkeletonLine width="50%" />
+            <SkeletonLine width="80%" />
+            <SkeletonLine width="60%" />
+          </div>
+          <div className="space-y-5">
+            <SkeletonLine width="40%" />
+            <SkeletonLine width="70%" />
+            {/* Video area placeholder keeps aspect-video shape */}
+            <div className="aspect-video w-full rounded-2xl bg-white/[0.04] animate-pulse" />
+          </div>
+        </div>
       </PageShell>
     );
   }
@@ -195,7 +210,20 @@ export default function Learn() {
   if (!course || !lesson) {
     return (
       <PageShell noFooter>
-        <div className="glass-card rounded-2xl p-12 animate-pulse min-h-[60vh]" />
+        {/* Course/lesson loading skeleton — same two-column layout as loaded state */}
+        <div className="grid lg:grid-cols-[280px_1fr] gap-6">
+          <div className="glass-card rounded-2xl p-4 h-fit space-y-3 animate-pulse">
+            <SkeletonLine width="70%" />
+            <SkeletonLine width="50%" />
+            <SkeletonLine width="80%" />
+            <SkeletonLine width="60%" />
+          </div>
+          <div className="space-y-5">
+            <SkeletonLine width="40%" />
+            <SkeletonLine width="70%" />
+            <div className="aspect-video w-full rounded-2xl bg-white/[0.04] animate-pulse" />
+          </div>
+        </div>
       </PageShell>
     );
   }
@@ -209,7 +237,7 @@ export default function Learn() {
         <aside className="glass-card rounded-2xl p-4 h-fit lg:sticky lg:top-28 max-h-[calc(100vh-8rem)] overflow-y-auto">
           <Link
             to={`/courses/${course.slug}`}
-            className="inline-flex items-center gap-1.5 font-tech text-[10px] uppercase tracking-[0.18em] text-secondary/60 hover:text-cyan-300 mb-3"
+            className="inline-flex items-center gap-1.5 font-tech text-[11px] uppercase tracking-[0.18em] text-secondary/60 hover:text-cyan-300 mb-3"
           >
             <ArrowLeft size={12} /> Trang khoá học
           </Link>
@@ -217,7 +245,7 @@ export default function Learn() {
           <nav className="space-y-3">
             {course.modules.map((mod, mi) => (
               <div key={mod.id} className="space-y-1">
-                <p className="font-tech text-[9px] uppercase tracking-[0.18em] text-primary/85 px-2">
+                <p className="font-tech text-[11px] uppercase tracking-[0.18em] text-primary/85 px-2">
                   {String(mi + 1).padStart(2, '0')} · {mod.title}
                 </p>
                 <ul className="space-y-0.5">

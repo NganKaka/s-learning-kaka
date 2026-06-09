@@ -13,6 +13,7 @@ import { useEffect, useState } from 'react';
 import PageShell from '../components/PageShell';
 import DocumentHead from '../components/DocumentHead';
 import Leaderboard from '../components/Leaderboard';
+import { SkeletonLine, SkeletonCard } from '../components/ui/Skeleton';
 import { useCourse, formatVnd, formatDuration, formatLessonDuration } from '../lib/courses';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -54,10 +55,33 @@ export default function CourseDetail() {
   if (loading) {
     return (
       <PageShell>
-        <div className="space-y-6">
-          <div className="h-12 w-2/3 bg-white/5 rounded-lg animate-pulse" />
-          <div className="h-64 w-full bg-white/5 rounded-2xl animate-pulse" />
-          <div className="h-32 w-full bg-white/5 rounded-2xl animate-pulse" />
+        {/* Skeleton mirrors the two-column layout: hero left + sticky card right */}
+        <div className="grid lg:grid-cols-[1fr_360px] gap-8 lg:gap-12">
+          <div className="space-y-6">
+            {/* Breadcrumb line */}
+            <SkeletonLine width="30%" />
+            {/* Title */}
+            <div className="space-y-2">
+              <SkeletonLine width="80%" />
+              <SkeletonLine width="60%" />
+            </div>
+            {/* Meta row */}
+            <SkeletonLine width="50%" />
+            {/* Cover image placeholder — aspect-video matches loaded image */}
+            <div className="aspect-video w-full rounded-3xl bg-white/[0.04] animate-pulse" />
+            <SkeletonCard />
+          </div>
+          {/* Sticky purchase card skeleton */}
+          <div className="glass-card rounded-3xl p-6 space-y-5 h-fit animate-pulse">
+            <SkeletonLine width="40%" />
+            <SkeletonLine width="60%" />
+            <div className="h-12 rounded-xl bg-white/[0.06]" />
+            <div className="space-y-3 pt-2 border-t border-white/10">
+              {[...Array(4)].map((_, i) => (
+                <SkeletonLine key={i} width={`${70 - i * 8}%`} />
+              ))}
+            </div>
+          </div>
         </div>
       </PageShell>
     );
@@ -331,7 +355,7 @@ function ModulePanel({ module, index, courseSlug }: ModulePanelProps) {
                     {lesson.title}
                   </span>
                   {lesson.is_preview && (
-                    <span className="font-tech text-[9px] uppercase tracking-[0.16em] text-cyan-300/85 shrink-0">
+                    <span className="font-tech text-[11px] uppercase tracking-[0.16em] text-cyan-300/85 shrink-0">
                       Xem thử
                     </span>
                   )}
