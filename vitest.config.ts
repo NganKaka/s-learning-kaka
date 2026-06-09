@@ -31,7 +31,7 @@ export default defineConfig({
         'src/lib/srs.ts': { lines: 45, statements: 45 },
         'src/lib/quiz.ts': { lines: 60, statements: 60 },
         'src/lib/xp.ts': { lines: 75, statements: 75 },
-        'src/lib/certificate.ts': { lines: 70, statements: 70 },
+        'src/lib/certificatePdf.ts': { lines: 70, statements: 70 },
       },
     },
   },

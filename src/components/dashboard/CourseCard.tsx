@@ -32,7 +32,7 @@ export function CourseCard({ course, studentName }: CourseCardProps) {
     setDownloading(true);
     try {
       const [{ generateCertificatePdf, downloadPdf }] = await Promise.all([
-        import('../../lib/certificate'),
+        import('../../lib/certificatePdf'),
       ]);
       const bytes = await generateCertificatePdf({
         studentName,

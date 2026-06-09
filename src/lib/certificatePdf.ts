@@ -1,3 +1,5 @@
+// Certificate PDF RENDERER — client-side PDF generation via pdf-lib.
+// For Supabase persistence / verify-code lookup, see `certificates.ts`.
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 
 interface CertificateInput {

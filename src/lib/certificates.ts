@@ -1,3 +1,5 @@
+// Certificate DATA layer — Supabase CRUD for issued certificates + verify codes.
+// For client-side PDF *rendering* of a certificate, see `certificatePdf.ts`.
 import { supabase } from './supabase';
 
 export interface Certificate {

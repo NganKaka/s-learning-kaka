@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { generateCertificatePdf } from './certificate';
+import { generateCertificatePdf } from './certificatePdf';
 
 // Smoke tests: assert the client-side PDF generator produces a structurally
 // valid, non-trivial PDF. We don't assert pixel/text layout (brittle), only
