@@ -86,8 +86,12 @@ export function buildDailySeries(
 
 /**
  * Fetch admin dashboard stats: the headline totals (for the cards) and a
- * `days`-long daily series for the chart. Resilient to RLS errors — missing
- * data degrades to zeros rather than throwing.
+ * `days`-long daily series for the chart.
+ *
+ * The all-time totals (counts + revenue sum + pass-rate) are computed
+ * server-side by the `admin_stats_totals` RPC so we never ship whole tables to
+ * the browser; only the bounded `days`-window rows are fetched for the series.
+ * Resilient: a missing RPC / RLS error degrades to zeros rather than throwing.
  */
 export async function fetchAdminStats(
   now: number = Date.now(),
@@ -99,18 +103,18 @@ export async function fetchAdminStats(
   const sevenDaysAgo = now - 7 * DAY_MS;
 
   const [
-    { count: users },
-    { count: enrollmentsCount },
-    { count: courses },
+    { data: totalsRow, error: totalsErr },
     { data: orders },
     { data: signupRows },
     { data: enrollmentRows },
     { data: attempts },
   ] = await Promise.all([
-    supabase.from('profiles').select('*', { count: 'exact', head: true }),
-    supabase.from('enrollments').select('*', { count: 'exact', head: true }).eq('status', 'active'),
-    supabase.from('courses').select('*', { count: 'exact', head: true }),
-    supabase.from('orders').select('amount_vnd, created_at').eq('status', 'confirmed'),
+    supabase.rpc('admin_stats_totals'),
+    supabase
+      .from('orders')
+      .select('amount_vnd, created_at')
+      .eq('status', 'confirmed')
+      .gte('created_at', windowStartIso),
     supabase.from('profiles').select('created_at').gte('created_at', windowStartIso),
     supabase
       .from('enrollments')
@@ -120,11 +124,24 @@ export async function fetchAdminStats(
     supabase
       .from('quiz_attempts')
       .select('final_score, auto_score, created_at')
-      .in('status', ['submitted', 'graded']),
+      .in('status', ['submitted', 'graded'])
+      .gte('created_at', windowStartIso),
   ]);
 
-  const orderRows = (orders ?? []) as { amount_vnd: number; created_at: string }[];
-  const totalRevenue = orderRows.reduce((s, o) => s + (o.amount_vnd ?? 0), 0);
+  if (totalsErr) console.error('admin_stats_totals RPC failed:', totalsErr.message);
+  const t = (totalsRow ?? {}) as Partial<AdminTotals>;
+
+  const signups = (signupRows ?? []) as DatedRow[];
+  const recentSignups = signups.filter((s) => Date.parse(s.created_at) >= sevenDaysAgo).length;
+
+  const totals: AdminTotals = {
+    totalUsers: t.totalUsers ?? 0,
+    totalEnrollments: t.totalEnrollments ?? 0,
+    totalRevenue: t.totalRevenue ?? 0,
+    totalCourses: t.totalCourses ?? 0,
+    recentSignups,
+    quizPassRate: t.quizPassRate ?? 0,
+  };
 
   const attemptRows = (
     (attempts ?? []) as {
@@ -133,28 +150,12 @@ export async function fetchAdminStats(
       created_at: string;
     }[]
   ).map((a) => ({ created_at: a.created_at, score: a.final_score ?? a.auto_score ?? 0 }));
-  const quizPassRate =
-    attemptRows.length > 0
-      ? (attemptRows.filter((a) => a.score >= PASS_THRESHOLD).length / attemptRows.length) * 100
-      : 0;
-
-  const signups = (signupRows ?? []) as DatedRow[];
-  const recentSignups = signups.filter((s) => Date.parse(s.created_at) >= sevenDaysAgo).length;
-
-  const totals: AdminTotals = {
-    totalUsers: users ?? 0,
-    totalEnrollments: enrollmentsCount ?? 0,
-    totalRevenue,
-    totalCourses: courses ?? 0,
-    recentSignups,
-    quizPassRate,
-  };
 
   const series = buildDailySeries(now, days, {
-    orders: orderRows.filter((o) => o.created_at >= windowStartIso),
+    orders: (orders ?? []) as (DatedRow & { amount_vnd: number })[],
     signups,
     enrollments: (enrollmentRows ?? []) as DatedRow[],
-    attempts: attemptRows.filter((a) => a.created_at >= windowStartIso),
+    attempts: attemptRows,
   });
 
   return { totals, series };
