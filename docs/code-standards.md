@@ -39,6 +39,17 @@ Living conventions for the sLearningKaka codebase. Keep this short and current.
 
 `useAsyncData` adoption was started (`StudentAnnouncements`, `LessonCards`). ~20 components/pages still hand-roll the fetch pattern. Single-value fetches migrate cleanly; multi-value pages (`Dashboard`, `Cart`, `Learn`, most `Teacher*`) fetch several values per effect and need light restructuring first. Migrate incrementally, verifying each against e2e (behavior-preserving).
 
+## UI primitives
+
+Shared presentational primitives live in `src/components/ui/`. Prefer these over re-inlining one-off Tailwind strings — they encode the brand vocabulary once (no new colors/fonts; tokens from `src/index.css`).
+
+- **`Button`** — variants `primary` (gold CTA) · `secondary` (cyan) · `ghost` · `danger` (red); sizes `sm`/`md`; `loading` disables + spinner + `aria-busy`; defaults `type="button"`. Consolidates the repeated `border-primary/40 bg-primary/15 … font-tech uppercase` CTA pattern.
+- **`Badge`** — tones `success` · `warning` · `info` · `neutral`; sizes `sm`/`md`. For status pills (e.g. the cyan "Đã đăng ký" → `tone="info"`).
+- **`EmptyState`** — `icon?` / `title` / `description?` / `action?`. Replaces ad-hoc `return null` empty blocks.
+- **`ErrorAlert`** — `message` + optional `onRetry`; `role="alert"`. Replaces the duplicated `border-red-400/30 bg-red-500/5 … text-red-300` inline error.
+
+**Conventions baked in:** brand tokens only; `className` is appended (not overridden) for one-off tweaks; decorative icons are `aria-hidden`. Adopt incrementally on touched pages — don't sweep teacher/admin in one pass. No `Modal`/`Dialog` primitive yet (YAGNI — add when a real need appears).
+
 ## Certificate fonts
 
 `certificatePdf.ts` embeds **Be Vietnam Pro** (a Unicode TTF covering Vietnamese) via `@pdf-lib/fontkit`, loaded lazily from `/public/fonts/` (`certificateFonts.ts`). This fixed a prior crash where standard WinAnsi Helvetica could not encode Vietnamese diacritics (`ễ`, `ữ`). If the font fails to load, it falls back to Helvetica (ASCII-only) so Latin names still render offline. Regression-tested in `certificatePdf.test.ts`.
