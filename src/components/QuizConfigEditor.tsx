@@ -1,27 +1,18 @@
 import { useEffect, useState } from 'react';
-import {
-  Plus,
-  Trash2,
-  Sparkles,
-  Loader2,
-  ChevronDown,
-  ChevronUp,
-  CheckCircle2,
-  Upload,
-  ImageIcon,
-} from 'lucide-react';
-import CustomSelect from './ui/CustomSelect';
+import { Plus, Sparkles, CheckCircle2, Trash2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { cacheInvalidate, CACHE_KEYS } from '../lib/cache';
-import type { Quiz, QuizQuestion, QuizQuestionType, QuizGradingMode } from '../lib/quiz';
+import type { Quiz, QuizQuestion } from '../lib/quiz';
+import QuizMetaForm from './teacher/quiz-config/QuizMetaForm';
+import QuestionEditor from './teacher/quiz-config/QuestionEditor';
+import QuizEmptyState from './teacher/quiz-config/QuizEmptyState';
 
 /**
  * Form-driven quiz editor for the teacher course editor.
  *
- * Replaces the previous `window.prompt`-driven flow. Supports:
- *   - Quiz config: title, time limit, max attempts, grading mode (max/mean), pass threshold
- *   - Questions: single / multi / text / file types, points, expected_text for auto-graded text,
- *     correct-choice picker for MCQs.
+ * Orchestrates QuizEmptyState + QuizMetaForm + QuestionEditor sub-components.
+ * Supports: title, time limit, max attempts, grading mode, pass threshold,
+ * and questions of type single / multi / text / file / image.
  */
 export default function QuizConfigEditor({ lessonId }: { lessonId: string }) {
   const [quiz, setQuiz] = useState<Quiz | null>(null);
@@ -94,7 +85,6 @@ export default function QuizConfigEditor({ lessonId }: { lessonId: string }) {
 
   const addQuestion = async () => {
     if (!quiz) return;
-    const order = questions.length;
     const { data } = await supabase
       .from('quiz_questions')
       .insert({
@@ -106,7 +96,7 @@ export default function QuizConfigEditor({ lessonId }: { lessonId: string }) {
         explanation_md: null,
         expected_text: null,
         points: 1,
-        order_index: order,
+        order_index: questions.length,
       })
       .select('*')
       .single();
@@ -131,25 +121,12 @@ export default function QuizConfigEditor({ lessonId }: { lessonId: string }) {
   }
 
   if (!quiz) {
-    return (
-      <div className="flex items-center justify-between rounded-xl border border-white/8 bg-white/[0.02] px-3 py-2">
-        <p className="inline-flex items-center gap-2 font-tech text-[10px] uppercase tracking-[0.18em] text-primary">
-          <Sparkles size={11} /> Chưa có quiz
-        </p>
-        <button
-          type="button"
-          onClick={createQuiz}
-          disabled={creating}
-          className="inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/15 px-3 py-1 font-tech text-[10px] uppercase tracking-[0.16em] text-primary hover:bg-primary/25 disabled:opacity-60"
-        >
-          {creating ? <Loader2 size={10} className="animate-spin" /> : <Plus size={10} />} Tạo quiz
-        </button>
-      </div>
-    );
+    return <QuizEmptyState creating={creating} onCreate={createQuiz} />;
   }
 
   return (
     <div className="space-y-3">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <p className="inline-flex items-center gap-2 font-tech text-[10px] uppercase tracking-[0.18em] text-primary">
           <Sparkles size={11} /> Quiz{' '}
@@ -160,81 +137,9 @@ export default function QuizConfigEditor({ lessonId }: { lessonId: string }) {
         </button>
       </div>
 
-      {/* Config */}
-      <div className="rounded-xl border border-white/10 bg-white/[0.02] p-4 space-y-3">
-        <ConfigField label="Tiêu đề">
-          <input
-            type="text"
-            defaultValue={quiz.title ?? ''}
-            onBlur={(e) => saveConfig({ title: e.target.value || null })}
-            className="w-full rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-on-surface focus:border-cyan-300/40 focus:outline-none"
-          />
-        </ConfigField>
+      <QuizMetaForm quiz={quiz} saving={savingConfig} onSave={saveConfig} />
 
-        <div className="grid sm:grid-cols-2 gap-3 items-end">
-          <ConfigField label="Thời gian (phút)">
-            <input
-              type="number"
-              min={0}
-              defaultValue={quiz.time_limit_seconds ? Math.round(quiz.time_limit_seconds / 60) : ''}
-              onBlur={(e) => {
-                const raw = e.target.value.trim();
-                const minutes = raw === '' ? null : Math.max(0, Number(raw));
-                saveConfig({
-                  time_limit_seconds: minutes && minutes > 0 ? minutes * 60 : null,
-                });
-              }}
-              placeholder="Không giới hạn"
-              className="w-full rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-on-surface focus:border-cyan-300/40 focus:outline-none"
-            />
-          </ConfigField>
-
-          <ConfigField label="Số lượt làm tối đa">
-            <input
-              type="number"
-              min={1}
-              defaultValue={quiz.max_attempts}
-              onBlur={(e) => saveConfig({ max_attempts: Math.max(1, Number(e.target.value) || 1) })}
-              className="w-full rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-on-surface focus:border-cyan-300/40 focus:outline-none"
-            />
-          </ConfigField>
-
-          <ConfigField label="Cách tính điểm cuối">
-            <CustomSelect
-              value={quiz.grading_mode}
-              onChange={(v) => saveConfig({ grading_mode: v as QuizGradingMode })}
-              options={[
-                { value: 'max', label: 'Điểm cao nhất giữa các lượt' },
-                { value: 'mean', label: 'Điểm trung bình các lượt' },
-              ]}
-            />
-          </ConfigField>
-
-          <ConfigField label="Ngưỡng đậu (%)">
-            <input
-              type="number"
-              min={0}
-              max={100}
-              defaultValue={quiz.pass_threshold ?? ''}
-              onBlur={(e) => {
-                const raw = e.target.value.trim();
-                const value = raw === '' ? null : Math.max(0, Math.min(100, Number(raw)));
-                saveConfig({ pass_threshold: value });
-              }}
-              placeholder="Không đặt"
-              className="w-full rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-on-surface focus:border-cyan-300/40 focus:outline-none"
-            />
-          </ConfigField>
-        </div>
-
-        {savingConfig && (
-          <p className="font-tech text-[10px] uppercase tracking-[0.16em] text-cyan-300 inline-flex items-center gap-1.5">
-            <Loader2 size={10} className="animate-spin" /> Đang lưu…
-          </p>
-        )}
-      </div>
-
-      {/* Questions */}
+      {/* Questions list */}
       <div className="space-y-3">
         {questions.map((q, idx) => (
           <QuestionEditor
@@ -290,331 +195,6 @@ export default function QuizConfigEditor({ lessonId }: { lessonId: string }) {
         >
           Huỷ thay đổi
         </button>
-      </div>
-    </div>
-  );
-}
-
-function ConfigField({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="space-y-1">
-      <label className="font-tech text-[10px] uppercase tracking-[0.18em] text-secondary/55">
-        {label}
-      </label>
-      {children}
-    </div>
-  );
-}
-
-function QuestionEditor({
-  index,
-  question,
-  onChange,
-  onDelete,
-  onMove,
-}: {
-  index: number;
-  question: QuizQuestion;
-  onChange: (patch: Partial<QuizQuestion>) => void;
-  onDelete: () => void;
-  onMove: (dir: -1 | 1) => void;
-}) {
-  const choices = question.choices_jsonb ?? [];
-  const correct = question.correct_jsonb ?? [];
-
-  const setType = (type: QuizQuestionType) => {
-    const patch: Partial<QuizQuestion> = { type };
-    if (type === 'single') {
-      patch.choices_jsonb = choices.length > 0 ? choices : ['Lựa chọn A', 'Lựa chọn B'];
-      patch.correct_jsonb = correct.length === 1 ? correct : [0];
-      patch.expected_text = null;
-    } else if (type === 'multi') {
-      patch.choices_jsonb = choices.length > 0 ? choices : ['Lựa chọn A', 'Lựa chọn B'];
-      patch.correct_jsonb = correct;
-      patch.expected_text = null;
-    } else if (type === 'text') {
-      patch.choices_jsonb = null;
-      patch.correct_jsonb = null;
-      // expected_text preserved
-    } else {
-      patch.choices_jsonb = null;
-      patch.correct_jsonb = null;
-      patch.expected_text = null;
-    }
-    onChange(patch);
-  };
-
-  const updateChoice = (idx: number, value: string) => {
-    const next = [...choices];
-    next[idx] = value;
-    onChange({ choices_jsonb: next });
-  };
-
-  const addChoice = () => {
-    onChange({
-      choices_jsonb: [...choices, `Lựa chọn ${String.fromCharCode(65 + choices.length)}`],
-    });
-  };
-
-  const removeChoice = (idx: number) => {
-    if (choices.length <= 2) return;
-    const next = choices.filter((_, i) => i !== idx);
-    const remappedCorrect = correct.filter((c) => c !== idx).map((c) => (c > idx ? c - 1 : c));
-    onChange({ choices_jsonb: next, correct_jsonb: remappedCorrect });
-  };
-
-  const toggleCorrect = (idx: number) => {
-    if (question.type === 'single') {
-      onChange({ correct_jsonb: [idx] });
-    } else {
-      const next = correct.includes(idx)
-        ? correct.filter((c) => c !== idx)
-        : [...correct, idx].sort();
-      onChange({ correct_jsonb: next });
-    }
-  };
-
-  return (
-    <div className="rounded-xl border border-white/10 bg-white/[0.02] p-4 space-y-3">
-      <div className="flex items-start justify-between gap-3">
-        <p className="font-tech text-[10px] uppercase tracking-[0.18em] text-primary tabular-nums">
-          Câu {String(index + 1).padStart(2, '0')}
-        </p>
-        <div className="flex items-center gap-1">
-          <button
-            type="button"
-            onClick={() => onMove(-1)}
-            className="text-secondary/55 hover:text-cyan-200"
-            aria-label="Lên"
-          >
-            <ChevronUp size={14} />
-          </button>
-          <button
-            type="button"
-            onClick={() => onMove(1)}
-            className="text-secondary/55 hover:text-cyan-200"
-            aria-label="Xuống"
-          >
-            <ChevronDown size={14} />
-          </button>
-          <button
-            type="button"
-            onClick={onDelete}
-            className="text-red-400/70 hover:text-red-300 ml-1"
-            aria-label="Xoá câu hỏi"
-          >
-            <Trash2 size={12} />
-          </button>
-        </div>
-      </div>
-
-      <textarea
-        defaultValue={question.prompt_md}
-        onBlur={(e) => onChange({ prompt_md: e.target.value })}
-        rows={2}
-        placeholder="Nội dung câu hỏi…"
-        className="w-full rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-on-surface focus:border-cyan-300/40 focus:outline-none resize-y"
-      />
-
-      <div className="grid sm:grid-cols-3 gap-3">
-        <ConfigField label="Loại">
-          <CustomSelect
-            value={question.type}
-            onChange={(v) => setType(v as QuizQuestionType)}
-            options={[
-              { value: 'single', label: 'Trắc nghiệm — một đáp án' },
-              { value: 'multi', label: 'Trắc nghiệm — nhiều đáp án' },
-              { value: 'text', label: 'Câu trả lời tự luận (text)' },
-              { value: 'file', label: 'Nộp tệp' },
-              { value: 'image', label: 'Hình ảnh (đề bài có ảnh)' },
-            ]}
-          />
-        </ConfigField>
-
-        <ConfigField label="Điểm">
-          <input
-            type="number"
-            min={0}
-            defaultValue={question.points}
-            onBlur={(e) => onChange({ points: Math.max(0, Number(e.target.value) || 0) })}
-            className="w-full rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-on-surface focus:border-cyan-300/40 focus:outline-none"
-          />
-        </ConfigField>
-      </div>
-
-      {(question.type === 'single' || question.type === 'multi') && (
-        <div className="space-y-2">
-          <label className="font-tech text-[10px] uppercase tracking-[0.18em] text-secondary/55">
-            Đáp án (đánh dấu đáp án đúng)
-          </label>
-          {choices.map((choice, ci) => {
-            const isCorrect = correct.includes(ci);
-            return (
-              <div key={ci} className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => toggleCorrect(ci)}
-                  className={`shrink-0 inline-flex items-center justify-center w-7 h-7 rounded-full border transition-colors ${
-                    isCorrect
-                      ? 'border-emerald-400/50 bg-emerald-500/15 text-emerald-200'
-                      : 'border-white/15 text-secondary/55 hover:border-cyan-300/40'
-                  }`}
-                  aria-label={isCorrect ? 'Đáp án đúng' : 'Đặt làm đáp án đúng'}
-                >
-                  {isCorrect ? <CheckCircle2 size={14} /> : String.fromCharCode(65 + ci)}
-                </button>
-                <input
-                  type="text"
-                  defaultValue={choice}
-                  onBlur={(e) => updateChoice(ci, e.target.value)}
-                  className="flex-1 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-1.5 text-sm text-on-surface focus:border-cyan-300/40 focus:outline-none"
-                />
-                {choices.length > 2 && (
-                  <button
-                    type="button"
-                    onClick={() => removeChoice(ci)}
-                    className="text-red-400/70 hover:text-red-300"
-                    aria-label="Xoá đáp án"
-                  >
-                    <Trash2 size={12} />
-                  </button>
-                )}
-              </div>
-            );
-          })}
-          <button
-            type="button"
-            onClick={addChoice}
-            className="inline-flex items-center gap-1.5 rounded-full border border-cyan-300/30 bg-cyan-400/[0.06] px-3 py-1 font-tech text-[10px] uppercase tracking-[0.16em] text-cyan-200 hover:bg-cyan-400/[0.1]"
-          >
-            <Plus size={10} /> Thêm đáp án
-          </button>
-        </div>
-      )}
-
-      {question.type === 'text' && (
-        <ConfigField label="Đáp án mong đợi (để trống nếu giáo viên chấm tay)">
-          <input
-            type="text"
-            defaultValue={question.expected_text ?? ''}
-            onBlur={(e) => onChange({ expected_text: e.target.value.trim() || null })}
-            placeholder="Ví dụ: 42  →  hệ thống tự chấm bằng cách so khớp không phân biệt hoa thường."
-            className="w-full rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-on-surface focus:border-cyan-300/40 focus:outline-none"
-          />
-        </ConfigField>
-      )}
-
-      {question.type === 'file' && (
-        <p className="rounded-lg border border-amber-400/20 bg-amber-500/[0.05] px-3 py-2 text-[11px] text-amber-200/85">
-          Học viên sẽ nộp tệp. Câu hỏi này cần giáo viên chấm tay từ trang “Bài kiểm tra”.
-        </p>
-      )}
-
-      {question.type === 'image' && (
-        <ImageUploader
-          imageUrl={question.image_url ?? null}
-          onUploaded={(url) => onChange({ image_url: url })}
-        />
-      )}
-
-      <ConfigField label="Giải thích (hiển thị sau khi học viên nộp bài, tuỳ chọn)">
-        <textarea
-          defaultValue={question.explanation_md ?? ''}
-          onBlur={(e) => onChange({ explanation_md: e.target.value.trim() || null })}
-          rows={2}
-          className="w-full rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-on-surface focus:border-cyan-300/40 focus:outline-none resize-y"
-        />
-      </ConfigField>
-    </div>
-  );
-}
-
-function ImageUploader({
-  imageUrl,
-  onUploaded,
-}: {
-  imageUrl: string | null;
-  onUploaded: (url: string | null) => void;
-}) {
-  const [uploading, setUploading] = useState(false);
-  const [dragOver, setDragOver] = useState(false);
-
-  const handleFile = async (file: File) => {
-    if (!file.type.startsWith('image/')) return;
-    setUploading(true);
-    const path = `quiz-images/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
-    const { error } = await supabase.storage
-      .from('quiz-submissions')
-      .upload(path, file, { contentType: file.type, upsert: false });
-    if (!error) {
-      const { data } = supabase.storage.from('quiz-submissions').getPublicUrl(path);
-      onUploaded(data.publicUrl);
-    }
-    setUploading(false);
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setDragOver(false);
-    const file = e.dataTransfer.files[0];
-    if (file) handleFile(file);
-  };
-
-  const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) handleFile(file);
-  };
-
-  return (
-    <div className="space-y-2">
-      {imageUrl && (
-        <div className="relative rounded-lg overflow-hidden border border-white/10">
-          <img
-            src={imageUrl}
-            alt="Ảnh câu hỏi"
-            className="w-full max-h-48 object-contain bg-black/20"
-          />
-          <button
-            type="button"
-            onClick={() => onUploaded(null)}
-            className="absolute top-2 right-2 rounded-full bg-black/60 p-1.5 text-red-300 hover:text-red-200"
-          >
-            <Trash2 size={12} />
-          </button>
-        </div>
-      )}
-      <div
-        onDragOver={(e) => {
-          e.preventDefault();
-          setDragOver(true);
-        }}
-        onDragLeave={() => setDragOver(false)}
-        onDrop={handleDrop}
-        className={`relative cursor-pointer rounded-xl border-2 border-dashed px-4 py-5 text-center transition-colors ${
-          dragOver
-            ? 'border-cyan-300/60 bg-cyan-400/[0.06]'
-            : 'border-white/15 bg-white/[0.02] hover:border-cyan-300/30'
-        }`}
-      >
-        <input
-          type="file"
-          accept="image/*"
-          onChange={handleInput}
-          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-        />
-        {uploading ? (
-          <Loader2 size={20} className="mx-auto animate-spin text-cyan-300" />
-        ) : (
-          <>
-            <ImageIcon size={20} className="mx-auto text-cyan-300/80 mb-1" />
-            <p className="text-sm text-secondary/75">
-              Kéo thả ảnh hoặc <span className="text-cyan-200 underline">chọn tệp</span>
-            </p>
-            <p className="font-tech text-[9px] uppercase tracking-[0.14em] text-secondary/45 mt-1">
-              PNG, JPG, WebP
-            </p>
-          </>
-        )}
       </div>
     </div>
   );
