@@ -1,16 +1,19 @@
 import { useEffect, useState } from 'react';
-import { Loader2, Users, TrendingUp, BookOpen, DollarSign } from 'lucide-react';
-import { fetchAdminStats, type AdminTotals } from '../lib/adminStats';
+import { Loader2, Users, TrendingUp, BookOpen, DollarSign, BarChart3 } from 'lucide-react';
+import { fetchAdminStats, type AdminTotals, type DailyPoint } from '../lib/adminStats';
+import AdminStatsChart from './admin/AdminStatsChart';
 
 export default function AdminAnalytics() {
   const [stats, setStats] = useState<AdminTotals | null>(null);
+  const [series, setSeries] = useState<DailyPoint[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
-    fetchAdminStats().then(({ totals }) => {
+    fetchAdminStats().then(({ totals, series: s }) => {
       if (cancelled) return;
       setStats(totals);
+      setSeries(s);
       setLoading(false);
     });
     return () => {
@@ -58,6 +61,17 @@ export default function AdminAnalytics() {
             {stats.quizPassRate.toFixed(0)}%
           </span>
         </div>
+      </div>
+
+      <div className="glass-card rounded-2xl p-5 space-y-3">
+        <p className="inline-flex items-center gap-2 font-tech text-[10px] uppercase tracking-[0.18em] text-secondary/55">
+          <BarChart3 size={12} className="text-primary" /> 30 ngày gần nhất
+        </p>
+        {series.some((p) => p.revenue || p.signups || p.enrollments || p.passRate !== null) ? (
+          <AdminStatsChart data={series} />
+        ) : (
+          <p className="py-10 text-center text-sm text-secondary/50">Chưa có dữ liệu thống kê.</p>
+        )}
       </div>
     </div>
   );
