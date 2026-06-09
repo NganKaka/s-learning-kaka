@@ -8,7 +8,6 @@ import { CheckCircle2, Trash2, Plus } from 'lucide-react';
 export interface ChoicesListProps {
   choices: string[];
   correct: number[];
-  isSingle: boolean;
   onToggleCorrect: (idx: number) => void;
   onUpdateChoice: (idx: number, value: string) => void;
   onAddChoice: () => void;
@@ -18,7 +17,6 @@ export interface ChoicesListProps {
 export default function ChoicesList({
   choices,
   correct,
-  isSingle,
   onToggleCorrect,
   onUpdateChoice,
   onAddChoice,
@@ -69,7 +67,7 @@ export default function ChoicesList({
         onClick={onAddChoice}
         className="inline-flex items-center gap-1.5 rounded-full border border-cyan-300/30 bg-cyan-400/[0.06] px-3 py-1 font-tech text-[10px] uppercase tracking-[0.16em] text-cyan-200 hover:bg-cyan-400/[0.1]"
       >
-        <Plus size={10} /> {isSingle ? 'Thêm đáp án' : 'Thêm đáp án'}
+        <Plus size={10} /> Thêm đáp án
       </button>
     </div>
   );

@@ -4,6 +4,7 @@ import PracticeMode from './PracticeMode';
 import TimedDrill from './TimedDrill';
 import { awardXp } from '../lib/xp';
 import { type QuizAttempt } from '../lib/quiz';
+import { useToast } from '../contexts/ToastContext';
 import { useQuizSession } from './lesson-quiz/useQuizSession';
 import { useQuizTimer } from './lesson-quiz/useQuizTimer';
 import QuizStartScreen from './lesson-quiz/QuizStartScreen';
@@ -20,6 +21,7 @@ import QuizActiveView from './lesson-quiz/QuizActiveView';
 export default function LessonQuiz({ lessonId, userId }: { lessonId: string; userId: string }) {
   const [mode, setMode] = useState<'quiz' | 'review' | 'practice' | 'drill'>('quiz');
   const [reviewAttempt, setReviewAttempt] = useState<QuizAttempt | null>(null);
+  const { showToast } = useToast();
 
   const {
     quiz,
@@ -44,8 +46,9 @@ export default function LessonQuiz({ lessonId, userId }: { lessonId: string; use
   const handleSubmitRef = useRef(handleSubmit);
   handleSubmitRef.current = handleSubmit;
   const onTimeout = useCallback(() => {
+    showToast('Hết giờ. Bài làm được nộp tự động.', 'info');
     handleSubmitRef.current('timeout');
-  }, []);
+  }, [showToast]);
 
   const { timeLeft } = useQuizTimer({
     activeAttempt,

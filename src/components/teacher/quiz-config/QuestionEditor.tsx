@@ -151,7 +151,6 @@ export default function QuestionEditor({
         <ChoicesList
           choices={choices}
           correct={correct}
-          isSingle={question.type === 'single'}
           onToggleCorrect={toggleCorrect}
           onUpdateChoice={updateChoice}
           onAddChoice={addChoice}
