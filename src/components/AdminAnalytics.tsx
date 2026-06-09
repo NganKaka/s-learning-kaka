@@ -1,62 +1,21 @@
 import { useEffect, useState } from 'react';
 import { Loader2, Users, TrendingUp, BookOpen, DollarSign } from 'lucide-react';
-import { supabase } from '../lib/supabase';
-
-interface Stats {
-  totalUsers: number;
-  totalEnrollments: number;
-  totalRevenue: number;
-  totalCourses: number;
-  recentSignups: number;
-  quizPassRate: number;
-}
+import { fetchAdminStats, type AdminTotals } from '../lib/adminStats';
 
 export default function AdminAnalytics() {
-  const [stats, setStats] = useState<Stats | null>(null);
+  const [stats, setStats] = useState<AdminTotals | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    (async () => {
-      const [
-        { count: users },
-        { count: enrollments },
-        { data: orders },
-        { count: courses },
-        { data: recentUsers },
-        { data: attempts },
-      ] = await Promise.all([
-        supabase.from('profiles').select('*', { count: 'exact', head: true }),
-        supabase
-          .from('enrollments')
-          .select('*', { count: 'exact', head: true })
-          .eq('status', 'active'),
-        supabase.from('orders').select('amount_vnd').eq('status', 'confirmed'),
-        supabase.from('courses').select('*', { count: 'exact', head: true }),
-        supabase
-          .from('profiles')
-          .select('id')
-          .gte('created_at', new Date(Date.now() - 7 * 86400000).toISOString()),
-        supabase
-          .from('quiz_attempts')
-          .select('final_score, auto_score')
-          .in('status', ['submitted', 'graded']),
-      ]);
-
-      const revenue = (orders ?? []).reduce((s, o) => s + ((o.amount_vnd as number) ?? 0), 0);
-      const scores = (attempts ?? []).map((a) => (a.final_score ?? a.auto_score ?? 0) as number);
-      const passRate =
-        scores.length > 0 ? (scores.filter((s) => s >= 60).length / scores.length) * 100 : 0;
-
-      setStats({
-        totalUsers: users ?? 0,
-        totalEnrollments: enrollments ?? 0,
-        totalRevenue: revenue,
-        totalCourses: courses ?? 0,
-        recentSignups: recentUsers?.length ?? 0,
-        quizPassRate: passRate,
-      });
+    let cancelled = false;
+    fetchAdminStats().then(({ totals }) => {
+      if (cancelled) return;
+      setStats(totals);
       setLoading(false);
-    })();
+    });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   if (loading)
